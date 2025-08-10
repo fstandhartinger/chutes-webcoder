@@ -8,6 +8,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Chutes Webcoder",
   description: "Build and iterate React apps with Chutes AI-powered Webcoder.",
+  icons: {
+    icon: "/@favicon.png",
+    shortcut: "/@favicon.png",
+    apple: "/@favicon.png",
+  },
 };
 
 export default function RootLayout({
