@@ -1,10 +1,8 @@
 <div align="center">
 
-# Open Lovable
+# Chutes Webcoder
 
-Chat with AI to build React apps instantly.
-
-<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmZtaHFleGRsMTNlaWNydGdianI4NGQ4dHhyZjB0d2VkcjRyeXBucCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZFVLWMa6dVskQX0qu1/giphy.gif" alt="Open Lovable Demo" width="100%"/>
+Build and refactor web apps by chatting with an AI. Powered by the Chutes LLM API and designed for rapid Next.js development.
 
 </div>
 
@@ -12,21 +10,30 @@ Chat with AI to build React apps instantly.
 
 1. **Clone & Install**
 ```bash
-git clone https://github.com/mendableai/open-lovable.git
-cd open-lovable
-npm install
+git clone <your-repo-url>
+cd chutes-webcoder
+npm install   # or: pnpm install / yarn install
 ```
 
-2. **Add `.env.local`**
+2. **Create `.env.local`**
+Provide at least one LLM provider. Using Chutes is recommended and supported out of the box.
 ```env
-# Required
-E2B_API_KEY=your_e2b_api_key  # Get from https://e2b.dev (Sandboxes)
-FIRECRAWL_API_KEY=your_firecrawl_api_key  # Get from https://firecrawl.dev (Web scraping)
+# Primary (recommended)
+CHUTES_API_KEY=your_chutes_api_key
+# Optional: override if needed
+# CHUTES_BASE_URL=https://llm.chutes.ai/v1
 
-# Optional (need at least one AI provider)
-ANTHROPIC_API_KEY=your_anthropic_api_key  # Get from https://console.anthropic.com
-OPENAI_API_KEY=your_openai_api_key  # Get from https://platform.openai.com (GPT-5)
-GROQ_API_KEY=your_groq_api_key  # Get from https://console.groq.com (Fast inference - Kimi K2 recommended)
+# Optional providers (enable any you use)
+GROQ_API_KEY=your_groq_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+ANTHROPIC_BASE_URL=https://api.anthropic.com/v1
+
+# Optional integrations
+E2B_API_KEY=your_e2b_api_key           # Sandboxes (https://e2b.dev)
+FIRECRAWL_API_KEY=your_firecrawl_api_key # Web scraping (https://firecrawl.dev)
+
+# App URL (used for internal API calls in dev)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 3. **Run**
@@ -34,7 +41,19 @@ GROQ_API_KEY=your_groq_api_key  # Get from https://console.groq.com (Fast infere
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)  
+Then open http://localhost:3000
+
+## Notes
+
+- Defaults to the Chutes API for OpenAI-compatible chat completions (`https://llm.chutes.ai/v1`).
+- You can switch models/providers via environment variables without code changes.
+- A Render deployment config is included in `render.yaml`.
+
+## Credits
+
+This project is inspired by and builds on the excellent groundwork from **Open Lovable** by Mendable AI. Huge thanks to their team for open-sourcing such a solid foundation.
+
+- Repo: https://github.com/mendableai/open-lovable
 
 ## License
 

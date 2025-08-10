@@ -33,10 +33,9 @@ const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(
           onClick={handleToggle}
           disabled={disabled}
           className={cn(
-            "h-4 w-4 rounded border border-zinc-300 flex items-center justify-center transition-all duration-200",
-            "[box-shadow:inset_0px_-1px_0px_0px_#e4e4e7,_0px_1px_3px_0px_rgba(228,_228,_231,_20%)]",
-            !disabled && "hover:[box-shadow:inset_0px_-1px_0px_0px_#d4d4d8,_0px_1px_3px_0px_rgba(212,_212,_216,_30%)]",
-            checked && "bg-orange-500 border-orange-500 [box-shadow:inset_0px_-1px_0px_0px_#c2410c,_0px_1px_3px_0px_rgba(234,_88,_12,_30%)]",
+            "h-4 w-4 rounded border border-border flex items-center justify-center transition-all duration-200 bg-[hsl(240_8%_7%)]",
+            !disabled && "hover:bg-[hsl(240_8%_10%)]",
+            checked && "bg-primary border-primary",
             disabled && "opacity-50 cursor-not-allowed"
           )}
         >
