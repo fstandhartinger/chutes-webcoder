@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface CodeApplicationState {
-  stage: 'analyzing' | 'installing' | 'applying' | 'complete' | null;
+  stage: 'analyzing' | 'installing' | 'applying' | 'complete' | 'waiting_preview' | null;
   packages?: string[];
   installedPackages?: string[];
   filesGenerated?: string[];
@@ -14,7 +14,8 @@ interface CodeApplicationProgressProps {
 }
 
 export default function CodeApplicationProgress({ state }: CodeApplicationProgressProps) {
-  if (!state.stage || state.stage === 'complete') return null;
+  // Keep the progress visible during 'complete' to avoid gap before preview becomes ready
+  if (!state.stage) return null;
 
   return (
     <AnimatePresence mode="wait">
@@ -24,7 +25,7 @@ export default function CodeApplicationProgress({ state }: CodeApplicationProgre
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3 }}
-        className="inline-block bg-gray-100 rounded-[10px] p-3 mt-2"
+        className="inline-block bg-[hsl(240_8%_10%)] rounded-[10px] p-3 mt-2 border border-border"
       >
         <div className="flex items-center gap-3">
           {/* Rotating loading indicator */}
@@ -43,14 +44,16 @@ export default function CodeApplicationProgress({ state }: CodeApplicationProgre
                 strokeLinecap="round"
                 strokeDasharray="31.416"
                 strokeDashoffset="10"
-                className="text-gray-700"
+                className="text-white"
               />
             </svg>
           </motion.div>
 
           {/* Simple loading text */}
-          <div className="text-sm font-medium text-gray-700">
-            Applying to sandbox...
+          <div className="text-sm font-medium text-white">
+            {state.stage === 'waiting_preview' || state.stage === 'complete'
+              ? 'Preparing preview…'
+              : 'Applying to sandbox...'}
           </div>
         </div>
       </motion.div>

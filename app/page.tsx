@@ -21,8 +21,10 @@ import {
 } from '@/lib/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import CodeApplicationProgress, { type CodeApplicationState } from '@/components/CodeApplicationProgress';
-import ParticleWave from '@/components/ParticleWave';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+// Lazy-load the wave to avoid impacting TTI
+const ParticleWave = dynamic(() => import('@/components/ParticleWave'), { ssr: false });
 
 interface SandboxData {
   sandboxId: string;
@@ -218,6 +220,13 @@ export default function AISandboxPage() {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
   }, [chatMessages]);
+  
+  // Clear "waiting_preview" state only after the UI has switched to the preview tab
+  useEffect(() => {
+    if (activeTab === 'preview' && codeApplicationState.stage === 'waiting_preview') {
+      setCodeApplicationState({ stage: null });
+    }
+  }, [activeTab, codeApplicationState.stage]);
 
 
   const updateStatus = (text: string, active: boolean) => {
@@ -230,14 +239,20 @@ export default function AISandboxPage() {
 
   const addChatMessage = (content: string, type: ChatMessage['type'], metadata?: ChatMessage['metadata']) => {
     setChatMessages(prev => {
+      // Ensure we never show this message twice by removing any previous ones before adding a new one
+      let base = prev;
+      if (type === 'system' && content === 'Waiting for sandbox to be ready...') {
+        base = prev.filter(msg => msg.content !== 'Waiting for sandbox to be ready...');
+      }
+
       // Skip duplicate consecutive system messages
-      if (type === 'system' && prev.length > 0) {
-        const lastMessage = prev[prev.length - 1];
+      if (type === 'system' && base.length > 0) {
+        const lastMessage = base[base.length - 1];
         if (lastMessage.type === 'system' && lastMessage.content === content) {
-          return prev; // Skip duplicate
+          return base; // Skip duplicate
         }
       }
-      return [...prev, { content, type, timestamp: new Date(), metadata }];
+      return [...base, { content, type, timestamp: new Date(), metadata }];
     });
   };
   
@@ -583,10 +598,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 case 'complete':
                   finalData = data;
                   setCodeApplicationState({ stage: 'complete' });
-                  // Clear the state after a delay
+                  // Always enter 'waiting_preview' to keep the message visible until we actually switch to preview
                   setTimeout(() => {
-                    setCodeApplicationState({ stage: null });
-                  }, 3000);
+                    setCodeApplicationState({ stage: 'waiting_preview' });
+                  }, 500);
                   break;
                   
                 case 'error':
@@ -1112,6 +1127,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             return 'jsx';
                           })()}
                           style={vscDarkPlus}
+                          className="scrollbar-dark"
                           customStyle={{
                             margin: 0,
                             padding: '1rem',
@@ -1154,6 +1170,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         <SyntaxHighlighter
                           language="jsx"
                           style={vscDarkPlus}
+                          className="scrollbar-dark"
                           customStyle={{
                             margin: 0,
                             padding: '1rem',
@@ -1196,6 +1213,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               'jsx'
                             }
                             style={vscDarkPlus}
+                            className="scrollbar-dark"
                             customStyle={{
                               margin: 0,
                               padding: '1rem',
@@ -1237,6 +1255,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               'jsx'
                             }
                             style={vscDarkPlus}
+                            className="scrollbar-dark"
                             customStyle={{
                               margin: 0,
                               padding: '1rem',
@@ -1261,10 +1280,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             <span className="font-mono text-sm">Processing...</span>
                           </div>
                         </div>
-                        <div className="bg-[hsl(240_8%_5%)] border border-border rounded">
+                        <div className="bg-[hsl(240_8%_5%)] border border-border rounded-b-lg">
                           <SyntaxHighlighter
                             language="jsx"
                             style={vscDarkPlus}
+                            className="scrollbar-dark"
                             customStyle={{
                               margin: 0,
                               padding: '1rem',
@@ -2752,23 +2772,9 @@ Focus on the key sections and content, making it clean and modern.`;
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
           {/* Background */}
           <div className="absolute inset-0 bg-background overflow-hidden">
-            {/* Main Sun - Pulsing */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-orange-400/50 via-orange-300/30 to-transparent rounded-full blur-[80px] animate-[sunPulse_4s_ease-in-out_infinite]" />
-            
-            {/* Inner Sun Core - Brighter */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-radial from-yellow-300/40 via-orange-400/30 to-transparent rounded-full blur-[40px] animate-[sunPulse_4s_ease-in-out_infinite_0.5s]" />
-            
-            {/* Outer Glow - Subtle */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-gradient-radial from-orange-200/20 to-transparent rounded-full blur-[120px]" />
-            
-            {/* Giant Glowing Orb - Center Bottom */}
-            <div className="absolute bottom-0 left-1/2 w-[800px] h-[800px] animate-[orbShrink_3s_ease-out_forwards]" style={{ transform: 'translateX(-50%) translateY(45%)' }}>
-              <div className="relative w-full h-full">
-                <div className="absolute inset-0 bg-orange-600 rounded-full blur-[100px] opacity-30 animate-pulse"></div>
-                <div className="absolute inset-16 bg-orange-500 rounded-full blur-[80px] opacity-40 animate-pulse" style={{ animationDelay: '0.3s' }}></div>
-                <div className="absolute inset-32 bg-orange-400 rounded-full blur-[60px] opacity-50 animate-pulse" style={{ animationDelay: '0.6s' }}></div>
-                <div className="absolute inset-48 bg-yellow-300 rounded-full blur-[40px] opacity-60"></div>
-              </div>
+            {/* Subtle, performant particle wave covering lower portion, shifted down 10% */}
+            <div className="absolute left-0 right-0 h-3/5" style={{ bottom: '-10%' }}>
+              <ParticleWave className="absolute inset-0" />
             </div>
           </div>
           
@@ -2802,7 +2808,7 @@ Focus on the key sections and content, making it clean and modern.`;
           
           {/* Main content */}
           <div className="relative z-10 h-full flex justify-center items-start pt-28 md:pt-36 px-4">
-            <div className="text-center max-w-4xl min-w-[600px] mx-auto">
+            <div className="text-center w-full max-w-4xl min-w-[600px] mx-auto">
               {/* Firecrawl-style Header */}
               <div className="text-center">
                 <h1 className="text-[2.5rem] lg:text-[3.8rem] text-center text-foreground font-semibold tracking-tight leading-[0.9] animate-[fadeIn_0.8s_ease-out]">
@@ -2810,7 +2816,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   <span className="md:hidden">Chutes Webcoder</span>
                 </h1>
                 <motion.p 
-                  className="text-base lg:text-lg max-w-lg mx-auto mt-2.5 text-muted-foreground text-center text-balance"
+                  className="text-base lg:text-lg max-w-lg mx-auto mt-2.5 mb-3 text-muted-foreground text-center text-balance"
                   animate={{
                     opacity: showStyleSelector ? 0.7 : 1
                   }}
@@ -2821,7 +2827,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </div>
               
               {/* Prompt form */}
-              <form onSubmit={handleHomePromptSubmit} className="mt-5 max-w-4xl mx-auto">
+              <form onSubmit={handleHomePromptSubmit} className="mt-5 w-full max-w-4xl mx-auto">
                 <div className="w-full relative group">
                   <textarea
                     value={homePromptInput}
@@ -2834,7 +2840,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="h-40 w-full resize-y focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-2 rounded-[18px] text-sm text-foreground px-4 pr-12 py-3 pb-8 border border-border bg-[hsl(240_8%_7%)]"
+                    className="h-40 w-full resize-y focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-2 rounded-[18px] text-sm text-foreground px-4 pr-12 py-3 pb-10 border border-border bg-[hsl(240_8%_7%)]"
                     style={{
                       boxShadow: '0 0 0 1px #e3e1de66, 0 1px 2px #5f4a2e14, 0 4px 6px #5f4a2e0a, 0 40px 40px -24px #684b2514',
                       filter: 'drop-shadow(rgba(249, 224, 184, 0.3) -0.731317px -0.731317px 35.6517px)'
@@ -2848,7 +2854,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       }
                     }}
                   />
-                  <span className="absolute bottom-2 left-4 text-[10px] text-muted-foreground select-none pointer-events-none">
+                  <span className="absolute bottom-3 left-4 text-[10px] text-[hsl(240_5%_50%)] select-none pointer-events-none">
                     Press Enter to send, Shift+Enter for linebreaks
                   </span>
                   <button
@@ -2875,7 +2881,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </div>
 
               {/* URL clone form */}
-              <form onSubmit={handleHomeScreenSubmit} className="max-w-4xl mx-auto">
+              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-4xl mx-auto">
                   <div className="w-full relative group">
                   <input
                     type="text"
@@ -3006,7 +3012,7 @@ Focus on the key sections and content, making it clean and modern.`;
               {/* Advanced - Model Selector (collapsed by default) */}
               <details className="mt-6 animate-[fadeIn_1s_ease-out]">
                 <summary className="cursor-pointer text-sm text-muted-foreground text-center">Advanced</summary>
-                <div className="mt-2 text-left w-full max-w-3xl mx-auto flex flex-col items-center">
+                <div className="mt-2 text-left w-full max-w-4xl mx-auto flex flex-col items-center">
                   <label className="block text-xs text-muted-foreground mb-1">AI Model:</label>
                   <select
                     value={aiModel}
@@ -3034,8 +3040,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 </div>
               </details>
             </div>
-            {/* Subtle particle wave at bottom of start page */}
-            <ParticleWave />
+            {/* ParticleWave removed */}
           </div>
         </div>
       )}
@@ -3170,7 +3175,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       <div className={`block rounded-[10px] px-4 py-2 ${
                         msg.type === 'user' ? 'bg-[hsl(240_8%_10%)] text-foreground ml-auto max-w-[80%]' :
                         msg.type === 'ai' ? 'bg-[hsl(240_8%_7%)] text-foreground mr-auto max-w-[80%]' :
-                        msg.type === 'system' ? 'bg-[#36322F] text-white text-sm' :
+                        msg.type === 'system' ? 'bg-transparent text-muted-foreground font-medium text-sm' :
                         msg.type === 'command' ? 'bg-[#36322F] text-white font-mono text-sm' :
                         msg.type === 'error' ? 'bg-red-900 text-red-100 text-sm border border-red-700' :
                         'bg-[#36322F] text-white text-sm'
@@ -3339,6 +3344,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       <SyntaxHighlighter
                         language="jsx"
                         style={vscDarkPlus}
+                        className="scrollbar-dark"
                         customStyle={{
                           margin: 0,
                           padding: '0.75rem',
@@ -3381,11 +3387,12 @@ Focus on the key sections and content, making it clean and modern.`;
               />
               <button
                 onClick={() => void sendChatMessage()}
-                className="absolute right-2 bottom-2 p-2 bg-[#36322F] text-white rounded-[10px] hover:bg-[#4a4542] [box-shadow:inset_0px_-2px_0px_0px_#171310,_0px_1px_6px_0px_rgba(58,_33,_8,_58%)] hover:translate-y-[1px] hover:scale-[0.98] hover:[box-shadow:inset_0px_-1px_0px_0px_#171310,_0px_1px_3px_0px_rgba(58,_33,_8,_40%)] active:translate-y-[2px] active:scale-[0.97] active:[box-shadow:inset_0px_1px_1px_0px_#171310,_0px_1px_2px_0px_rgba(58,_33,_8,_30%)] transition-all duration-200"
+                className="absolute right-2 bottom-2 p-2 bg-transparent text-white hover:text-zinc-300 transition-colors cursor-pointer"
                 title="Send message (Enter)"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <polyline points="9 10 4 15 9 20"></polyline>
+                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                 </svg>
               </button>
             </div>
