@@ -19,8 +19,10 @@ const anthropic = createAnthropic({
   baseURL: process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com/v1',
 });
 
+// Configure OpenAI-compatible client against Chutes endpoint
 const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.CHUTES_API_KEY,
+  baseURL: process.env.CHUTES_BASE_URL || 'https://llm.chutes.ai/v1'
 });
 
 // Helper function to analyze user preferences from conversation history
@@ -69,7 +71,7 @@ declare global {
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, model = 'openai/gpt-oss-20b', context, isEdit = false } = await request.json();
+    const { prompt, model = 'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8', context, isEdit = false } = await request.json();
     
     console.log('[generate-ai-code-stream] Received request:');
     console.log('[generate-ai-code-stream] - prompt:', prompt);
@@ -165,7 +167,7 @@ export async function POST(request: NextRequest) {
           if (manifest) {
             await sendProgress({ type: 'status', message: '🔍 Creating search plan...' });
             
-            const fileContents = global.sandboxState.fileCache.files;
+            const fileContents = global.sandboxState?.fileCache?.files || {};
             console.log('[generate-ai-code-stream] Files available for search:', Object.keys(fileContents).length);
             
             // STEP 1: Get search plan from AI
@@ -326,7 +328,7 @@ User request: "${prompt}"`;
                         
                         // For now, fall back to keyword search since we don't have file contents for search execution
                         // This path happens when no manifest was initially available
-                        let targetFiles = [];
+                        let targetFiles: string[] = [];
                         if (!searchPlan || searchPlan.searchTerms.length === 0) {
                           console.warn('[generate-ai-code-stream] No target files after fetch, searching for relevant files');
                           
@@ -950,14 +952,30 @@ CRITICAL: When files are provided in the context:
                   // Store files in cache
                   for (const [path, content] of Object.entries(filesData.files)) {
                     const normalizedPath = path.replace('/home/user/app/', '');
-                    global.sandboxState.fileCache.files[normalizedPath] = {
+                    if (!global.sandboxState) global.sandboxState = {} as any;
+                    if (!global.sandboxState.fileCache) {
+                      global.sandboxState.fileCache = {
+                        files: {},
+                        lastSync: Date.now(),
+                        sandboxId: context?.sandboxId || 'unknown'
+                      } as any;
+                    }
+                    (global.sandboxState.fileCache as any).files[normalizedPath] = {
                       content: content as string,
                       lastModified: Date.now()
-                    };
+                    } as any;
                   }
                   
                   if (filesData.manifest) {
-                    global.sandboxState.fileCache.manifest = filesData.manifest;
+                    if (!global.sandboxState) global.sandboxState = {} as any;
+                    if (!global.sandboxState.fileCache) {
+                      global.sandboxState.fileCache = {
+                        files: {},
+                        lastSync: Date.now(),
+                        sandboxId: context?.sandboxId || 'unknown'
+                      } as any;
+                    }
+                    (global.sandboxState.fileCache as any).manifest = filesData.manifest as any;
                     
                     // Now try to analyze edit intent with the fetched manifest
                     if (!editContext) {
@@ -988,7 +1006,7 @@ CRITICAL: When files are provided in the context:
                   }
                   
                   // Update variables
-                  backendFiles = global.sandboxState.fileCache.files;
+                  backendFiles = (global.sandboxState.fileCache as any)?.files || {};
                   hasBackendFiles = Object.keys(backendFiles).length > 0;
                   console.log('[generate-ai-code-stream] Updated backend cache with fetched files');
                 }
@@ -1148,18 +1166,14 @@ CRITICAL: When files are provided in the context:
         
         // Determine which provider to use based on model
         const isAnthropic = model.startsWith('anthropic/');
-        const isOpenAI = model.startsWith('openai/gpt-5');
-        const modelProvider = isAnthropic ? anthropic : (isOpenAI ? openai : groq);
-        const actualModel = isAnthropic ? model.replace('anthropic/', '') : 
-                           (model === 'openai/gpt-5') ? 'gpt-5' : model;
+        const isChutes = model.startsWith('chutes/');
+        const modelProvider = isAnthropic ? anthropic : (isChutes ? openai : groq);
+        const actualModel = isAnthropic ? model.replace('anthropic/', '') : model;
         
-        // Make streaming API call with appropriate provider
-        const streamOptions: any = {
-          model: modelProvider(actualModel),
-          messages: [
-            { 
-              role: 'system', 
-              content: systemPrompt + `
+        // Prepare shared messages content
+        const systemMessage = {
+          role: 'system' as const,
+          content: systemPrompt + `
 
 🚨 CRITICAL CODE GENERATION RULES - VIOLATION = FAILURE 🚨:
 1. NEVER truncate ANY code - ALWAYS write COMPLETE files
@@ -1170,7 +1184,7 @@ CRITICAL: When files are provided in the context:
 6. If you run out of space, prioritize completing the current file
 
 CRITICAL STRING RULES TO PREVENT SYNTAX ERRORS:
-- NEVER write: className="px-8 py-4 bg-black text-white font-bold neobrut-border neobr...
+- NEVER write: className="px-8 py-4 bg-black text-white font-bold neobrut-border neobr..."
 - ALWAYS write: className="px-8 py-4 bg-black text-white font-bold neobrut-border neobrut-shadow"
 - COMPLETE every className attribute
 - COMPLETE every string literal
@@ -1194,10 +1208,10 @@ Examples of CORRECT CODE (ALWAYS DO THIS):
 ✅ import { useState, useEffect, useCallback } from 'react'
 
 REMEMBER: It's better to generate fewer COMPLETE files than many INCOMPLETE files.`
-            },
-            { 
-              role: 'user', 
-              content: fullPrompt + `
+        };
+        const userMessage = {
+          role: 'user' as const,
+          content: fullPrompt + `
 
 CRITICAL: You MUST complete EVERY file you start. If you write:
 <file path="src/components/Hero.jsx">
@@ -1214,31 +1228,81 @@ ALWAYS write complete code:
 
 If you're running out of space, generate FEWER files but make them COMPLETE.
 It's better to have 3 complete files than 10 incomplete files.`
-            }
-          ],
-          maxTokens: 8192, // Reduce to ensure completion
-          stopSequences: [] // Don't stop early
-          // Note: Neither Groq nor Anthropic models support tool/function calling in this context
-          // We use XML tags for package detection instead
         };
-        
-        // Add temperature for non-reasoning models
-        if (!model.startsWith('openai/gpt-5')) {
-          streamOptions.temperature = 0.7;
-        }
-        
-        // Add reasoning effort for GPT-5 models
-        if (isOpenAI) {
-          streamOptions.experimental_providerMetadata = {
-            openai: {
-              reasoningEffort: 'high'
+
+        // If using Chutes models, bypass SDK and call chat/completions directly
+        let textStreamAsyncIterator: AsyncGenerator<string, void, unknown> | null = null;
+        if (isChutes) {
+          const url = `${process.env.CHUTES_BASE_URL || 'https://llm.chutes.ai/v1'}/chat/completions`;
+          // Chutes expects model ids without the leading "chutes/" vendor prefix
+          const chutesModelId = model.startsWith('chutes/') ? model.replace(/^chutes\//, '') : model;
+          const resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.CHUTES_API_KEY || ''}`
+            },
+            body: JSON.stringify({
+              model: chutesModelId,
+              messages: [systemMessage, userMessage],
+              stream: true,
+              temperature: 0.7
+            })
+          });
+          if (!resp.ok || !resp.body) {
+            throw new Error(`Chutes API error: ${resp.status} ${await resp.text()}`);
+          }
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          async function* iterate() {
+            let buffer = '';
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith('data:')) continue;
+                const dataStr = trimmed.replace(/^data:\s*/, '');
+                if (dataStr === '[DONE]') {
+                  return;
+                }
+                try {
+                  const json = JSON.parse(dataStr);
+                  const deltaText = json.choices?.[0]?.delta?.content || '';
+                  if (deltaText) {
+                    yield deltaText as string;
+                  }
+                } catch {
+                  // ignore malformed chunks
+                }
+              }
             }
+          }
+          textStreamAsyncIterator = iterate();
+        } else {
+          // Non-Chutes: use SDK provider
+          const streamOptions: any = {
+            model: modelProvider(actualModel),
+            messages: [systemMessage, userMessage],
+            stopSequences: []
           };
+          if (!model.startsWith('chutes/')) {
+            streamOptions.temperature = 0.7;
+          }
+          const result = await streamText(streamOptions);
+          // Convert SDK textStream to async iterator of strings
+          async function* sdkIter() {
+            for await (const textPart of result.textStream) {
+              yield (textPart || '') as string;
+            }
+          }
+          textStreamAsyncIterator = sdkIter();
         }
-        
-        const result = await streamText(streamOptions);
-        
-        // Stream the response and parse in real-time
+
+        // Stream the response and parse in real-time (unified over both paths)
         let generatedCode = '';
         let currentFile = '';
         let currentFilePath = '';
@@ -1251,8 +1315,7 @@ It's better to have 3 complete files than 10 incomplete files.`
         let tagBuffer = '';
         
         // Stream the response and parse for packages in real-time
-        for await (const textPart of result.textStream) {
-          const text = textPart || '';
+        for await (const text of textStreamAsyncIterator!) {
           generatedCode += text;
           currentFile += text;
           
@@ -1578,17 +1641,23 @@ Provide the complete file content without any truncation. Include all necessary 
                 
                 // Make a focused API call to complete this specific file
                 // Create a new client for the completion based on the provider
+                // Choose provider and normalize model id
                 let completionClient;
-                if (model.includes('gpt') || model.includes('openai')) {
+                let completionModelId = model;
+                if (model.startsWith('chutes/')) {
                   completionClient = openai;
-                } else if (model.includes('claude')) {
+                  completionModelId = model.replace('chutes/', '');
+                } else if (model.startsWith('anthropic/') || model.includes('claude')) {
                   completionClient = anthropic;
+                  completionModelId = model.replace('anthropic/', '');
+                } else if (model.includes('gpt') || model.includes('openai')) {
+                  completionClient = openai;
                 } else {
                   completionClient = groq;
                 }
                 
                 const completionResult = await streamText({
-                  model: completionClient(modelMapping[model] || model),
+                  model: completionClient(completionModelId),
                   messages: [
                     { 
                       role: 'system', 
@@ -1596,8 +1665,7 @@ Provide the complete file content without any truncation. Include all necessary 
                     },
                     { role: 'user', content: completionPrompt }
                   ],
-                  temperature: isGPT5 ? undefined : appConfig.ai.defaultTemperature,
-                  maxTokens: appConfig.ai.truncationRecoveryMaxTokens
+                  temperature: appConfig.ai.defaultTemperature
                 });
                 
                 // Get the full text from the stream

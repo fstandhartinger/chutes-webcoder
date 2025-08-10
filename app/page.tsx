@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { appConfig } from '@/config/app.config';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import {
   FiFile, 
   FiChevronRight, 
   FiChevronDown,
-  FiGithub,
   BsFolderFill, 
   BsFolder2Open,
   SiJavascript, 
@@ -49,17 +48,12 @@ export default function AISandboxPage() {
   const [responseArea, setResponseArea] = useState<string[]>([]);
   const [structureContent, setStructureContent] = useState('No sandbox created yet');
   const [promptInput, setPromptInput] = useState('');
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      content: 'Welcome! I can help you generate code with full context of your sandbox files and structure. Just start chatting - I\'ll automatically create a sandbox for you if needed!\n\nTip: If you see package errors like "react-router-dom not found", just type "npm install" or "check packages" to automatically install missing packages.',
-      type: 'system',
-      timestamp: new Date()
-    }
-  ]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [aiChatInput, setAiChatInput] = useState('');
   const [aiEnabled] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const creatingSandboxRef = useRef<Promise<any> | null>(null);
   const [aiModel, setAiModel] = useState(() => {
     const modelParam = searchParams.get('model');
     return appConfig.ai.availableModels.includes(modelParam || '') ? modelParam! : appConfig.ai.defaultModel;
@@ -72,6 +66,7 @@ export default function AISandboxPage() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [homeScreenFading, setHomeScreenFading] = useState(false);
   const [homeUrlInput, setHomeUrlInput] = useState('');
+  const [homePromptInput, setHomePromptInput] = useState('');
   const [homeContextInput, setHomeContextInput] = useState('');
   const [activeTab, setActiveTab] = useState<'generation' | 'preview'>('preview');
   const [showStyleSelector, setShowStyleSelector] = useState(false);
@@ -159,16 +154,16 @@ export default function AISandboxPage() {
         try {
           // For now, just create a new sandbox - you could enhance this to actually restore
           // the specific sandbox if your backend supports it
-          await createSandbox(true);
+          await createSandbox(true, true);
         } catch (error) {
           console.error('[ai-sandbox] Failed to restore sandbox:', error);
           // Create new sandbox on error
-          await createSandbox(true);
+          await createSandbox(true, true);
         }
       } else {
         // Automatically create new sandbox
         console.log('[home] No sandbox in URL, creating new sandbox automatically...');
-        await createSandbox(true);
+        await createSandbox(true, true);
       }
     };
     
@@ -355,92 +350,97 @@ export default function AISandboxPage() {
     }
   };
 
-  const createSandbox = async (fromHomeScreen = false) => {
-    console.log('[createSandbox] Starting sandbox creation...');
+  const createSandbox = async (fromHomeScreen = false, suppressUrlPush = false) => {
+    if (creatingSandboxRef.current) {
+      console.log('[createSandbox] Reusing in-flight creation promise');
+      return creatingSandboxRef.current;
+    }
+    console.log('[createSandbox] Starting sandbox creation... fromHomeScreen=', fromHomeScreen);
     setLoading(true);
     setShowLoadingBackground(true);
     updateStatus('Creating sandbox...', false);
     setResponseArea([]);
     setScreenshotError(null);
-    
-    try {
-      const response = await fetch('/api/create-ai-sandbox', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
-      });
-      
-      const data = await response.json();
-      console.log('[createSandbox] Response data:', data);
-      
-      if (data.success) {
-        setSandboxData(data);
-        updateStatus('Sandbox active', true);
-        log('Sandbox created successfully!');
-        log(`Sandbox ID: ${data.sandboxId}`);
-        log(`URL: ${data.url}`);
-        
-        // Update URL with sandbox ID
-        const newParams = new URLSearchParams(searchParams.toString());
-        newParams.set('sandbox', data.sandboxId);
-        newParams.set('model', aiModel);
-        router.push(`/?${newParams.toString()}`, { scroll: false });
-        
-        // Fade out loading background after sandbox loads
-        setTimeout(() => {
-          setShowLoadingBackground(false);
-        }, 3000);
-        
-        if (data.structure) {
-          displayStructure(data.structure);
-        }
-        
-        // Fetch sandbox files after creation
-        setTimeout(fetchSandboxFiles, 1000);
-        
-        // Restart Vite server to ensure it's running
-        setTimeout(async () => {
-          try {
-            console.log('[createSandbox] Ensuring Vite server is running...');
-            const restartResponse = await fetch('/api/restart-vite', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
-            });
-            
-            if (restartResponse.ok) {
-              const restartData = await restartResponse.json();
-              if (restartData.success) {
-                console.log('[createSandbox] Vite server started successfully');
-              }
-            }
-          } catch (error) {
-            console.error('[createSandbox] Error starting Vite server:', error);
+
+    creatingSandboxRef.current = (async () => {
+      try {
+        const response = await fetch('/api/create-ai-sandbox', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const data = await response.json();
+        console.log('[createSandbox] Response data:', data);
+        if (data.success) {
+          console.log('[createSandbox] SUCCESS sandboxId=', data.sandboxId, 'url=', data.url);
+          setSandboxData(data);
+          updateStatus('Sandbox active', true);
+          log('Sandbox created successfully!');
+          log(`Sandbox ID: ${data.sandboxId}`);
+          log(`URL: ${data.url}`);
+          // Update URL with sandbox ID
+          if (!suppressUrlPush) {
+            const newParams = new URLSearchParams(searchParams.toString());
+            newParams.set('sandbox', data.sandboxId);
+            newParams.set('model', aiModel);
+            console.log('[createSandbox] Updating URL with sandbox param');
+            router.push(`/?${newParams.toString()}`, { scroll: false });
+          } else {
+            console.log('[createSandbox] Suppressing URL push during active generation');
           }
-        }, 2000);
-        
-        // Only add welcome message if not coming from home screen
-        if (!fromHomeScreen) {
-          addChatMessage(`Sandbox created! ID: ${data.sandboxId}. I now have context of your sandbox and can help you build your app. Just ask me to create components and I'll automatically apply them!
+          // Fade out loading background after sandbox loads
+          setTimeout(() => {
+            setShowLoadingBackground(false);
+          }, 3000);
+          if (data.structure) {
+            displayStructure(data.structure);
+          }
+          // Fetch sandbox files after creation
+          setTimeout(fetchSandboxFiles, 1000);
+          // Ensure Vite server is up
+          setTimeout(async () => {
+            try {
+              console.log('[createSandbox] Ensuring Vite server is running...');
+              const restartResponse = await fetch('/api/restart-vite', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+              if (restartResponse.ok) {
+                const restartData = await restartResponse.json();
+                if (restartData.success) {
+                  console.log('[createSandbox] Vite server started successfully');
+                }
+              }
+            } catch (error) {
+              console.error('[createSandbox] Error starting Vite server:', error);
+            }
+          }, 2000);
+          // Only add welcome message if not coming from home screen
+          if (!fromHomeScreen) {
+            addChatMessage(`Sandbox created! ID: ${data.sandboxId}. I now have context of your sandbox and can help you build your app. Just ask me to create components and I'll automatically apply them!
 
 Tip: I automatically detect and install npm packages from your code imports (like react-router-dom, axios, etc.)`, 'system');
-        }
-        
-        setTimeout(() => {
-          if (iframeRef.current) {
-            iframeRef.current.src = data.url;
           }
-        }, 100);
-      } else {
-        throw new Error(data.error || 'Unknown error');
+          setTimeout(() => {
+            if (iframeRef.current) {
+              console.log('[createSandbox] Setting iframe src to sandbox URL');
+              iframeRef.current.src = data.url;
+            }
+          }, 100);
+          return data;
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (error: any) {
+        console.error('[createSandbox] Error:', error);
+        updateStatus('Error', false);
+        log(`Failed to create sandbox: ${error.message}`, 'error');
+        addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
+        throw error;
+      } finally {
+        setLoading(false);
+        creatingSandboxRef.current = null;
       }
-    } catch (error: any) {
-      console.error('[createSandbox] Error:', error);
-      updateStatus('Error', false);
-      log(`Failed to create sandbox: ${error.message}`, 'error');
-      addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
-    } finally {
-      setLoading(false);
-    }
+    })();
+
+    return creatingSandboxRef.current;
   };
 
   const displayStructure = (structure: any) => {
@@ -451,7 +451,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
-  const applyGeneratedCode = async (code: string, isEdit: boolean = false) => {
+  const applyGeneratedCode = async (
+    code: string,
+    isEdit: boolean = false,
+    sandboxOverride?: { sandboxId: string; url: string }
+  ) => {
     setLoading(true);
     log('Applying AI-generated code...');
     
@@ -468,6 +472,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       }
       
       // Use streaming endpoint for real-time feedback
+      console.log('[applyGeneratedCode] Calling /api/apply-ai-code-stream with sandboxId=', sandboxData?.sandboxId);
       const response = await fetch('/api/apply-ai-code-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -475,7 +480,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           response: code,
           isEdit: isEdit,
           packages: pendingPackages,
-          sandboxId: sandboxData?.sandboxId // Pass the sandbox ID to ensure proper connection
+          sandboxId: sandboxOverride?.sandboxId || sandboxData?.sandboxId // Ensure correct sandbox is used
         })
       });
       
@@ -499,6 +504,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
+              console.log('[applyGeneratedCode] SSE event:', data.type, data.message || data.fileName || '');
               
               switch (data.type) {
                 case 'start':
@@ -513,10 +519,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       stage: 'installing', 
                       packages: data.packages 
                     });
-                  } else if (data.message.includes('Creating files') || data.message.includes('Applying')) {
+                   } else if (data.message.includes('Creating files') || data.message.includes('Applying')) {
                     setCodeApplicationState({ 
-                      stage: 'applying',
-                      filesGenerated: results.filesCreated 
+                      stage: 'applying'
                     });
                   }
                   break;
@@ -613,6 +618,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           structure: finalData.structure,
           message: finalData.message
         };
+        console.log('[applyGeneratedCode] Final data received:', data.message, data.results);
         
         if (data.success) {
           const { results } = data;
@@ -622,20 +628,30 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           log(`Packages installed: ${results.packagesInstalled.join(', ')}`);
         }
         
-        if (results.filesCreated?.length > 0) {
+        if (results.filesCreated?.length > 0 || results.filesUpdated?.length > 0) {
           log('Files created:');
           results.filesCreated.forEach((file: string) => {
             log(`  ${file}`, 'command');
           });
           
           // Verify files were actually created by refreshing the sandbox if needed
-          if (sandboxData?.sandboxId && results.filesCreated.length > 0) {
-            // Small delay to ensure files are written
+          const effectiveSandbox = sandboxOverride || sandboxData;
+          if (effectiveSandbox?.sandboxId) {
+            // Refresh preview immediately
+            if (iframeRef.current && effectiveSandbox.url) {
+              const newSrc = `${effectiveSandbox.url}?t=${Date.now()}&applied=true`;
+              console.log('[applyGeneratedCode] Refreshing iframe to', newSrc);
+              iframeRef.current.src = newSrc;
+            }
+            // Also restart Vite to pick up any dependencies or initial app bootstrap
+            try {
+              console.log('[applyGeneratedCode] Requesting /api/restart-vite');
+              await fetch('/api/restart-vite', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            } catch {}
+            // After short delay, switch to preview tab so user sees the running app
             setTimeout(() => {
-              // Force refresh the iframe to show new files
-              if (iframeRef.current) {
-                iframeRef.current.src = iframeRef.current.src;
-              }
+              console.log('[applyGeneratedCode] Switching to preview tab');
+              setActiveTab('preview');
             }, 1000);
           }
         }
@@ -677,32 +693,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           log(data.explanation);
         }
         
-        if (data.autoCompleted) {
-          log('Auto-generating missing components...', 'command');
-          
-          if (data.autoCompletedComponents) {
-            setTimeout(() => {
-              log('Auto-generated missing components:', 'info');
-              data.autoCompletedComponents.forEach((comp: string) => {
-                log(`  ${comp}`, 'command');
-              });
-            }, 1000);
-          }
-        } else if (data.warning) {
-          log(data.warning, 'error');
-          
-          if (data.missingImports && data.missingImports.length > 0) {
-            const missingList = data.missingImports.join(', ');
-            addChatMessage(
-              `Ask me to "create the missing components: ${missingList}" to fix these import errors.`,
-              'system'
-            );
-          }
-        }
+        // Optionally handle extra fields if present in future
         
         log('Code applied successfully!');
         console.log('[applyGeneratedCode] Response data:', data);
-        console.log('[applyGeneratedCode] Debug info:', data.debug);
+        // Debug info may not always be present
         console.log('[applyGeneratedCode] Current sandboxData:', sandboxData);
         console.log('[applyGeneratedCode] Current iframe element:', iframeRef.current);
         console.log('[applyGeneratedCode] Current iframe src:', iframeRef.current?.src);
@@ -755,36 +750,15 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           // but that's only available in the backend API routes
           console.log('[build-test] Skipping build test - would need API endpoint');
           
-          // Force iframe refresh after applying code
-          const refreshDelay = appConfig.codeApplication.defaultRefreshDelay; // Allow Vite to process changes
-          
-          setTimeout(() => {
-            if (iframeRef.current && sandboxData?.url) {
-              console.log('[home] Refreshing iframe after code application...');
-              
-              // Method 1: Change src with timestamp
-              const urlWithTimestamp = `${sandboxData.url}?t=${Date.now()}&applied=true`;
-              iframeRef.current.src = urlWithTimestamp;
-              
-              // Method 2: Force reload after a short delay
-              setTimeout(() => {
-                try {
-                  if (iframeRef.current?.contentWindow) {
-                    iframeRef.current.contentWindow.location.reload();
-                    console.log('[home] Force reloaded iframe content');
-                  }
-                } catch (e) {
-                  console.log('[home] Could not reload iframe (cross-origin):', e);
-                }
-              }, 1000);
-            }
-          }, refreshDelay);
+        // After applying code, prefer showing code generation progress a moment longer
+        // and switch to preview slightly delayed to allow Vite to finish
           
           // Vite error checking removed - handled by template setup
         }
         
           // Give Vite HMR a moment to detect changes, then ensure refresh
-          if (iframeRef.current && sandboxData?.url) {
+          const effectiveSandbox2 = sandboxOverride || sandboxData;
+          if (iframeRef.current && effectiveSandbox2?.url) {
             // Wait for Vite to process the file changes
             // If packages were installed, wait longer for Vite to restart
             const packagesInstalled = results?.packagesInstalled?.length > 0 || data.results?.packagesInstalled?.length > 0;
@@ -792,14 +766,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             console.log(`[applyGeneratedCode] Packages installed: ${packagesInstalled}, refresh delay: ${refreshDelay}ms`);
             
             setTimeout(async () => {
-            if (iframeRef.current && sandboxData?.url) {
+            if (iframeRef.current && effectiveSandbox2?.url) {
               console.log('[applyGeneratedCode] Starting iframe refresh sequence...');
               console.log('[applyGeneratedCode] Current iframe src:', iframeRef.current.src);
-              console.log('[applyGeneratedCode] Sandbox URL:', sandboxData.url);
+              console.log('[applyGeneratedCode] Sandbox URL:', effectiveSandbox2.url);
               
               // Method 1: Try direct navigation first
               try {
-                const urlWithTimestamp = `${sandboxData.url}?t=${Date.now()}&force=true`;
+                const urlWithTimestamp = `${effectiveSandbox2.url}?t=${Date.now()}&force=true`;
                 console.log('[applyGeneratedCode] Attempting direct navigation to:', urlWithTimestamp);
                 
                 // Remove any existing onload handler
@@ -845,7 +819,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               iframeRef.current.remove();
               
               // Add new iframe
-              newIframe.src = `${sandboxData.url}?t=${Date.now()}&recreated=true`;
+              newIframe.src = `${effectiveSandbox2.url}?t=${Date.now()}&recreated=true`;
               parent?.appendChild(newIframe);
               
               // Update ref
@@ -995,11 +969,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       const fileTree: { [key: string]: Array<{ name: string; edited?: boolean }> } = {};
                       
                       // Create a map of edited files
-                      const editedFiles = new Set(
-                        generationProgress.files
-                          .filter(f => f.edited)
-                          .map(f => f.path)
-                      );
+                       const editedFiles = new Set(
+                         generationProgress.files
+                           // edited flag may not exist on all entries
+                           .filter((f: any) => !!(f as any).edited)
+                           .map(f => f.path)
+                       );
                       
                       // Process all files from generation progress
                       generationProgress.files.forEach(file => {
@@ -1008,10 +983,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         const fileName = parts[parts.length - 1];
                         
                         if (!fileTree[dir]) fileTree[dir] = [];
-                        fileTree[dir].push({
-                          name: fileName,
-                          edited: file.edited || false
-                        });
+                         fileTree[dir].push({
+                           name: fileName,
+                           edited: (file as any).edited || false
+                         });
                       });
                       
                       return Object.entries(fileTree).map(([dir, files]) => (
@@ -1393,7 +1368,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               ref={iframeRef}
               src={sandboxData.url}
               className="w-full h-full border-none"
-              title="Open Lovable Sandbox"
+              title="Chutes Webcoder Sandbox"
               allow="clipboard-write"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
             />
@@ -1453,8 +1428,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     return null;
   };
 
-  const sendChatMessage = async () => {
-    const message = aiChatInput.trim();
+  const sendChatMessage = async (overrideMessage?: string) => {
+    const message = (overrideMessage ?? aiChatInput).trim();
     if (!message) return;
     
     if (!aiEnabled) {
@@ -1463,7 +1438,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
     
     addChatMessage(message, 'user');
-    setAiChatInput('');
+    if (!overrideMessage) {
+      setAiChatInput('');
+    }
     
     // Check for special commands
     const lowerMessage = message.toLowerCase().trim();
@@ -1477,16 +1454,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
     
     // Start sandbox creation in parallel if needed
-    let sandboxPromise: Promise<void> | null = null;
+    let sandboxPromise: Promise<{ sandboxId: string; url: string }> | null = null;
     let sandboxCreating = false;
     
     if (!sandboxData) {
       sandboxCreating = true;
-      addChatMessage('Creating sandbox while I plan your app...', 'system');
-      sandboxPromise = createSandbox(true).catch((error: any) => {
+      // In-Progress Hinweis für den Benutzer
+      addChatMessage('Creating sandbox...', 'system');
+      // Parallel starten, nicht blockieren
+      sandboxPromise = createSandbox(true, true).catch((error: any) => {
         addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
         throw error;
-      });
+      }) as Promise<{ sandboxId: string; url: string }>;
     }
     
     // Determine if this is an edit
@@ -1550,6 +1529,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       const decoder = new TextDecoder();
       let generatedCode = '';
       let explanation = '';
+      let aggregatedStream = '';
       
       if (reader) {
         while (true) {
@@ -1565,7 +1545,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 const data = JSON.parse(line.slice(6));
                 
                 if (data.type === 'status') {
-                  setGenerationProgress(prev => ({ ...prev, status: data.message }));
+          setGenerationProgress(prev => ({ ...prev, status: data.message }));
+          // Wenn Sandbox gerade erstellt wird, UI-Status kombinieren
+          if (sandboxCreating && data.message?.toLowerCase().includes('planning')) {
+            addChatMessage('Waiting for sandbox to be ready...', 'system');
+          }
                 } else if (data.type === 'thinking') {
                   setGenerationProgress(prev => ({ 
                     ...prev, 
@@ -1593,6 +1577,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     addChatMessage(text.trim(), 'ai');
                   }
                 } else if (data.type === 'stream' && data.raw) {
+                  aggregatedStream += data.text || '';
                   setGenerationProgress(prev => {
                     const newStreamedCode = prev.streamedCode + data.text;
                     
@@ -1634,9 +1619,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               ...updatedState.files[existingFileIndex],
                               content: fileContent.trim(),
                               type: fileType,
-                              completed: true,
-                              edited: true
-                            },
+                              completed: true
+                            } as any,
                             ...updatedState.files.slice(existingFileIndex + 1)
                           ];
                         } else {
@@ -1645,9 +1629,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             path: filePath,
                             content: fileContent.trim(),
                             type: fileType,
-                            completed: true,
-                            edited: false
-                          }];
+                            completed: true
+                          } as any];
                         }
                         
                         // Only show file status if not in edit mode
@@ -1775,6 +1758,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           }
         }
       }
+      // Fallback if the model didn't send an explicit 'complete' event
+      if (!generatedCode && aggregatedStream && aggregatedStream.includes('<file path="')) {
+        console.warn('[chat] No explicit complete event; using aggregated streamed code as fallback');
+        generatedCode = aggregatedStream;
+      }
       
       if (generatedCode) {
         // Parse files from generated code for metadata
@@ -1808,26 +1796,47 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         // setLeftPanelVisible(true);
         
         // Wait for sandbox creation if it's still in progress
+        let createdSandbox: { sandboxId: string; url: string } | null = null;
         if (sandboxPromise) {
           addChatMessage('Waiting for sandbox to be ready...', 'system');
           try {
-            await sandboxPromise;
+            console.log('[chat] Awaiting sandboxPromise before apply');
+            createdSandbox = await sandboxPromise;
+            console.log('[chat] SandboxPromise resolved. createdSandbox=', createdSandbox, 'state.sandboxData=', sandboxData);
+            // Refresh sandboxData from URL param after router push (if any)
+            const sParam = new URLSearchParams(window.location.search).get('sandbox');
+            if (!sandboxData && sParam) {
+              console.log('[chat] Restoring sandbox from URL param:', sParam);
+              setSandboxData(prev => prev || { sandboxId: sParam, url: iframeRef.current?.src?.split('?')[0] || '' } as any);
+            }
             // Remove the waiting message
             setChatMessages(prev => prev.filter(msg => msg.content !== 'Waiting for sandbox to be ready...'));
-          } catch {
+          } catch (e) {
+            console.error('[chat] Sandbox creation failed:', e);
             addChatMessage('Sandbox creation failed. Cannot apply code.', 'system');
             return;
           }
         }
         
-        if (sandboxData && generatedCode) {
-          // Use isEdit flag that was determined at the start
-          await applyGeneratedCode(generatedCode, isEdit);
+        // Apply using the freshest sandbox info available
+        const sandboxParam = searchParams.get('sandbox');
+        const effectiveSandbox = (sandboxData && sandboxData.sandboxId)
+          ? sandboxData
+          : (createdSandbox && createdSandbox.sandboxId)
+            ? createdSandbox
+            : (sandboxParam ? { sandboxId: sandboxParam, url: `https://5173-${sandboxParam}.e2b.app` } as any : null);
+        
+        if (effectiveSandbox && generatedCode) {
+          console.log('[chat] Applying generated code. sandboxId=', effectiveSandbox.sandboxId, 'url=', effectiveSandbox.url);
+          await applyGeneratedCode(generatedCode, isEdit, effectiveSandbox as any);
+          console.log('[chat] applyGeneratedCode finished');
+        } else {
+          console.warn('[chat] Missing effective sandbox or generatedCode at apply step', { hasSandbox: !!effectiveSandbox, hasCode: !!generatedCode });
         }
       }
       
-      // Show completion status briefly then switch to preview
-      setGenerationProgress(prev => ({
+        // Show completion status; switch to preview happens after apply step confirms
+        setGenerationProgress(prev => ({
         ...prev,
         isGenerating: false,
         isStreaming: false,
@@ -1838,11 +1847,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         thinkingText: undefined,
         thinkingDuration: undefined
       }));
-      
-      setTimeout(() => {
-        // Switch to preview but keep files for display
-        setActiveTab('preview');
-      }, 1000); // Reduced from 3000ms to 1000ms
+        // do not immediately switch to preview; wait for apply flow to refresh
     } catch (error: any) {
       setChatMessages(prev => prev.filter(msg => msg.content !== 'Thinking...'));
       addChatMessage(`Error: ${error.message}`, 'system');
@@ -2273,6 +2278,7 @@ Focus on the key sections and content, making it clean and modern while preservi
         setLoadingStage(null); // Clear loading stage
         
         setTimeout(() => {
+          console.log('[cloneWebsite] Switching to preview after generation complete');
           // Switch back to preview tab but keep files
           setActiveTab('preview');
         }, 1000); // Show completion briefly then switch
@@ -2571,9 +2577,8 @@ Focus on the key sections and content, making it clean and modern.`;
                               ...updatedState.files[existingFileIndex],
                               content: fileContent.trim(),
                               type: fileType,
-                              completed: true,
-                              edited: true
-                            },
+                              completed: true
+                            } as any,
                             ...updatedState.files.slice(existingFileIndex + 1)
                           ];
                         } else {
@@ -2582,9 +2587,8 @@ Focus on the key sections and content, making it clean and modern.`;
                             path: filePath,
                             content: fileContent.trim(),
                             type: fileType,
-                            completed: true,
-                            edited: false
-                          }];
+                            completed: true
+                          } as any];
                         }
                         
                         // Only show file status if not in edit mode
@@ -2723,7 +2727,26 @@ Focus on the key sections and content, making it clean and modern.`;
     }, 500);
   };
 
+  // Handle prompt-driven generation (no URL cloning)
+  const handleHomePromptSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const promptText = homePromptInput.trim();
+    if (!promptText) return;
+
+    setHomeScreenFading(true);
+    setTimeout(async () => {
+      setShowHomeScreen(false);
+      setHomeScreenFading(false);
+      setActiveTab('generation');
+      // Start generation immediately; if sandbox fehlt, wird sie parallel erstellt
+      void sendChatMessage(promptText);
+      // Eingabe zurücksetzen
+      setHomePromptInput('');
+    }, 200);
+  };
+
   return (
+    <Suspense fallback={<div className="font-sans bg-background h-screen" /> }>
     <div className="font-sans bg-background text-foreground h-screen flex flex-col">
       {/* Home Screen Overlay */}
       {showHomeScreen && (
@@ -2772,20 +2795,10 @@ Focus on the key sections and content, making it clean and modern.`;
           
           {/* Header */}
           <div className="absolute top-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-between animate-[fadeIn_0.8s_ease-out]">
-            <img
-              src="/firecrawl-logo-with-fire.webp"
-              alt="Firecrawl"
-              className="h-8 w-auto"
-            />
-            <a 
-              href="https://github.com/mendableai/open-lovable" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[#36322F] text-white px-3 py-2 rounded-[10px] text-sm font-medium [box-shadow:inset_0px_-2px_0px_0px_#171310,_0px_1px_6px_0px_rgba(58,_33,_8,_58%)] hover:translate-y-[1px] hover:scale-[0.98] hover:[box-shadow:inset_0px_-1px_0px_0px_#171310,_0px_1px_3px_0px_rgba(58,_33,_8,_40%)] active:translate-y-[2px] active:scale-[0.97] active:[box-shadow:inset_0px_1px_1px_0px_#171310,_0px_1px_2px_0px_rgba(58,_33,_8,_30%)] transition-all duration-200"
-            >
-              <FiGithub className="w-4 h-4" />
-              <span>Use this template</span>
-            </a>
+            <div className="h-8 w-auto text-[#36322F]">
+              <svg className="h-8 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+            </div>
+            <div />
           </div>
           
           {/* Main content */}
@@ -2794,8 +2807,8 @@ Focus on the key sections and content, making it clean and modern.`;
               {/* Firecrawl-style Header */}
               <div className="text-center">
                 <h1 className="text-[2.5rem] lg:text-[3.8rem] text-center text-[#36322F] font-semibold tracking-tight leading-[0.9] animate-[fadeIn_0.8s_ease-out]">
-                  <span className="hidden md:inline">Open Lovable</span>
-                  <span className="md:hidden">Open Lovable</span>
+                  <span className="hidden md:inline">Chutes Webcoder</span>
+                  <span className="md:hidden">Chutes Webcoder</span>
                 </h1>
                 <motion.p 
                   className="text-base lg:text-lg max-w-lg mx-auto mt-2.5 text-zinc-500 text-center text-balance"
@@ -2804,53 +2817,36 @@ Focus on the key sections and content, making it clean and modern.`;
                   }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
                 >
-                  Re-imagine any website, in seconds.
+                  Build React apps with AI. Describe your idea or clone a URL.
                 </motion.p>
               </div>
               
-              <form onSubmit={handleHomeScreenSubmit} className="mt-5 max-w-3xl mx-auto">
+              {/* Prompt form */}
+              <form onSubmit={handleHomePromptSubmit} className="mt-5 max-w-3xl mx-auto">
                 <div className="w-full relative group">
-                  <input
-                    type="text"
-                    value={homeUrlInput}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setHomeUrlInput(value);
-                      
-                      // Check if it's a valid domain
-                      const domainRegex = /^(https?:\/\/)?(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(\/?.*)?$/;
-                      if (domainRegex.test(value) && value.length > 5) {
-                        // Small delay to make the animation feel smoother
-                        setTimeout(() => setShowStyleSelector(true), 100);
-                      } else {
-                        setShowStyleSelector(false);
-                        setSelectedStyle(null);
-                      }
-                    }}
-                    placeholder=" "
-                    aria-placeholder="https://firecrawl.dev"
-                    className="h-[3.25rem] w-full resize-none focus-visible:outline-none focus-visible:ring-orange-500 focus-visible:ring-2 rounded-[18px] text-sm text-[#36322F] px-4 pr-12 border-[.75px] border-border bg-white"
+                  <textarea
+                    value={homePromptInput}
+                    onChange={(e) => setHomePromptInput(e.target.value)}
+                    placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
+                    className="h-40 w-full resize-y focus-visible:outline-none focus-visible:ring-orange-500 focus-visible:ring-2 rounded-[18px] text-sm text-[#36322F] px-4 pr-12 py-3 border-[.75px] border-border bg-white"
                     style={{
                       boxShadow: '0 0 0 1px #e3e1de66, 0 1px 2px #5f4a2e14, 0 4px 6px #5f4a2e0a, 0 40px 40px -24px #684b2514',
                       filter: 'drop-shadow(rgba(249, 224, 184, 0.3) -0.731317px -0.731317px 35.6517px)'
                     }}
                     autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const form = e.currentTarget.closest('form');
+                        if (form) (form as HTMLFormElement).requestSubmit();
+                      }
+                    }}
                   />
-                  <div 
-                    aria-hidden="true" 
-                    className={`absolute top-1/2 -translate-y-1/2 left-4 pointer-events-none text-sm text-opacity-50 text-start transition-opacity ${
-                      homeUrlInput ? 'opacity-0' : 'opacity-100'
-                    }`}
-                  >
-                    <span className="text-[#605A57]/50" style={{ fontFamily: 'monospace' }}>
-                      https://firecrawl.dev
-                    </span>
-                  </div>
                   <button
                     type="submit"
-                    disabled={!homeUrlInput.trim()}
-                    className="absolute top-1/2 transform -translate-y-1/2 right-2 flex h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-zinc-500 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title={selectedStyle ? `Clone with ${selectedStyle} Style` : 'Clone Website'}
+                    disabled={!homePromptInput.trim()}
+                    className="absolute bottom-3 right-2 flex h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-zinc-500 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Send"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                       <polyline points="9 10 4 15 9 20"></polyline>
@@ -2858,130 +2854,176 @@ Focus on the key sections and content, making it clean and modern.`;
                     </svg>
                   </button>
                 </div>
-                  
-                  {/* Style Selector - Slides out when valid domain is entered */}
-                  {showStyleSelector && (
-                    <div className="overflow-hidden mt-4">
-                      <div className={`transition-all duration-500 ease-out transform ${
-                        showStyleSelector ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
-                      }`}>
-                    <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-4 shadow-sm">
-                      <p className="text-sm text-gray-600 mb-3 font-medium">How do you want your site to look?</p>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        {[
-                          { name: 'Neobrutalist', description: 'Bold colors, thick borders' },
-                          { name: 'Glassmorphism', description: 'Frosted glass effects' },
-                          { name: 'Minimalist', description: 'Clean and simple' },
-                          { name: 'Dark Mode', description: 'Dark theme' },
-                          { name: 'Gradient', description: 'Colorful gradients' },
-                          { name: 'Retro', description: '80s/90s aesthetic' },
-                          { name: 'Modern', description: 'Contemporary design' },
-                          { name: 'Monochrome', description: 'Black and white' }
-                        ].map((style) => (
-                          <button
-                            key={style.name}
-                            type="button"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                // Submit the form
-                                const form = e.currentTarget.closest('form');
-                                if (form) {
-                                  form.requestSubmit();
-                                }
-                              }
-                            }}
-                            onClick={() => {
-                              if (selectedStyle === style.name) {
-                                // Deselect if clicking the same style
-                                setSelectedStyle(null);
-                                // Keep only additional context, remove the style theme part
-                                const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
-                                setHomeContextInput(currentAdditional);
-                              } else {
-                                // Select new style
-                                setSelectedStyle(style.name);
-                                // Extract any additional context (everything after the style theme)
-                                const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
-                                setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
-                              }
-                            }}
-                            className={`p-3 rounded-lg border transition-all ${
-                              selectedStyle === style.name
-                                ? 'border-orange-400 bg-orange-50 text-gray-900 shadow-sm'
-                                : 'border-gray-200 bg-white hover:border-orange-200 hover:bg-orange-50/50 text-gray-700'
-                            }`}
-                          >
-                            <div className="text-sm font-medium">{style.name}</div>
-                            <div className="text-xs text-gray-500 mt-1">{style.description}</div>
-                          </button>
-                        ))}
-                      </div>
-                      
-                      {/* Additional context input - part of the style selector */}
-                      <div className="mt-4 mb-2">
-                        <input
-                          type="text"
-                          value={(() => {
-                            if (!selectedStyle) return homeContextInput;
-                            // Extract additional context by removing the style theme part
-                            const additional = homeContextInput.replace(new RegExp('^' + selectedStyle.toLowerCase() + ' theme\\s*,?\\s*', 'i'), '');
-                            return additional;
-                          })()}
-                          onChange={(e) => {
-                            const additionalContext = e.target.value;
-                            if (selectedStyle) {
-                              setHomeContextInput(selectedStyle.toLowerCase() + ' theme' + (additionalContext.trim() ? ', ' + additionalContext : ''));
-                            } else {
-                              setHomeContextInput(additionalContext);
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              const form = e.currentTarget.closest('form');
-                              if (form) {
-                                form.requestSubmit();
-                              }
-                            }
-                          }}
-                          placeholder="Add more details: specific features, color preferences..."
-                          className="w-full px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-orange-300 focus:ring-2 focus:ring-orange-100 transition-all duration-200"
-                        />
-                      </div>
-                    </div>
-                      </div>
-                    </div>
-                  )}
+                <div className="mt-2 text-xs text-gray-500 text-left">Press Enter to send, Shift+Enter for linebreaks</div>
+              </form>
+
+              {/* Separator */}
+              <div className="relative my-6">
+                <div className="border-t border-gray-300" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="bg-white px-2 text-xs text-gray-500">OR</span>
+                </div>
+              </div>
+
+              {/* URL clone form */}
+              <form onSubmit={handleHomeScreenSubmit} className="max-w-3xl mx-auto">
+                <div className="w-full relative group">
+                  <input
+                    type="text"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setHomeUrlInput(value);
+                      const domainRegex = /^(https?:\/\/)?(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(\/?..*)?$/;
+                      if (domainRegex.test(value) && value.length > 5) {
+                        setTimeout(() => setShowStyleSelector(true), 100);
+                      } else {
+                        setShowStyleSelector(false);
+                        setSelectedStyle(null);
+                      }
+                    }}
+                    placeholder="https://example.com"
+                    className="h-[3.25rem] w-full focus-visible:outline-none focus-visible:ring-orange-500 focus-visible:ring-2 rounded-[18px] text-sm text-[#36322F] px-4 pr-12 border-[.75px] border-border bg-white"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!homeUrlInput.trim()}
+                    className="absolute top-1/2 transform -translate-y-1/2 right-2 flex h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-zinc-500 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Clone Website"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <polyline points="9 10 4 15 9 20"></polyline>
+                      <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                    </svg>
+                  </button>
+                </div>
               </form>
               
-              {/* Model Selector */}
-              <div className="mt-6 flex items-center justify-center animate-[fadeIn_1s_ease-out]">
-                <select
-                  value={aiModel}
-                  onChange={(e) => {
-                    const newModel = e.target.value;
-                    setAiModel(newModel);
-                    const params = new URLSearchParams(searchParams);
-                    params.set('model', newModel);
-                    if (sandboxData?.sandboxId) {
-                      params.set('sandbox', sandboxData.sandboxId);
-                    }
-                    router.push(`/?${params.toString()}`);
-                  }}
-                  className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#36322F] focus:border-transparent"
-                  style={{
-                    boxShadow: '0 0 0 1px #e3e1de66, 0 1px 2px #5f4a2e14'
-                  }}
-                >
-                  {appConfig.ai.availableModels.map(model => (
-                    <option key={model} value={model}>
-                      {appConfig.ai.modelDisplayNames[model] || model}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Style Selector - Slides out when valid domain is entered */}
+              {showStyleSelector && (
+                <div className="overflow-hidden mt-4">
+                  <div className={`transition-all duration-500 ease-out transform ${
+                    showStyleSelector ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
+                  }`}>
+                <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-4 shadow-sm">
+                  <p className="text-sm text-gray-600 mb-3 font-medium">How do you want your site to look?</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {[
+                      { name: 'Neobrutalist', description: 'Bold colors, thick borders' },
+                      { name: 'Glassmorphism', description: 'Frosted glass effects' },
+                      { name: 'Minimalist', description: 'Clean and simple' },
+                      { name: 'Dark Mode', description: 'Dark theme' },
+                      { name: 'Gradient', description: 'Colorful gradients' },
+                      { name: 'Retro', description: '80s/90s aesthetic' },
+                      { name: 'Modern', description: 'Contemporary design' },
+                      { name: 'Monochrome', description: 'Black and white' }
+                    ].map((style) => (
+                      <button
+                        key={style.name}
+                        type="button"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Submit the form
+                            const form = e.currentTarget.closest('form');
+                            if (form) {
+                              form.requestSubmit();
+                            }
+                          }
+                        }}
+                        onClick={() => {
+                          if (selectedStyle === style.name) {
+                            // Deselect if clicking the same style
+                            setSelectedStyle(null);
+                            // Keep only additional context, remove the style theme part
+                            const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
+                            setHomeContextInput(currentAdditional);
+                          } else {
+                            // Select new style
+                            setSelectedStyle(style.name);
+                            // Extract any additional context (everything after the style theme)
+                            const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
+                            setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
+                          }
+                        }}
+                        className={`p-3 rounded-lg border transition-all ${
+                          selectedStyle === style.name
+                            ? 'border-orange-400 bg-orange-50 text-gray-900 shadow-sm'
+                            : 'border-gray-200 bg-white hover:border-orange-200 hover:bg-orange-50/50 text-gray-700'
+                        }`}
+                      >
+                        <div className="text-sm font-medium">{style.name}</div>
+                        <div className="text-xs text-gray-500 mt-1">{style.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* Additional context input - part of the style selector */}
+                  <div className="mt-4 mb-2">
+                    <input
+                      type="text"
+                      value={(() => {
+                        if (!selectedStyle) return homeContextInput;
+                        // Extract additional context by removing the style theme part
+                        const additional = homeContextInput.replace(new RegExp('^' + selectedStyle.toLowerCase() + ' theme\\s*,?\\s*', 'i'), '');
+                        return additional;
+                      })()}
+                      onChange={(e) => {
+                        const additionalContext = e.target.value;
+                        if (selectedStyle) {
+                          setHomeContextInput(selectedStyle.toLowerCase() + ' theme' + (additionalContext.trim() ? ', ' + additionalContext : ''));
+                        } else {
+                          setHomeContextInput(additionalContext);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const form = e.currentTarget.closest('form');
+                          if (form) {
+                            form.requestSubmit();
+                          }
+                        }
+                      }}
+                      placeholder="Add more details: specific features, color preferences..."
+                      className="w-full px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-orange-300 focus:ring-2 focus:ring-orange-100 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Advanced - Model Selector (collapsed by default) */}
+              <details className="mt-6 animate-[fadeIn_1s_ease-out]">
+                <summary className="cursor-pointer text-sm text-gray-600 text-center">Advanced</summary>
+                <div className="mt-2 text-left w-full max-w-3xl mx-auto flex flex-col items-center">
+                  <label className="block text-xs text-gray-500 mb-1">AI Model:</label>
+                  <select
+                    value={aiModel}
+                    onChange={(e) => {
+                      const newModel = e.target.value;
+                      setAiModel(newModel);
+                      const params = new URLSearchParams(searchParams);
+                      params.set('model', newModel);
+                      if (sandboxData?.sandboxId) {
+                        params.set('sandbox', sandboxData.sandboxId);
+                      }
+                      router.push(`/?${params.toString()}`);
+                    }}
+                    className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#36322F] focus:border-transparent"
+                    style={{
+                      boxShadow: '0 0 0 1px #e3e1de66, 0 1px 2px #5f4a2e14'
+                    }}
+                  >
+                    {appConfig.ai.availableModels.map(model => (
+                      <option key={model} value={model}>
+                        {(appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </details>
             </div>
           </div>
         </div>
@@ -2989,34 +3031,38 @@ Focus on the key sections and content, making it clean and modern.`;
       
       <div className="bg-card px-4 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <img
-            src="/firecrawl-logo-with-fire.webp"
-            alt="Firecrawl"
-            className="h-8 w-auto"
-          />
+          <div className="h-8 w-auto text-[#36322F]">
+            <svg className="h-8 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Model Selector - Left side */}
-          <select
-            value={aiModel}
-            onChange={(e) => {
-              const newModel = e.target.value;
-              setAiModel(newModel);
-              const params = new URLSearchParams(searchParams);
-              params.set('model', newModel);
-              if (sandboxData?.sandboxId) {
-                params.set('sandbox', sandboxData.sandboxId);
-              }
-              router.push(`/?${params.toString()}`);
-            }}
-            className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#36322F] focus:border-transparent"
-          >
+          {/* Advanced - Model Selector (collapsed by default) */}
+          <details className="w-full">
+            <summary className="cursor-pointer text-sm text-gray-600 text-center">Advanced</summary>
+            <div className="mt-2 w-full flex flex-col items-center">
+              <label className="block text-xs text-gray-500 mb-1">AI Model:</label>
+              <select
+                value={aiModel}
+                onChange={(e) => {
+                  const newModel = e.target.value;
+                  setAiModel(newModel);
+                  const params = new URLSearchParams(searchParams);
+                  params.set('model', newModel);
+                  if (sandboxData?.sandboxId) {
+                    params.set('sandbox', sandboxData.sandboxId);
+                  }
+                  router.push(`/?${params.toString()}`);
+                }}
+                className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#36322F] focus:border-transparent"
+              >
             {appConfig.ai.availableModels.map(model => (
               <option key={model} value={model}>
-                {appConfig.ai.modelDisplayNames[model] || model}
+                {(appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model}
               </option>
             ))}
-          </select>
+              </select>
+            </div>
+          </details>
           <Button 
             variant="code"
             onClick={() => createSandbox()}
@@ -3309,7 +3355,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 rows={3}
               />
               <button
-                onClick={sendChatMessage}
+                onClick={() => void sendChatMessage()}
                 className="absolute right-2 bottom-2 p-2 bg-[#36322F] text-white rounded-[10px] hover:bg-[#4a4542] [box-shadow:inset_0px_-2px_0px_0px_#171310,_0px_1px_6px_0px_rgba(58,_33,_8,_58%)] hover:translate-y-[1px] hover:scale-[0.98] hover:[box-shadow:inset_0px_-1px_0px_0px_#171310,_0px_1px_3px_0px_rgba(58,_33,_8,_40%)] active:translate-y-[2px] active:scale-[0.97] active:[box-shadow:inset_0px_1px_1px_0px_#171310,_0px_1px_2px_0px_rgba(58,_33,_8,_30%)] transition-all duration-200"
                 title="Send message (Enter)"
               >
@@ -3411,5 +3457,6 @@ Focus on the key sections and content, making it clean and modern.`;
 
 
     </div>
+    </Suspense>
   );
 }

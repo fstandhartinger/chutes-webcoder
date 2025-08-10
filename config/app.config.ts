@@ -28,20 +28,26 @@ export const appConfig = {
   // AI Model Configuration
   ai: {
     // Default AI model
-    defaultModel: 'moonshotai/kimi-k2-instruct',
+    defaultModel: 'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
     
     // Available models
     availableModels: [
-      'openai/gpt-5',
-      'moonshotai/kimi-k2-instruct',
-      'anthropic/claude-sonnet-4-20250514'
+      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
+      'chutes/deepseek-ai/DeepSeek-V3-0324',
+      'chutes/deepseek-ai/DeepSeek-R1-0528',
+      'chutes/zai-org/GLM-4.5-FP8',
+      'chutes/moonshotai/Kimi-K2-Instruct',
+      'chutes/openai/gpt-oss-120b'
     ],
     
     // Model display names
     modelDisplayNames: {
-      'openai/gpt-5': 'GPT-5',
-      'moonshotai/kimi-k2-instruct': 'Kimi K2 Instruct',
-      'anthropic/claude-sonnet-4-20250514': 'Sonnet 4'
+      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder',
+      'chutes/deepseek-ai/DeepSeek-V3-0324': 'DeepSeek-V3 New',
+      'chutes/deepseek-ai/DeepSeek-R1-0528': 'DeepSeek R1 New',
+      'chutes/zai-org/GLM-4.5-FP8': 'GLM 4.5',
+      'chutes/moonshotai/Kimi-K2-Instruct': 'Kimi-K2',
+      'chutes/openai/gpt-oss-120b': 'OpenAI Open Source 120b'
     },
     
     // Temperature settings for non-reasoning models

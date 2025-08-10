@@ -15,9 +15,10 @@ const anthropic = createAnthropic({
   baseURL: process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com/v1',
 });
 
+// Use Chutes OpenAI-compatible endpoint
 const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
+  apiKey: process.env.CHUTES_API_KEY,
+  baseURL: process.env.CHUTES_BASE_URL || 'https://llm.chutes.ai/v1',
 });
 
 // Schema for the AI's search plan - not file selection!
@@ -50,7 +51,7 @@ const searchPlanSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, manifest, model = 'openai/gpt-oss-20b' } = await request.json();
+    const { prompt, manifest, model = 'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8' } = await request.json();
     
     console.log('[analyze-edit-intent] Request received');
     console.log('[analyze-edit-intent] Prompt:', prompt);
@@ -96,12 +97,11 @@ export async function POST(request: NextRequest) {
     let aiModel;
     if (model.startsWith('anthropic/')) {
       aiModel = anthropic(model.replace('anthropic/', ''));
-    } else if (model.startsWith('openai/')) {
-      if (model.includes('gpt-oss')) {
-        aiModel = groq(model);
-      } else {
-        aiModel = openai(model.replace('openai/', ''));
-      }
+  } else if (model.startsWith('chutes/')) {
+      // For intent analysis, call Chutes chat/completions directly to avoid SDK path mismatch
+      aiModel = {
+        provider: 'chutes-direct'
+      } as any;
     } else {
       // Default to groq if model format is unclear
       aiModel = groq(model);
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     
     // Use AI to create a search plan
     const result = await generateObject({
-      model: aiModel,
+      model: aiModel.provider === 'chutes-direct' ? openai('') : aiModel,
       schema: searchPlanSchema,
       messages: [
         {

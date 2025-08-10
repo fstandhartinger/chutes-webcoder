@@ -262,6 +262,7 @@ function parseAIResponse(response: string): ParsedResponse {
 export async function POST(request: NextRequest) {
   try {
     const { response, isEdit = false, packages = [], sandboxId } = await request.json();
+    console.log('[apply-ai-code-stream] POST begin. sandboxId=', sandboxId);
     
     if (!response) {
       return NextResponse.json({
@@ -278,6 +279,7 @@ export async function POST(request: NextRequest) {
     
     // Parse the AI response
     const parsed = parseAIResponse(response);
+    console.log('[apply-ai-code-stream] Parsed files count:', parsed.files.length);
     
     // Log what was parsed
     console.log('[apply-ai-code-stream] Parsed result:');
@@ -296,6 +298,7 @@ export async function POST(request: NextRequest) {
     
     // First, always check the global state for active sandbox
     let sandbox = global.activeSandbox;
+    console.log('[apply-ai-code-stream] global.activeSandbox exists?', !!sandbox);
     
     // If we don't have a sandbox in this instance but we have a sandboxId,
     // reconnect to the existing sandbox
@@ -370,6 +373,10 @@ export async function POST(request: NextRequest) {
     
     // Function to send progress updates
     const sendProgress = async (data: any) => {
+      // Mirror critical events to server logs for debugging
+      if (data?.type === 'complete' || data?.type === 'step' || data?.type === 'start') {
+        console.log('[apply-ai-code-stream] SSE ->', data.type, data.message || '');
+      }
       const message = `data: ${JSON.stringify(data)}\n\n`;
       await writer.write(encoder.encode(message));
     };
