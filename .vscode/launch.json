@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Chutes Webcoder: Next.js Dev by GPT-5",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "CHUTES_API_KEY": "${env:CHUTES_API_KEY}",
+        "CHUTES_BASE_URL": "https://llm.chutes.ai/v1"
+      },
+      "autoAttachChildProcesses": true
+    }
+  ]
+}
+
+

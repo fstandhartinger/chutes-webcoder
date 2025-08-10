@@ -20,6 +20,7 @@ import {
   SiJson 
 } from '@/lib/icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare, Code2, Eye } from 'lucide-react';
 import CodeApplicationProgress, { type CodeApplicationState } from '@/components/CodeApplicationProgress';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -102,10 +103,44 @@ export default function AISandboxPage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const codeDisplayRef = useRef<HTMLDivElement>(null);
+  const applyingRecoveryRef = useRef<boolean>(false);
+  const sandboxRecreationCountRef = useRef<number>(0);
   
   const [codeApplicationState, setCodeApplicationState] = useState<CodeApplicationState>({
     stage: null
   });
+
+  // Helpers for robust preview readiness
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const pingSandbox = async (baseUrl?: string) => {
+    if (!baseUrl) return false;
+    // Use an image ping to bypass CORS; success or error both indicate reachability
+    try {
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = `${baseUrl.replace(/\/$/, '')}/favicon.ico?t=${Date.now()}`;
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const fetchSandboxActive = async (): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/sandbox-status', { method: 'GET' });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data?.active && data?.healthy) {
+        if (data.sandboxData && (!sandboxData || sandboxData.sandboxId !== data.sandboxData.sandboxId)) {
+          setSandboxData(data.sandboxData);
+        }
+        return true;
+      }
+    } catch {}
+    return false;
+  };
   
   const [generationProgress, setGenerationProgress] = useState<{
     isGenerating: boolean;
@@ -132,6 +167,69 @@ export default function AISandboxPage() {
     files: [],
     lastProcessedPosition: 0
   });
+
+  // After apply, request a preview refresh when iframe exists
+  const [pendingRefresh, setPendingRefresh] = useState<{ reason: string } | null>(null);
+  
+  // Mobile portrait layout detection and tab state
+  const [isPortrait, setIsPortrait] = useState(false);
+  const [isSmallViewport, setIsSmallViewport] = useState(true);
+  const isMobilePortraitLayout = isPortrait && isSmallViewport;
+  const [mobileTab, setMobileTab] = useState<'chat' | 'code' | 'preview'>('chat');
+  const userTabbedRef = useRef(false);
+  const prevIsGeneratingRef = useRef(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+
+  useEffect(() => {
+    const updateViewportState = () => {
+      try {
+        const portrait = window.matchMedia('(orientation: portrait)').matches;
+        setIsPortrait(portrait);
+      } catch {
+        setIsPortrait(window.innerHeight >= window.innerWidth);
+      }
+      setIsSmallViewport(window.innerWidth < 768);
+    };
+    updateViewportState();
+    window.addEventListener('resize', updateViewportState, { passive: true });
+    // Some browsers still emit orientationchange
+    window.addEventListener('orientationchange', updateViewportState as any, { passive: true } as any);
+    return () => {
+      window.removeEventListener('resize', updateViewportState);
+      window.removeEventListener('orientationchange', updateViewportState as any);
+    };
+  }, []);
+
+  // Keep right panel mode in sync when user taps mobile tabs
+  useEffect(() => {
+    if (!isMobilePortraitLayout) return;
+    if (mobileTab === 'code') setActiveTab('generation');
+    if (mobileTab === 'preview') setActiveTab('preview');
+  }, [mobileTab, isMobilePortraitLayout]);
+
+  // Reflect programmatic right-panel mode changes in mobile tabs
+  useEffect(() => {
+    if (!isMobilePortraitLayout) return;
+    if (activeTab === 'generation') setMobileTab('code');
+    if (activeTab === 'preview') setMobileTab('preview');
+  }, [activeTab, isMobilePortraitLayout]);
+
+  // Auto-switch to Code when generation starts (mobile portrait)
+  useEffect(() => {
+    if (!isMobilePortraitLayout) {
+      prevIsGeneratingRef.current = generationProgress.isGenerating;
+      return;
+    }
+    if (!prevIsGeneratingRef.current && generationProgress.isGenerating) {
+      // Generation just started
+      setIframeLoaded(false);
+      if (!userTabbedRef.current) {
+        setActiveTab('generation');
+        setMobileTab('code');
+      }
+    }
+    prevIsGeneratingRef.current = generationProgress.isGenerating;
+  }, [generationProgress.isGenerating, isMobilePortraitLayout]);
 
   // Clear old conversation data on component mount and create/restore sandbox
   useEffect(() => {
@@ -228,6 +326,83 @@ export default function AISandboxPage() {
     }
   }, [activeTab, codeApplicationState.stage]);
 
+  // Deferred, robust refresh sequence when iframe and sandbox are ready
+  useEffect(() => {
+    const run = async () => {
+      if (!pendingRefresh) return;
+      const url = sandboxData?.url;
+      if (!url) {
+        console.warn('[refresh] No sandbox URL yet; waiting...');
+        setTimeout(() => setPendingRefresh({ reason: pendingRefresh.reason }), 500);
+        return;
+      }
+      if (!iframeRef.current) {
+        console.warn('[refresh] No iframe yet; waiting for render...');
+        // Switch to preview tab to ensure iframe is rendered in the right pane
+        setActiveTab('preview');
+        // Re-arm the refresh shortly after switching tabs
+        setTimeout(() => setPendingRefresh({ reason: pendingRefresh.reason }), 300);
+        return;
+      }
+      console.log('[refresh] Starting refresh sequence. reason=', pendingRefresh.reason, 'url=', url);
+      applyingRecoveryRef.current = true;
+      try {
+        // Step 1: health checks
+        for (let attempt = 0; attempt < 12; attempt++) {
+          const active = await fetchSandboxActive();
+          const reachable = await pingSandbox(url);
+          console.log(`[refresh] Health check ${attempt + 1}/12 active=${active} reachable=${reachable}`);
+          if (active && reachable) break;
+          await wait(1000);
+        }
+        // Step 2: navigate
+        iframeRef.current.src = `${url}?t=${Date.now()}&deferred=1`;
+        await wait(1500);
+        // Step 3: recreate iframe once if still needed
+        const parent = iframeRef.current.parentElement;
+        if (parent) {
+          const newIframe = document.createElement('iframe');
+          newIframe.className = iframeRef.current.className;
+          newIframe.title = iframeRef.current.title;
+          newIframe.allow = iframeRef.current.allow;
+          const sandboxValue = iframeRef.current.getAttribute('sandbox');
+          if (sandboxValue) newIframe.setAttribute('sandbox', sandboxValue);
+          iframeRef.current.remove();
+          newIframe.src = `${url}?t=${Date.now()}&deferredRecreate=1`;
+          parent.appendChild(newIframe);
+          (iframeRef as any).current = newIframe;
+          await wait(1500);
+        }
+        // Step 4: final health
+        const finalActive = await fetchSandboxActive();
+        const finalReachable = await pingSandbox(url);
+        console.log('[refresh] Final health active=', finalActive, 'reachable=', finalReachable);
+        if (!(finalActive && finalReachable) && sandboxRecreationCountRef.current < 3) {
+          sandboxRecreationCountRef.current += 1;
+          console.warn('[refresh] Recreating sandbox. attempt=', sandboxRecreationCountRef.current);
+          await createSandbox(true, true);
+          if (sandboxData?.url && iframeRef.current) {
+            iframeRef.current.src = `${sandboxData.url}?t=${Date.now()}&deferredNewSandbox=1`;
+          }
+        }
+      } finally {
+        applyingRecoveryRef.current = false;
+        setPendingRefresh(null);
+      }
+    };
+    void run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingRefresh, sandboxData?.url]);
+
+  // Only auto-switch to Preview after iframe is fully loaded and user hasn't changed tabs
+  useEffect(() => {
+    if (!isMobilePortraitLayout) return;
+    if (iframeLoaded && !userTabbedRef.current) {
+      setActiveTab('preview');
+      setMobileTab('preview');
+    }
+  }, [iframeLoaded, isMobilePortraitLayout]);
+
 
   const updateStatus = (text: string, active: boolean) => {
     setStatus({ text, active });
@@ -258,7 +433,7 @@ export default function AISandboxPage() {
   
   const checkAndInstallPackages = async () => {
     if (!sandboxData) {
-      addChatMessage('No active sandbox. Create a sandbox first!', 'system');
+      // Avoid noisy message; just start sandbox creation implicitly where relevant
       return;
     }
     
@@ -278,7 +453,6 @@ export default function AISandboxPage() {
   
   const installPackages = async (packages: string[]) => {
     if (!sandboxData) {
-      addChatMessage('No active sandbox. Create a sandbox first!', 'system');
       return;
     }
     
@@ -654,22 +828,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           // Verify files were actually created by refreshing the sandbox if needed
           const effectiveSandbox = sandboxOverride || sandboxData;
           if (effectiveSandbox?.sandboxId) {
-            // Refresh preview immediately
-            if (iframeRef.current && effectiveSandbox.url) {
-              const newSrc = `${effectiveSandbox.url}?t=${Date.now()}&applied=true`;
-              console.log('[applyGeneratedCode] Refreshing iframe to', newSrc);
-              iframeRef.current.src = newSrc;
-            }
+            // Request a refresh to occur after the iframe is rendered/available
+            setPendingRefresh({ reason: 'applied' });
             // Also restart Vite to pick up any dependencies or initial app bootstrap
             try {
               console.log('[applyGeneratedCode] Requesting /api/restart-vite');
               await fetch('/api/restart-vite', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
             } catch {}
-            // After short delay, switch to preview tab so user sees the running app
-            setTimeout(() => {
-              console.log('[applyGeneratedCode] Switching to preview tab');
-              setActiveTab('preview');
-            }, 1000);
+            // Do not force switch; rely on iframe load and auto-switch logic elsewhere
           }
         }
         
@@ -773,80 +939,16 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           // Vite error checking removed - handled by template setup
         }
         
-          // Give Vite HMR a moment to detect changes, then ensure refresh
+          // Defer robust refresh to dedicated useEffect via pendingRefresh
           const effectiveSandbox2 = sandboxOverride || sandboxData;
-          if (iframeRef.current && effectiveSandbox2?.url) {
+          if (effectiveSandbox2?.url) {
             // Wait for Vite to process the file changes
             // If packages were installed, wait longer for Vite to restart
             const packagesInstalled = results?.packagesInstalled?.length > 0 || data.results?.packagesInstalled?.length > 0;
             const refreshDelay = packagesInstalled ? appConfig.codeApplication.packageInstallRefreshDelay : appConfig.codeApplication.defaultRefreshDelay;
             console.log(`[applyGeneratedCode] Packages installed: ${packagesInstalled}, refresh delay: ${refreshDelay}ms`);
             
-            setTimeout(async () => {
-            if (iframeRef.current && effectiveSandbox2?.url) {
-              console.log('[applyGeneratedCode] Starting iframe refresh sequence...');
-              console.log('[applyGeneratedCode] Current iframe src:', iframeRef.current.src);
-              console.log('[applyGeneratedCode] Sandbox URL:', effectiveSandbox2.url);
-              
-              // Method 1: Try direct navigation first
-              try {
-                const urlWithTimestamp = `${effectiveSandbox2.url}?t=${Date.now()}&force=true`;
-                console.log('[applyGeneratedCode] Attempting direct navigation to:', urlWithTimestamp);
-                
-                // Remove any existing onload handler
-                iframeRef.current.onload = null;
-                
-                // Navigate directly
-                iframeRef.current.src = urlWithTimestamp;
-                
-                // Wait a bit and check if it loaded
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Try to access the iframe content to verify it loaded
-                try {
-                  const iframeDoc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
-                  if (iframeDoc && iframeDoc.readyState === 'complete') {
-                    console.log('[applyGeneratedCode] Iframe loaded successfully');
-                    return;
-                  }
-                } catch (e) {
-                  console.log('[applyGeneratedCode] Cannot access iframe content (CORS), assuming loaded');
-                  return;
-                }
-              } catch (e) {
-                console.error('[applyGeneratedCode] Direct navigation failed:', e);
-              }
-              
-              // Method 2: Force complete iframe recreation if direct navigation failed
-              console.log('[applyGeneratedCode] Falling back to iframe recreation...');
-              const parent = iframeRef.current.parentElement;
-              const newIframe = document.createElement('iframe');
-              
-              // Copy attributes
-              newIframe.className = iframeRef.current.className;
-              newIframe.title = iframeRef.current.title;
-              newIframe.allow = iframeRef.current.allow;
-              // Copy sandbox attributes
-              const sandboxValue = iframeRef.current.getAttribute('sandbox');
-              if (sandboxValue) {
-                newIframe.setAttribute('sandbox', sandboxValue);
-              }
-              
-              // Remove old iframe
-              iframeRef.current.remove();
-              
-              // Add new iframe
-              newIframe.src = `${effectiveSandbox2.url}?t=${Date.now()}&recreated=true`;
-              parent?.appendChild(newIframe);
-              
-              // Update ref
-              (iframeRef as any).current = newIframe;
-              
-              console.log('[applyGeneratedCode] Iframe recreated with new content');
-            } else {
-              console.error('[applyGeneratedCode] No iframe or sandbox URL available for refresh');
-            }
-          }, refreshDelay); // Dynamic delay based on whether packages were installed
+            setTimeout(() => setPendingRefresh({ reason: packagesInstalled ? 'packagesInstalled' : 'default' }), refreshDelay);
         }
         
         } else {
@@ -950,7 +1052,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         <div className="absolute inset-0 flex overflow-hidden">
           {/* File Explorer - Hide during edits */}
           {!generationProgress.isEdit && (
-            <div className="w-[250px] border-r border-border bg-[hsl(240_8%_7%)] flex flex-col flex-shrink-0">
+            <div className="hidden sm:flex w-full sm:w-[240px] md:w-[250px] sm:flex-col border-b sm:border-b-0 sm:border-r border-border bg-[hsl(240_8%_7%)] flex-shrink-0">
             <div className="p-3 bg-[hsl(240_8%_10%)] text-foreground flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BsFolderFill className="w-4 h-4" />
@@ -1335,7 +1437,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Show screenshot when we have one and (loading OR generating OR no sandbox yet)
       if (urlScreenshot && (loading || generationProgress.isGenerating || !sandboxData?.url || isPreparingDesign)) {
         return (
-          <div className="relative w-full h-full bg-[hsl(240_8%_10%)]">
+          <div className="absolute inset-0 w-full h-full bg-[hsl(240_8%_10%)]">
             <img 
               src={urlScreenshot} 
               alt="Website preview" 
@@ -1359,7 +1461,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Don't show loading overlay for edits
       if (loadingStage || (generationProgress.isGenerating && !generationProgress.isEdit)) {
         return (
-          <div className="relative w-full h-full bg-[hsl(240_8%_10%)] flex items-center justify-center">
+          <div className="absolute inset-0 w-full h-full bg-[hsl(240_8%_10%)] flex items-center justify-center">
             <div className="text-center">
               <div className="mb-8">
                 <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
@@ -1382,7 +1484,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Show sandbox iframe only when not in any loading state
       if (sandboxData?.url && !loading) {
         return (
-          <div className="relative w-full h-full">
+          <div className="absolute inset-0 w-full h-full">
             <iframe
               ref={iframeRef}
               src={sandboxData.url}
@@ -1390,6 +1492,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               title="Chutes Webcoder Sandbox"
               allow="clipboard-write"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+              onLoad={() => setIframeLoaded(true)}
             />
             {/* Refresh button */}
             <button
@@ -1465,8 +1568,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     const lowerMessage = message.toLowerCase().trim();
     if (lowerMessage === 'check packages' || lowerMessage === 'install packages' || lowerMessage === 'npm install') {
       if (!sandboxData) {
-        addChatMessage('No active sandbox. Create a sandbox first!', 'system');
-        return;
+        // Start or wait for sandbox implicitly
+        await createSandbox(true, true);
       }
       await checkAndInstallPackages();
       return;
@@ -2749,7 +2852,10 @@ Focus on the key sections and content, making it clean and modern.`;
   // Handle prompt-driven generation (no URL cloning)
   const handleHomePromptSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const promptText = homePromptInput.trim();
+    // Ensure selected style context (homeContextInput) is included alongside the user's text
+    const baseText = homePromptInput.trim();
+    const styleText = homeContextInput.trim();
+    const promptText = styleText ? `${baseText}\n\n${styleText}` : baseText;
     if (!promptText) return;
 
     setHomeScreenFading(true);
@@ -2765,8 +2871,8 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <Suspense fallback={<div className="font-sans bg-background h-screen" /> }>
-    <div className="font-sans bg-background text-foreground h-screen flex flex-col">
+    <Suspense fallback={<div className="font-sans bg-background min-h-[100svh] md:min-h-screen" /> }>
+    <div className="font-sans bg-background text-foreground min-h-[100svh] md:min-h-screen flex flex-col">
       {/* Home Screen Overlay */}
       {showHomeScreen && (
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
@@ -2808,7 +2914,7 @@ Focus on the key sections and content, making it clean and modern.`;
           
           {/* Main content */}
           <div className="relative z-10 h-full flex justify-center items-start pt-28 md:pt-36 px-4">
-            <div className="text-center w-full max-w-4xl min-w-[600px] mx-auto">
+            <div className="text-center w-full max-w-4xl mx-auto px-4">
               {/* Firecrawl-style Header */}
               <div className="text-center">
                 <h1 className="text-[2.5rem] lg:text-[3.8rem] text-center text-foreground font-semibold tracking-tight leading-[0.9] animate-[fadeIn_0.8s_ease-out]">
@@ -2915,10 +3021,9 @@ Focus on the key sections and content, making it clean and modern.`;
               
               {/* Style Selector - Slides out when valid domain is entered */}
               {showStyleSelector && (
+                <>
                 <div className="overflow-hidden mt-10 max-w-4xl mx-auto w-full">
-                  <div className={`transition-all duration-500 ease-out transform ${
-                    showStyleSelector ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
-                  }`}>
+                <div className={`transition-all duration-500 ease-out transform ${showStyleSelector ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
                 <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 shadow-sm">
                   <p className="text-sm text-muted-foreground mb-3 font-medium">How do you want your site to look?</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -3007,6 +3112,21 @@ Focus on the key sections and content, making it clean and modern.`;
                 </div>
                   </div>
                 </div>
+                {/* Mobile quick start button when a style is selected */}
+                {selectedStyle && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleHomePromptSubmit({ preventDefault: () => {} } as any);
+                    }}
+                    className="fixed md:hidden bottom-6 right-6 z-50 rounded-full bg-primary text-primary-foreground w-12 h-12 flex items-center justify-center shadow-lg border border-border"
+                    title="Start"
+                    aria-label="Start generation"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </button>
+                )}
+              </>
               )}
               
               {/* Advanced - Model Selector (collapsed by default) */}
@@ -3119,9 +3239,39 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      {/* Mobile portrait global tabs */}
+      <div className="md:hidden bg-card border-b border-border px-2 py-2">
+        <div className="flex bg-[#36322F] rounded-lg p-1 w-full max-w-sm mx-auto justify-between">
+          <button
+            className={`${mobileTab === 'chat' ? 'bg-black text-white' : 'text-[hsl(0_0%_85%)] hover:text-white hover:bg-[hsl(240_8%_12%)]'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            onClick={() => { userTabbedRef.current = true; setMobileTab('chat'); }}
+            title="Chat"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span className="hidden min-[380px]:inline">Chat</span>
+          </button>
+          <button
+            className={`${mobileTab === 'code' ? 'bg-black text-white' : 'text-[hsl(0_0%_85%)] hover:text-white hover:bg-[hsl(240_8%_12%)]'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            onClick={() => { userTabbedRef.current = true; setMobileTab('code'); }}
+            title="Code"
+          >
+            <Code2 className="w-4 h-4" />
+            <span className="hidden min-[380px]:inline">Code</span>
+          </button>
+          <button
+            className={`${mobileTab === 'preview' ? 'bg-black text-white' : 'text-[hsl(0_0%_85%)] hover:text-white hover:bg-[hsl(240_8%_12%)]'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            onClick={() => { userTabbedRef.current = true; setMobileTab('preview'); }}
+            title="Preview"
+          >
+            <Eye className="w-4 h-4" />
+            <span className="hidden min-[380px]:inline">Preview</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
         {/* Center Panel - AI Chat (1/3 of remaining width) */}
-        <div className="flex-1 max-w-[400px] flex flex-col border-r border-border bg-background">
+        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[400px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-background min-h-0`}>
           {conversationContext.scrapedWebsites.length > 0 && (
             <div className="p-4 bg-card">
               <div className="flex flex-col gap-2">
@@ -3146,7 +3296,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         href={sourceURL} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                  className="text-foreground hover:text-muted-foreground truncate max-w-[250px]"
+                  className="text-foreground hover:text-muted-foreground truncate max-w-full sm:max-w-[250px]"
                         title={sourceURL}
                       >
                         {siteName}
@@ -3158,7 +3308,7 @@ Focus on the key sections and content, making it clean and modern.`;
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-1 scrollbar-dark" ref={chatMessagesRef}>
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-1 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
             {chatMessages.map((msg, idx) => {
               // Check if this message is from a successful generation
               const isGenerationComplete = msg.content.includes('Successfully recreated') || 
@@ -3400,10 +3550,10 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
 
         {/* Right Panel - Preview or Generation (2/3 of remaining width) */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-4 py-2 bg-card border-b border-border flex justify-between items-center">
+        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0`}>
+            <div className="px-2 sm:px-4 py-2 bg-card border-b border-border flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <div className="flex bg-[#36322F] rounded-lg p-1">
+              <div className="hidden md:flex bg-[#36322F] rounded-lg p-1">
                 <button
                   onClick={() => setActiveTab('generation')}
                   className={`p-2 rounded-md transition-all ${
@@ -3479,7 +3629,7 @@ Focus on the key sections and content, making it clean and modern.`;
               )}
             </div>
           </div>
-          <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative overflow-hidden min-h-0">
             {renderMainContent()}
           </div>
         </div>

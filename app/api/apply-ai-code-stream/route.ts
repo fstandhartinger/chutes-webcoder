@@ -547,6 +547,7 @@ export async function POST(request: NextRequest) {
               .replace(/"""/g, '\\"\\"\\"')
               .replace(/\$/g, '\\$');
             
+            console.log(`[apply-ai-code-stream] Writing file ${normalizedPath} -> ${fullPath}`);
             await sandboxInstance.runCode(`
 import os
 os.makedirs(os.path.dirname("${fullPath}"), exist_ok=True)
@@ -554,6 +555,17 @@ with open("${fullPath}", 'w') as f:
     f.write("""${escapedContent}""")
 print(f"File written: ${fullPath}")
             `);
+            // Extra verification: list file size
+            try {
+              const statRes = await sandboxInstance.runCode(`
+import os
+print(os.path.exists("${fullPath}"))
+print(os.path.getsize("${fullPath}"))
+              `);
+              console.log('[apply-ai-code-stream] Wrote', normalizedPath, 'exists/size ->', statRes);
+            } catch (e) {
+              console.warn('[apply-ai-code-stream] Could not stat file after write:', normalizedPath, e);
+            }
             
             // Update file cache
             if (global.sandboxState?.fileCache) {
@@ -587,8 +599,20 @@ print(f"File written: ${fullPath}")
           }
         }
         
-        // Step 3: Execute commands
+        // Step 3: Execute commands (ensure dev server runs)
         const commandsArray = Array.isArray(parsed.commands) ? parsed.commands : [];
+        const devRunCmd = 'npm run dev';
+        // Ensure the dev server is running in background to serve the app
+        try {
+          console.log('[apply-ai-code-stream] Ensuring Vite dev server is running...');
+          await sandboxInstance.runCode(`
+import subprocess, os
+proc = subprocess.Popen(['bash','-lc','cd /home/user/app && ${devRunCmd} >/home/user/app/.dev.log 2>&1 & echo $!'])
+print('Dev server started')
+          `);
+        } catch (e) {
+          console.warn('[apply-ai-code-stream] Failed to start dev server (may already be running):', e);
+        }
         if (commandsArray.length > 0) {
           await sendProgress({ 
             type: 'step', 
@@ -651,13 +675,15 @@ print(f"File written: ${fullPath}")
           }
         }
         
-        // Send final results
+        // Send final results with both created and updated counts
+        const totalApplied = (results.filesCreated?.length || 0) + (results.filesUpdated?.length || 0);
+        console.log('[apply-ai-code-stream] Files created:', results.filesCreated?.length || 0, 'updated:', results.filesUpdated?.length || 0, 'total:', totalApplied);
         await sendProgress({
           type: 'complete',
           results,
           explanation: parsed.explanation,
           structure: parsed.structure,
-          message: `Successfully applied ${results.filesCreated.length} files`
+          message: `Successfully applied ${totalApplied} file${totalApplied === 1 ? '' : 's'}`
         });
         
         // Track applied files in conversation state

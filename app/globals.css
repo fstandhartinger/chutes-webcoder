@@ -164,6 +164,24 @@
   .scrollbar-dark::-webkit-scrollbar-thumb:hover {
     background: hsl(240 6% 30%);
   }
+
+  /* Thinner scrollbars on small screens */
+  @media (max-width: 640px) {
+    .scrollbar-dark::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+  }
+
+  /* Smooth iOS scrolling helper */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent parent page from scrolling when scrolling inside */
+  .overscroll-contain {
+    overscroll-behavior-y: contain;
+  }
   /* Hide scrollbar for Chrome, Safari and Opera */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -200,6 +218,19 @@
 }
 
 @layer utilities {
+  /* Mobile-safe container padding */
+  .container-padding {
+    padding-left: 0.75rem; /* 12px */
+    padding-right: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-padding {
+      padding-left: 1rem; /* 16px */
+      padding-right: 1rem;
+    }
+  }
+
   /* Holographic accent utilities */
   .holo-text {
     background: linear-gradient(
