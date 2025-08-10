@@ -13,8 +13,8 @@ services:
       - key: CHUTES_BASE_URL
         value: https://llm.chutes.ai/v1
       - key: E2B_API_KEY
-        fromSecret: true # Signalisiert Render, dass dies ein Secret ist
+        sync: false
       - key: FIRECRAWL_API_KEY
-        fromSecret: true
+        sync: false
       - key: CHUTES_API_KEY
-        fromSecret: true
+        sync: false
