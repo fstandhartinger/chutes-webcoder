@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: chutes-webcoder
+    env: node
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: CHUTES_BASE_URL
+        value: https://llm.chutes.ai/v1
+      - key: E2B_API_KEY
+        fromSecret: true # Signalisiert Render, dass dies ein Secret ist
+      - key: FIRECRAWL_API_KEY
+        fromSecret: true
+      - key: CHUTES_API_KEY
+        fromSecret: true
