@@ -20,7 +20,7 @@ export async function GET() {
     console.log('[get-sandbox-files] Fetching and analyzing file structure...');
     
     // Get all React/JS/CSS files
-    const result = await withTimeout(global.activeSandbox.runCode(`
+    const result: any = await withTimeout(global.activeSandbox.runCode(`
 import os
 import json
 
@@ -69,8 +69,14 @@ result = {
 print(json.dumps(result))
     `), 45000, 'Fetching sandbox files timed out');
 
-    const output = result.logs.stdout.join('');
-    const parsedResult = JSON.parse(output);
+    const output = (result?.logs?.stdout || []).join('');
+    let parsedResult: any;
+    try {
+      parsedResult = JSON.parse(output);
+    } catch (e) {
+      console.error('[get-sandbox-files] Failed to parse sandbox output');
+      return NextResponse.json({ success: false, error: 'Failed to read sandbox files' }, { status: 500 });
+    }
     
     // Build enhanced file manifest
     const fileManifest: FileManifest = {
