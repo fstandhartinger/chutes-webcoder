@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     console.log('[create-zip] Creating project zip...');
     
     // Create zip file in sandbox
-    const result = await withTimeout(global.activeSandbox.runCode(`
+    const result: any = await withTimeout(global.activeSandbox.runCode(`
 import zipfile
 import os
 import json
@@ -41,7 +41,7 @@ print(f" Created project.zip ({file_size} bytes)")
     `), 30000, 'Zip creation timed out');
     
     // Read the zip file and convert to base64
-    const readResult = await withTimeout(global.activeSandbox.runCode(`
+    const readResult: any = await withTimeout(global.activeSandbox.runCode(`
 import base64
 
 with open('/tmp/project.zip', 'rb') as f:
@@ -50,7 +50,7 @@ with open('/tmp/project.zip', 'rb') as f:
     print(encoded)
     `), 30000, 'Zip read timed out');
     
-    const base64Content = readResult.logs.stdout.join('').trim();
+    const base64Content = (readResult.logs?.stdout || []).join('').trim();
     
     // Create a data URL for download
     const dataUrl = `data:application/zip;base64,${base64Content}`;
