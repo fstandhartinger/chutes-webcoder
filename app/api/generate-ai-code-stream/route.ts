@@ -1681,7 +1681,7 @@ Provide the complete file content without any truncation. Include all necessary 
                 );
                 
                 // Extract just the code content (remove any markdown or explanation)
-                let _cleanContent = completedContent;
+                let cleanContent = completedContent; // ensure consistent variable name
                 if (cleanContent.includes('```')) {
                   const codeMatch = cleanContent.match(/```[\w]*\n([\s\S]*?)```/);
                   if (codeMatch) {
