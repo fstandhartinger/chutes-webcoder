@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withTimeout } from '@/lib/retry';
 import { parseJavaScriptFile, buildComponentTree } from '@/lib/file-parser';
 import { FileManifest, FileInfo, RouteInfo } from '@/types/file-manifest';
 import type { SandboxState } from '@/types/sandbox';
@@ -19,7 +20,7 @@ export async function GET() {
     console.log('[get-sandbox-files] Fetching and analyzing file structure...');
     
     // Get all React/JS/CSS files
-    const result = await global.activeSandbox.runCode(`
+    const result = await withTimeout(global.activeSandbox.runCode(`
 import os
 import json
 
@@ -66,7 +67,7 @@ result = {
 }
 
 print(json.dumps(result))
-    `);
+    `), 45000, 'Fetching sandbox files timed out');
 
     const output = result.logs.stdout.join('');
     const parsedResult = JSON.parse(output);

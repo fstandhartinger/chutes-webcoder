@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withTimeout } from '@/lib/retry';
 
 declare global {
   var activeSandbox: any;
@@ -16,7 +17,7 @@ export async function POST() {
     console.log('[restart-vite] Forcing Vite restart...');
     
     // Kill existing Vite process and restart
-    const result = await global.activeSandbox.runCode(`
+    const result = await withTimeout(global.activeSandbox.runCode(`
 import subprocess
 import os
 import signal
@@ -118,7 +119,7 @@ with open('/tmp/vite-process.pid', 'w') as f:
 # Wait for Vite to fully start
 time.sleep(5)
 print("Vite is ready")
-    `);
+    `), 45000, 'Vite restart timed out');
     
     return NextResponse.json({
       success: true,

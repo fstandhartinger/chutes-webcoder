@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withTimeout } from '@/lib/retry';
 
 declare global {
   var activeSandbox: any;
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
     console.log('[create-zip] Creating project zip...');
     
     // Create zip file in sandbox
-    const result = await global.activeSandbox.runCode(`
+    const result = await withTimeout(global.activeSandbox.runCode(`
 import zipfile
 import os
 import json
@@ -37,17 +38,17 @@ with zipfile.ZipFile('/tmp/project.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
 # Get file size
 file_size = os.path.getsize('/tmp/project.zip')
 print(f" Created project.zip ({file_size} bytes)")
-    `);
+    `), 30000, 'Zip creation timed out');
     
     // Read the zip file and convert to base64
-    const readResult = await global.activeSandbox.runCode(`
+    const readResult = await withTimeout(global.activeSandbox.runCode(`
 import base64
 
 with open('/tmp/project.zip', 'rb') as f:
     content = f.read()
     encoded = base64.b64encode(content).decode('utf-8')
     print(encoded)
-    `);
+    `), 30000, 'Zip read timed out');
     
     const base64Content = readResult.logs.stdout.join('').trim();
     

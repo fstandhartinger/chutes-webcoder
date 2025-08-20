@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Sandbox } from '@e2b/code-interpreter';
+import { withRetry, withTimeout } from '@/lib/retry';
 
 declare global {
   var activeSandbox: any;
@@ -42,7 +43,10 @@ export async function POST(request: NextRequest) {
     if (!sandbox && sandboxId) {
       console.log(`[install-packages] Reconnecting to sandbox ${sandboxId}...`);
       try {
-        sandbox = await Sandbox.connect(sandboxId, { apiKey: process.env.E2B_API_KEY });
+        sandbox = await withRetry(
+          () => Sandbox.connect(sandboxId, { apiKey: process.env.E2B_API_KEY }),
+          { retries: 1, delayMs: 500, onRetry: (e, a) => console.warn(`[install-packages] connect retry #${a}:`, (e as Error)?.message) }
+        );
         global.activeSandbox = sandbox;
         console.log(`[install-packages] Successfully reconnected to sandbox ${sandboxId}`);
       } catch (error) {
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
         // Kill any existing Vite process first
         await sendProgress({ type: 'status', message: 'Stopping development server...' });
         
-        await sandboxInstance.runCode(`
+        await withTimeout(sandboxInstance.runCode(`
 import subprocess
 import os
 import signal
@@ -99,7 +103,7 @@ try:
         print("Stopped existing Vite process")
 except:
     print("No existing Vite process found")
-        `);
+        `), 15000, 'Stopping Vite timed out');
         
         // Check which packages are already installed
         await sendProgress({ 
@@ -107,7 +111,7 @@ except:
           message: 'Checking installed packages...' 
         });
         
-        const checkResult = await sandboxInstance.runCode(`
+        const checkResult = await withTimeout(sandboxInstance.runCode(`
 import os
 import json
 
@@ -147,14 +151,14 @@ try:
 except Exception as e:
     print(f"Error checking packages: {e}")
     print(f"NEED_INSTALL:{json.dumps(packages_to_check)}")
-        `);
+        `), 30000, 'Package check timed out');
         
         // Parse packages that need installation
         let packagesToInstall = validPackages;
         
         // Check if checkResult has the expected structure
-        if (checkResult && checkResult.results && checkResult.results[0] && checkResult.results[0].text) {
-          const outputLines = checkResult.results[0].text.split('\n');
+        if (checkResult && (checkResult as any).results && (checkResult as any).results[0] && (checkResult as any).results[0].text) {
+          const outputLines = (checkResult as any).results[0].text.split('\n');
           for (const line of outputLines) {
             if (line.startsWith('NEED_INSTALL:')) {
               try {
@@ -170,7 +174,6 @@ except Exception as e:
           packagesToInstall = validPackages;
         }
         
-        
         if (packagesToInstall.length === 0) {
           await sendProgress({ 
             type: 'success', 
@@ -182,14 +185,12 @@ except Exception as e:
         }
         
         // Install only packages that aren't already installed
-        const packageList = packagesToInstall.join(' ');
-        // Only send the npm install command message if we're actually installing new packages
         await sendProgress({ 
           type: 'info', 
           message: `Installing ${packagesToInstall.length} new package(s): ${packagesToInstall.join(', ')}`
         });
         
-        const installResult = await sandboxInstance.runCode(`
+        const installResult = await withTimeout(sandboxInstance.runCode(`
 import subprocess
 import os
 
@@ -226,7 +227,7 @@ if stderr:
     if 'ERESOLVE' in stderr:
         print("ERESOLVE_ERROR: Dependency conflict detected - using --legacy-peer-deps flag")
 
-print(f"\\nInstallation completed with code: {rc}")
+print(f"\nInstallation completed with code: {rc}")
 
 # Verify packages were installed
 import json
@@ -241,11 +242,11 @@ for pkg in ${JSON.stringify(packagesToInstall)}:
     else:
         print(f"✗ Package {pkg} not found in dependencies")
         
-print(f"\\nVerified installed packages: {installed}")
-        `, { timeout: 60000 }); // 60 second timeout for npm install
+print(f"\nVerified installed packages: {installed}")
+        `, { timeout: 60000 }), 90000, 'npm install timed out');
         
         // Send npm output
-        const output = installResult?.output || installResult?.logs?.stdout?.join('\n') || '';
+        const output = (installResult as any)?.output || (installResult as any)?.logs?.stdout?.join('\n') || '';
         const npmOutputLines = output.split('\n').filter((line: string) => line.trim());
         for (const line of npmOutputLines) {
           if (line.includes('STDERR:')) {
@@ -293,7 +294,7 @@ print(f"\\nVerified installed packages: {installed}")
         // Restart Vite dev server
         await sendProgress({ type: 'status', message: 'Restarting development server...' });
         
-        await sandboxInstance.runCode(`
+        await withTimeout(sandboxInstance.runCode(`
 import subprocess
 import os
 import time
@@ -302,6 +303,8 @@ os.chdir('/home/user/app')
 
 # Kill any existing Vite processes
 subprocess.run(['pkill', '-f', 'vite'], capture_output=True)
+print('Killed any existing vite processes (if running)')
+
 time.sleep(1)
 
 # Start Vite dev server
@@ -329,7 +332,7 @@ subprocess.run(['touch', '/home/user/app/package.json'])
 subprocess.run(['touch', '/home/user/app/vite.config.js'])
 
 print("Vite restarted and should now recognize all packages")
-        `);
+        `), 45000, 'Vite restart timed out');
         
         await sendProgress({ 
           type: 'complete', 

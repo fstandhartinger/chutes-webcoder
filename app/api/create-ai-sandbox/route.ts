@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Sandbox } from '@e2b/code-interpreter';
 import type { SandboxState } from '@/types/sandbox';
 import { appConfig } from '@/config/app.config';
+import { withRetry, withTimeout, delay } from '@/lib/retry';
 
 // Store active sandbox globally
 declare global {
@@ -37,16 +38,21 @@ export async function POST() {
 
     // Create base sandbox - we'll set up Vite ourselves for full control
     console.log(`[create-ai-sandbox] Creating base E2B sandbox with ${appConfig.e2b.timeoutMinutes} minute timeout...`);
-    sandbox = await Sandbox.create({ 
-      apiKey: process.env.E2B_API_KEY,
-      timeoutMs: appConfig.e2b.timeoutMs
-    });
+    sandbox = await withRetry(
+      () => Sandbox.create({ 
+        apiKey: process.env.E2B_API_KEY,
+        timeoutMs: appConfig.e2b.timeoutMs
+      }),
+      { retries: 1, delayMs: 750, onRetry: (e, a) => console.warn(`[create-ai-sandbox] Sandbox.create retry #${a}:`, (e as Error)?.message) }
+    );
     
     const sandboxId = (sandbox as any).sandboxId || Date.now().toString();
     const host = (sandbox as any).getHost(appConfig.e2b.vitePort);
     
     console.log(`[create-ai-sandbox] Sandbox created: ${sandboxId}`);
     console.log(`[create-ai-sandbox] Sandbox host: ${host}`);
+    // Persist sandbox metadata globally for reconnection from other routes
+    global.sandboxData = { sandboxId, url: `https://${host}` };
 
     // Set up a basic Vite React app using Python to write files
     console.log('[create-ai-sandbox] Setting up Vite React app...');
@@ -226,11 +232,14 @@ print('\\nAll files created successfully!')
 `;
 
     // Execute the setup script
-    await sandbox.runCode(setupScript);
+    await withRetry(
+      () => withTimeout(sandbox.runCode(setupScript), appConfig.api.requestTimeout * 2, 'Sandbox setup took too long'),
+      { retries: 1, delayMs: 500, onRetry: () => console.warn('[create-ai-sandbox] Retrying initial file setup') }
+    );
     
     // Install dependencies
     console.log('[create-ai-sandbox] Installing dependencies...');
-    await sandbox.runCode(`
+    await withRetry(() => withTimeout(sandbox.runCode(`
 import subprocess
 import sys
 
@@ -247,11 +256,11 @@ if result.returncode == 0:
 else:
     print(f'⚠ Warning: npm install had issues: {result.stderr}')
     # Continue anyway as it might still work
-    `);
+    `), Math.max(appConfig.packages.installTimeout, 60000) + 15000, 'npm install timed out'), { retries: 0, delayMs: 0 });
     
     // Start Vite dev server
     console.log('[create-ai-sandbox] Starting Vite dev server...');
-    await sandbox.runCode(`
+    await withRetry(() => withTimeout(sandbox.runCode(`
 import subprocess
 import os
 import time
@@ -275,13 +284,13 @@ process = subprocess.Popen(
 
 print(f'✓ Vite dev server started with PID: {process.pid}')
 print('Waiting for server to be ready...')
-    `);
+    `), appConfig.api.requestTimeout, 'Starting Vite dev server timed out'), { retries: 1, delayMs: 1000 });
     
     // Wait for Vite to be fully ready
-    await new Promise(resolve => setTimeout(resolve, appConfig.e2b.viteStartupDelay));
+    await delay(appConfig.e2b.viteStartupDelay);
     
     // Force Tailwind CSS to rebuild by touching the CSS file
-    await sandbox.runCode(`
+    await withRetry(() => withTimeout(sandbox.runCode(`
 import os
 import time
 
@@ -294,7 +303,7 @@ if os.path.exists(css_file):
 # Also ensure PostCSS processes it
 time.sleep(2)
 print('✓ Tailwind CSS should be loaded')
-    `);
+    `), appConfig.api.requestTimeout, 'Tailwind rebuild timed out'), { retries: 0, delayMs: 0 });
 
     // Store sandbox globally
     global.activeSandbox = sandbox;

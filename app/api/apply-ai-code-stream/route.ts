@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Sandbox } from '@e2b/code-interpreter';
+import { withRetry, withTimeout } from '@/lib/retry';
 import type { SandboxState } from '@/types/sandbox';
 import type { ConversationState } from '@/types/conversation';
 
@@ -307,7 +308,10 @@ export async function POST(request: NextRequest) {
       
       try {
         // Reconnect to the existing sandbox using E2B's connect method
-        sandbox = await Sandbox.connect(sandboxId, { apiKey: process.env.E2B_API_KEY });
+        sandbox = await withRetry(
+          () => Sandbox.connect(sandboxId, { apiKey: process.env.E2B_API_KEY }),
+          { retries: 1, delayMs: 500, onRetry: (e, a) => console.warn(`[apply-ai-code-stream] connect retry #${a}:`, (e as Error)?.message) }
+        );
         console.log(`[apply-ai-code-stream] Successfully reconnected to sandbox ${sandboxId}`);
         
         // Store the reconnected sandbox globally for this instance
@@ -343,7 +347,7 @@ export async function POST(request: NextRequest) {
           structure: parsed.structure,
           parsedFiles: parsed.files,
           message: `Parsed ${parsed.files.length} files but couldn't apply them - sandbox reconnection failed.`
-        });
+        }, { status: 410 });
       }
     }
     
@@ -363,7 +367,7 @@ export async function POST(request: NextRequest) {
         structure: parsed.structure,
         parsedFiles: parsed.files,
         message: `Parsed ${parsed.files.length} files but no sandbox available to apply them.`
-      });
+      }, { status: 400 });
     }
     
     // Create a response stream for real-time updates
@@ -548,20 +552,20 @@ export async function POST(request: NextRequest) {
               .replace(/\$/g, '\\$');
             
             console.log(`[apply-ai-code-stream] Writing file ${normalizedPath} -> ${fullPath}`);
-            await sandboxInstance.runCode(`
+            await withTimeout(sandboxInstance.runCode(`
 import os
 os.makedirs(os.path.dirname("${fullPath}"), exist_ok=True)
 with open("${fullPath}", 'w') as f:
     f.write("""${escapedContent}""")
 print(f"File written: ${fullPath}")
-            `);
+            `), 30000, 'Writing file timed out');
             // Extra verification: list file size
             try {
-              const statRes = await sandboxInstance.runCode(`
+              const statRes = await withTimeout(sandboxInstance.runCode(`
 import os
 print(os.path.exists("${fullPath}"))
 print(os.path.getsize("${fullPath}"))
-              `);
+              `), 15000, 'Stat file timed out');
               console.log('[apply-ai-code-stream] Wrote', normalizedPath, 'exists/size ->', statRes);
             } catch (e) {
               console.warn('[apply-ai-code-stream] Could not stat file after write:', normalizedPath, e);
@@ -605,11 +609,11 @@ print(os.path.getsize("${fullPath}"))
         // Ensure the dev server is running in background to serve the app
         try {
           console.log('[apply-ai-code-stream] Ensuring Vite dev server is running...');
-          await sandboxInstance.runCode(`
+          await withTimeout(sandboxInstance.runCode(`
 import subprocess, os
 proc = subprocess.Popen(['bash','-lc','cd /home/user/app && ${devRunCmd} >/home/user/app/.dev.log 2>&1 & echo $!'])
 print('Dev server started')
-          `);
+          `), 30000, 'Starting dev server timed out');
         } catch (e) {
           console.warn('[apply-ai-code-stream] Failed to start dev server (may already be running):', e);
         }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { SandboxState } from '@/types/sandbox';
 import type { ConversationState } from '@/types/conversation';
+import { withTimeout } from '@/lib/retry';
 
 declare global {
   var conversationState: ConversationState | null;
@@ -333,14 +334,14 @@ export async function POST(request: NextRequest) {
         // Remove any CSS imports from JSX/JS files (we're using Tailwind)
         let fileContent = file.content;
         if (file.path.endsWith('.jsx') || file.path.endsWith('.js') || file.path.endsWith('.tsx') || file.path.endsWith('.ts')) {
-          fileContent = fileContent.replace(/import\s+['"]\.\/[^'"]+\.css['"];?\s*\n?/g, '');
+          fileContent = fileContent.replace(/import\s+['"]\.\/[^'\"]+\.css['"];?\s*\n?/g, '');
         }
         
         console.log(`[apply-ai-code] Writing file using E2B files API: ${fullPath}`);
         
         try {
           // Use the correct E2B API - sandbox.files.write()
-          await global.activeSandbox.files.write(fullPath, fileContent);
+          await withTimeout(global.activeSandbox.files.write(fullPath, fileContent), 30000, 'Writing file timed out');
           console.log(`[apply-ai-code] Successfully wrote file: ${fullPath}`);
           
           // Update file cache
@@ -432,7 +433,7 @@ function App() {
 export default App;`;
       
       try {
-        await global.activeSandbox.runCode(`
+        await withTimeout(global.activeSandbox.runCode(`
 file_path = "/home/user/app/src/App.jsx"
 file_content = """${appContent.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"""
 
@@ -440,7 +441,7 @@ with open(file_path, 'w') as f:
     f.write(file_content)
 
 print(f"Auto-generated: {file_path}")
-        `);
+        `), 30000, 'Writing App.jsx timed out');
         results.filesCreated.push('src/App.jsx (auto-generated)');
       } catch (error) {
         results.errors.push(`Failed to create App.jsx: ${(error as Error).message}`);
@@ -459,13 +460,13 @@ print(f"Auto-generated: {file_path}")
       
       if (!isEdit && !indexCssInParsed && !indexCssExists) {
         try {
-          await global.activeSandbox.runCode(`
+          await withTimeout(global.activeSandbox.runCode(`
 file_path = "/home/user/app/src/index.css"
 file_content = """@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
+::root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -489,7 +490,7 @@ with open(file_path, 'w') as f:
     f.write(file_content)
 
 print(f"Auto-generated: {file_path}")
-          `);
+          `), 30000, 'Writing index.css timed out');
           results.filesCreated.push('src/index.css (with Tailwind)');
         } catch (error) {
           results.errors.push('Failed to create index.css with Tailwind');

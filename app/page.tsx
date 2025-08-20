@@ -676,7 +676,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to apply code: ${response.statusText}`);
+        // Try to parse server error JSON to show a useful message
+        try {
+          const err = await response.json();
+          throw new Error(err?.error || err?.message || `Failed to apply code (${response.status})`);
+        } catch {
+          throw new Error(`Failed to apply code (${response.status})`);
+        }
       }
       
       // Handle streaming response
@@ -684,6 +690,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       const decoder = new TextDecoder();
       let finalData: any = null;
       
+      let receivedFinalEvent = false;
       while (reader) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -776,6 +783,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   setTimeout(() => {
                     setCodeApplicationState({ stage: 'waiting_preview' });
                   }, 500);
+                  receivedFinalEvent = true;
                   break;
                   
                 case 'error':
@@ -955,7 +963,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           throw new Error(finalData?.error || 'Failed to apply code');
         }
       } else {
-        // If no final data was received, still close loading
+        // If the SSE stream ended without a final event, avoid leaving the UI stuck
+        if (!receivedFinalEvent) {
+          setCodeApplicationState({ stage: null });
+        }
         addChatMessage('Code application may have partially succeeded. Check the preview.', 'system');
       }
     } catch (error: any) {
