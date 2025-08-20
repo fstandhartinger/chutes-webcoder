@@ -9,7 +9,6 @@ import { executeSearchPlan, formatSearchResultsForAI, selectTargetFile } from '@
 import { FileManifest } from '@/types/file-manifest';
 import type { ConversationState, ConversationMessage, ConversationEdit } from '@/types/conversation';
 import { appConfig } from '@/config/app.config';
-import { withTimeout } from '@/lib/retry';
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -1682,7 +1681,7 @@ Provide the complete file content without any truncation. Include all necessary 
                 );
                 
                 // Extract just the code content (remove any markdown or explanation)
-                let cleanContent = completedContent;
+                let _cleanContent = completedContent;
                 if (cleanContent.includes('```')) {
                   const codeMatch = cleanContent.match(/```[\w]*\n([\s\S]*?)```/);
                   if (codeMatch) {

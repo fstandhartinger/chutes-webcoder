@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { withTimeout } from '@/lib/retry';
 import { parseJavaScriptFile, buildComponentTree } from '@/lib/file-parser';
 import { FileManifest, FileInfo, RouteInfo } from '@/types/file-manifest';
-import type { SandboxState } from '@/types/sandbox';
+
 
 declare global {
   var activeSandbox: any;
@@ -73,7 +73,7 @@ print(json.dumps(result))
     let parsedResult: any;
     try {
       parsedResult = JSON.parse(output);
-    } catch (e) {
+    } catch (_e) {
       console.error('[get-sandbox-files] Failed to parse sandbox output');
       return NextResponse.json({ success: false, error: 'Failed to read sandbox files' }, { status: 500 });
     }
@@ -164,7 +164,7 @@ function extractRoutes(files: Record<string, FileInfo>): RouteInfo[] {
       const routeMatches = fileInfo.content.matchAll(/path=["']([^"']+)["'].*(?:element|component)={([^}]+)}/g);
       
       for (const match of routeMatches) {
-        const [, routePath, componentRef] = match;
+        const [, routePath, _componentRef] = match;
         routes.push({
           path: routePath,
           component: path,

@@ -474,7 +474,7 @@ export async function POST(request: NextRequest) {
                       if (data.type === 'success' && data.installedPackages) {
                         results.packagesInstalled = data.installedPackages;
                       }
-                    } catch (e) {
+                    } catch (_e) {
                       // Ignore parse errors
                     }
                   }
@@ -567,8 +567,8 @@ print(os.path.exists("${fullPath}"))
 print(os.path.getsize("${fullPath}"))
               `), 15000, 'Stat file timed out');
               console.log('[apply-ai-code-stream] Wrote', normalizedPath, 'exists/size ->', statRes);
-            } catch (e) {
-              console.warn('[apply-ai-code-stream] Could not stat file after write:', normalizedPath, e);
+            } catch (_e) {
+              console.warn('[apply-ai-code-stream] Could not stat file after write:', normalizedPath, _e);
             }
             
             // Update file cache

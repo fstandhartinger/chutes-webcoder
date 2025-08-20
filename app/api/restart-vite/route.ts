@@ -17,7 +17,7 @@ export async function POST() {
     console.log('[restart-vite] Forcing Vite restart...');
     
     // Kill existing Vite process and restart
-    const result = await withTimeout(global.activeSandbox.runCode(`
+    const result: any = await withTimeout(global.activeSandbox.runCode(`
 import subprocess
 import os
 import signal
@@ -124,7 +124,7 @@ print("Vite is ready")
     return NextResponse.json({
       success: true,
       message: 'Vite restarted successfully',
-      output: result.output
+      output: result?.output ?? (result?.logs?.stdout || []).join('')
     });
     
   } catch (error) {
