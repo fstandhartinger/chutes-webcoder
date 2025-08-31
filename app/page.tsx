@@ -302,7 +302,8 @@ export default function AISandboxPage() {
       if (!screenshotUrl.match(/^https?:\/\//i)) {
         screenshotUrl = 'https://' + screenshotUrl;
       }
-      captureUrlScreenshot(screenshotUrl);
+      // Avoid triggering if unmounted during state changes
+      if (isMountedRef.current) captureUrlScreenshot(screenshotUrl);
     }
   }, [showHomeScreen, homeUrlInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -340,15 +341,15 @@ export default function AISandboxPage() {
       const url = sandboxData?.url;
       if (!url) {
         console.warn('[refresh] No sandbox URL yet; waiting...');
-        setTimeout(() => setPendingRefresh({ reason: pendingRefresh.reason }), 500);
+        setTimeout(() => { if (isMountedRef.current) setPendingRefresh({ reason: pendingRefresh.reason }); }, 500);
         return;
       }
       if (!iframeRef.current) {
         console.warn('[refresh] No iframe yet; waiting for render...');
         // Switch to preview tab to ensure iframe is rendered in the right pane
-        setActiveTab('preview');
+        if (isMountedRef.current) setActiveTab('preview');
         // Re-arm the refresh shortly after switching tabs
-        setTimeout(() => setPendingRefresh({ reason: pendingRefresh.reason }), 300);
+        setTimeout(() => { if (isMountedRef.current) setPendingRefresh({ reason: pendingRefresh.reason }); }, 300);
         return;
       }
       console.log('[refresh] Starting refresh sequence. reason=', pendingRefresh.reason, 'url=', url);
@@ -388,13 +389,13 @@ export default function AISandboxPage() {
           sandboxRecreationCountRef.current += 1;
           console.warn('[refresh] Recreating sandbox. attempt=', sandboxRecreationCountRef.current);
           await createSandbox(true, true);
-          if (sandboxData?.url && iframeRef.current) {
+          if (isMountedRef.current && sandboxData?.url && iframeRef.current) {
             iframeRef.current.src = `${sandboxData.url}?t=${Date.now()}&deferredNewSandbox=1`;
           }
         }
       } finally {
         applyingRecoveryRef.current = false;
-        setPendingRefresh(null);
+        if (isMountedRef.current) setPendingRefresh(null);
       }
     };
     void run();
@@ -1001,6 +1002,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       
       if (response.ok) {
         const data = await response.json();
+        if (!isMountedRef.current) return;
         if (data.success) {
           _setSandboxFiles(data.files || {});
           _setFileStructure(data.structure || '');
