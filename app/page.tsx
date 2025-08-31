@@ -19,7 +19,7 @@ import {
   SiCss3, 
   SiJson 
 } from '@/lib/icons';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { MessageSquare, Code2, Eye } from 'lucide-react';
 import CodeApplicationProgress, { type CodeApplicationState } from '@/components/CodeApplicationProgress';
 import Link from 'next/link';
@@ -50,7 +50,7 @@ export default function AISandboxPage() {
   const [sandboxData, setSandboxData] = useState<SandboxData | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ text: 'Not connected', active: false });
-  const [responseArea, setResponseArea] = useState<string[]>([]);
+  const [_responseArea, _setResponseArea] = useState<string[]>([]);
   const [structureContent, setStructureContent] = useState('No sandbox created yet');
   const [promptInput, setPromptInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -63,9 +63,9 @@ export default function AISandboxPage() {
     const modelParam = searchParams.get('model');
     return appConfig.ai.availableModels.includes(modelParam || '') ? modelParam! : appConfig.ai.defaultModel;
   });
-  const [urlOverlayVisible, setUrlOverlayVisible] = useState(false);
+  const [_urlOverlayVisible, _setUrlOverlayVisible] = useState(false);
   const [urlInput, setUrlInput] = useState('');
-  const [urlStatus, setUrlStatus] = useState<string[]>([]);
+  const [_urlStatus, _setUrlStatus] = useState<string[]>([]);
   const [showHomeScreen, setShowHomeScreen] = useState(true);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['app', 'src', 'src/components']));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -76,15 +76,15 @@ export default function AISandboxPage() {
   const [activeTab, setActiveTab] = useState<'generation' | 'preview'>('preview');
   const [showStyleSelector, setShowStyleSelector] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
-  const [showLoadingBackground, setShowLoadingBackground] = useState(false);
+  const [_showLoadingBackground, _setShowLoadingBackground] = useState(false);
   const [urlScreenshot, setUrlScreenshot] = useState<string | null>(null);
   const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
   const [screenshotError, setScreenshotError] = useState<string | null>(null);
   const [isPreparingDesign, setIsPreparingDesign] = useState(false);
   const [targetUrl, setTargetUrl] = useState<string>('');
   const [loadingStage, setLoadingStage] = useState<'gathering' | 'planning' | 'generating' | null>(null);
-  const [sandboxFiles, setSandboxFiles] = useState<Record<string, string>>({});
-  const [fileStructure, setFileStructure] = useState<string>('');
+  const [_sandboxFiles, _setSandboxFiles] = useState<Record<string, string>>({});
+  const [_fileStructure, _setFileStructure] = useState<string>('');
   
   const [conversationContext, setConversationContext] = useState<{
     scrapedWebsites: Array<{ url: string; content: any; timestamp: Date }>;
@@ -105,6 +105,13 @@ export default function AISandboxPage() {
   const codeDisplayRef = useRef<HTMLDivElement>(null);
   const applyingRecoveryRef = useRef<boolean>(false);
   const sandboxRecreationCountRef = useRef<number>(0);
+  const isMountedRef = useRef<boolean>(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
   
   const [codeApplicationState, setCodeApplicationState] = useState<CodeApplicationState>({
     stage: null
@@ -252,7 +259,7 @@ export default function AISandboxPage() {
       if (sandboxIdParam) {
         // Try to restore existing sandbox
         console.log('[home] Attempting to restore sandbox:', sandboxIdParam);
-        setLoading(true);
+        if (isMountedRef.current) setLoading(true);
         try {
           // For now, just create a new sandbox - you could enhance this to actually restore
           // the specific sandbox if your backend supports it
@@ -409,7 +416,7 @@ export default function AISandboxPage() {
   };
 
   const log = (message: string, type: 'info' | 'error' | 'command' = 'info') => {
-    setResponseArea(prev => [...prev, `[${type}] ${message}`]);
+    _setResponseArea(prev => [...prev, `[${type}] ${message}`]);
   };
 
   const addChatMessage = (content: string, type: ChatMessage['type'], metadata?: ChatMessage['metadata']) => {
@@ -441,7 +448,7 @@ export default function AISandboxPage() {
     addChatMessage('Sandbox is ready. Vite configuration is handled by the template.', 'system');
   };
   
-  const handleSurfaceError = (errors: any[]) => {
+  const _handleSurfaceError = (_errors: any[]) => {
     // Function kept for compatibility but Vite errors are now handled by template
     
     // Focus the input
@@ -451,7 +458,7 @@ export default function AISandboxPage() {
     }
   };
   
-  const installPackages = async (packages: string[]) => {
+  const _installPackages = async (_packages: string[]) => {
     if (!sandboxData) {
       return;
     }
@@ -460,7 +467,7 @@ export default function AISandboxPage() {
       const response = await fetch('/api/install-packages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packages })
+        body: JSON.stringify({ packages: _packages })
       });
       
       if (!response.ok) {
@@ -547,10 +554,10 @@ export default function AISandboxPage() {
       return creatingSandboxRef.current;
     }
     console.log('[createSandbox] Starting sandbox creation... fromHomeScreen=', fromHomeScreen);
-    setLoading(true);
-    setShowLoadingBackground(true);
+    if (isMountedRef.current) setLoading(true);
+    _setShowLoadingBackground(true);
     updateStatus('Creating sandbox...', false);
-    setResponseArea([]);
+    _setResponseArea([]);
     setScreenshotError(null);
 
     creatingSandboxRef.current = (async () => {
@@ -564,8 +571,8 @@ export default function AISandboxPage() {
         console.log('[createSandbox] Response data:', data);
         if (data.success) {
           console.log('[createSandbox] SUCCESS sandboxId=', data.sandboxId, 'url=', data.url);
-          setSandboxData(data);
-          updateStatus('Sandbox active', true);
+          if (isMountedRef.current) setSandboxData(data);
+          if (isMountedRef.current) updateStatus('Sandbox active', true);
           log('Sandbox created successfully!');
           log(`Sandbox ID: ${data.sandboxId}`);
           log(`URL: ${data.url}`);
@@ -581,13 +588,13 @@ export default function AISandboxPage() {
           }
           // Fade out loading background after sandbox loads
           setTimeout(() => {
-            setShowLoadingBackground(false);
+            if (isMountedRef.current) _setShowLoadingBackground(false);
           }, 3000);
           if (data.structure) {
-            displayStructure(data.structure);
+            if (isMountedRef.current) displayStructure(data.structure);
           }
           // Fetch sandbox files after creation
-          setTimeout(fetchSandboxFiles, 1000);
+          setTimeout(() => { if (isMountedRef.current) fetchSandboxFiles(); }, 1000);
           // Ensure Vite server is up
           setTimeout(async () => {
             try {
@@ -604,13 +611,13 @@ export default function AISandboxPage() {
             }
           }, 2000);
           // Only add welcome message if not coming from home screen
-          if (!fromHomeScreen) {
+          if (!fromHomeScreen && isMountedRef.current) {
             addChatMessage(`Sandbox created! ID: ${data.sandboxId}. I now have context of your sandbox and can help you build your app. Just ask me to create components and I'll automatically apply them!
 
 Tip: I automatically detect and install npm packages from your code imports (like react-router-dom, axios, etc.)`, 'system');
           }
           setTimeout(() => {
-            if (iframeRef.current) {
+            if (isMountedRef.current && iframeRef.current) {
               console.log('[createSandbox] Setting iframe src to sandbox URL');
               iframeRef.current.src = data.url;
             }
@@ -623,10 +630,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         console.error('[createSandbox] Error:', error);
         updateStatus('Error', false);
         log(`Failed to create sandbox: ${error.message}`, 'error');
-        addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
+        if (isMountedRef.current) addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
         throw error;
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) setLoading(false);
         creatingSandboxRef.current = null;
       }
     })();
@@ -995,8 +1002,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setSandboxFiles(data.files || {});
-          setFileStructure(data.structure || '');
+          _setSandboxFiles(data.files || {});
+          _setFileStructure(data.structure || '');
           console.log('[fetchSandboxFiles] Updated file list:', Object.keys(data.files || {}).length, 'files');
         }
       }
@@ -1005,7 +1012,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
   
-  const restartViteServer = async () => {
+  const _restartViteServer = async () => {
     try {
       addChatMessage('Restarting Vite dev server...', 'system');
       
@@ -1037,7 +1044,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
-  const applyCode = async () => {
+  const _applyCode = async () => {
     const code = promptInput.trim();
     if (!code) {
       log('Please enter some code first', 'error');
@@ -2106,7 +2113,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
-  const clearChatHistory = () => {
+  const _clearChatHistory = () => {
     setChatMessages([{
       content: 'Chat history cleared. How can I help you?',
       type: 'system',
@@ -2115,10 +2122,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
   };
 
 
-  const cloneWebsite = async () => {
+  const _cloneWebsite = async () => {
     let url = urlInput.trim();
     if (!url) {
-      setUrlStatus(prev => [...prev, 'Please enter a URL']);
+      _setUrlStatus(prev => [...prev, 'Please enter a URL']);
       return;
     }
     
@@ -2126,9 +2133,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       url = 'https://' + url;
     }
     
-    setUrlStatus([`Using: ${url}`, 'Starting to scrape...']);
+    _setUrlStatus([`Using: ${url}`, 'Starting to scrape...']);
     
-    setUrlOverlayVisible(false);
+    _setUrlOverlayVisible(false);
     
     // Remove protocol for cleaner display
     const cleanUrl = url.replace(/^https?:\/\//i, '');
@@ -2392,7 +2399,7 @@ Focus on the key sections and content, making it clean and modern while preservi
         );
         
         setUrlInput('');
-        setUrlStatus([]);
+        _setUrlStatus([]);
         setHomeContextInput('');
         
         // Clear generation progress and all screenshot/design states
@@ -2421,7 +2428,7 @@ Focus on the key sections and content, making it clean and modern while preservi
       
     } catch (error: any) {
       addChatMessage(`Failed to clone website: ${error.message}`, 'system');
-      setUrlStatus([]);
+      _setUrlStatus([]);
       setIsPreparingDesign(false);
       // Clear all states on error
       setUrlScreenshot(null);
@@ -2441,6 +2448,7 @@ Focus on the key sections and content, making it clean and modern while preservi
   };
 
   const captureUrlScreenshot = async (url: string) => {
+    if (!isMountedRef.current) return;
     setIsCapturingScreenshot(true);
     setScreenshotError(null);
     try {
@@ -2452,6 +2460,7 @@ Focus on the key sections and content, making it clean and modern while preservi
       
       const data = await response.json();
       if (data.success && data.screenshot) {
+        if (!isMountedRef.current) return;
         setUrlScreenshot(data.screenshot);
         // Set preparing design state
         setIsPreparingDesign(true);
@@ -2463,13 +2472,13 @@ Focus on the key sections and content, making it clean and modern while preservi
           setActiveTab('preview');
         }
       } else {
-        setScreenshotError(data.error || 'Failed to capture screenshot');
+        if (isMountedRef.current) setScreenshotError(data.error || 'Failed to capture screenshot');
       }
     } catch (error) {
       console.error('Failed to capture screenshot:', error);
-      setScreenshotError('Network error while capturing screenshot');
+      if (isMountedRef.current) setScreenshotError('Network error while capturing screenshot');
     } finally {
-      setIsCapturingScreenshot(false);
+      if (isMountedRef.current) setIsCapturingScreenshot(false);
     }
   };
 
@@ -2512,8 +2521,8 @@ Focus on the key sections and content, making it clean and modern while preservi
       
       // Now start the clone process which will stream the generation
       setUrlInput(homeUrlInput);
-      setUrlOverlayVisible(false); // Make sure overlay is closed
-      setUrlStatus(['Scraping website content...']);
+      _setUrlOverlayVisible(false); // Make sure overlay is closed
+      _setUrlStatus(['Scraping website content...']);
       
       try {
         // Scrape the website
@@ -2540,7 +2549,7 @@ Focus on the key sections and content, making it clean and modern while preservi
           throw new Error(scrapeData.error || 'Failed to scrape website');
         }
         
-        setUrlStatus(['Website scraped successfully!', 'Generating React app...']);
+        _setUrlStatus(['Website scraped successfully!', 'Generating React app...']);
         
         // Clear preparing design state and switch to generation tab
         setIsPreparingDesign(false);
@@ -2821,7 +2830,7 @@ Focus on the key sections and content, making it clean and modern.`;
         }
         
         setUrlInput('');
-        setUrlStatus([]);
+        _setUrlStatus([]);
         setHomeContextInput('');
         
         // Clear generation progress and all screenshot/design states
@@ -2845,7 +2854,7 @@ Focus on the key sections and content, making it clean and modern.`;
         }, 1000); // Show completion briefly then switch
       } catch (error: any) {
         addChatMessage(`Failed to clone website: ${error.message}`, 'system');
-        setUrlStatus([]);
+        _setUrlStatus([]);
         setIsPreparingDesign(false);
         // Also clear generation progress on error
         setGenerationProgress(prev => ({
@@ -3327,7 +3336,7 @@ Focus on the key sections and content, making it clean and modern.`;
                                          msg.content.includes('Code generated!');
               
               // Get the files from metadata if this is a completion message
-              const completedFiles = msg.metadata?.appliedFiles || [];
+              const _completedFiles = msg.metadata?.appliedFiles || [];
               
               return (
                 <div key={idx} className="block">
