@@ -20,7 +20,7 @@ import {
   SiJson 
 } from '@/lib/icons';
 import { motion } from 'framer-motion';
-import { MessageSquare, Code2, Eye } from 'lucide-react';
+import { MessageSquare, Code2, Eye, ExternalLink, Clipboard } from 'lucide-react';
 import CodeApplicationProgress, { type CodeApplicationState } from '@/components/CodeApplicationProgress';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -3246,34 +3246,17 @@ Focus on the key sections and content, making it clean and modern.`;
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
-          <Button 
-            variant="code"
-            onClick={async () => {
-              setStatus({ text: 'Deploying…', active: true });
-              try {
-                const resp = await fetch('/api/deploy', { method: 'POST' });
-                const j = await resp.json();
-                if (j.success && j.url) {
-                  addChatMessage(`Deployment ready: ${j.url}`, 'system');
-                  window.open(j.url, '_blank');
-                } else {
-                  addChatMessage(`Deploy failed: ${j.error || 'Unknown error'}`, 'error');
-                }
-              } catch (e: any) {
-                addChatMessage(`Deploy error: ${e?.message || e}`, 'error');
-              } finally {
-                setStatus({ text: 'Sandbox active', active: true });
-              }
-            }}
-            size="sm"
-            title="Deploy your app"
-            className="cursor-pointer"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M12 2l6 6-6 6-6-6 6-6z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 8v14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Button>
+          {false && (
+            <Button 
+              variant="code"
+              onClick={async () => {}}
+              size="sm"
+              title="Deploy your app"
+              className="cursor-pointer"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+          )}
           <Button 
             variant="code"
             onClick={reapplyLastGeneration}
@@ -3282,9 +3265,7 @@ Focus on the key sections and content, making it clean and modern.`;
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
             className="cursor-pointer"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            <Clipboard className="w-4 h-4" />
           </Button>
           <Button 
             variant="code"
