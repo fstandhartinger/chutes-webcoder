@@ -227,7 +227,7 @@ export default function AISandboxPage() {
     if (activeTab === 'preview') setMobileTab('preview');
   }, [activeTab, isMobilePortraitLayout]);
 
-  // Auto-switch to Code when generation starts (mobile portrait)
+  // Auto-switch to Chat when generation starts (mobile portrait); later auto-switch to Preview when ready
   useEffect(() => {
     if (!isMobilePortraitLayout) {
       prevIsGeneratingRef.current = generationProgress.isGenerating;
@@ -238,7 +238,7 @@ export default function AISandboxPage() {
       setIframeLoaded(false);
       if (!userTabbedRef.current) {
         setActiveTab('generation');
-        setMobileTab('code');
+        setMobileTab('chat');
       }
     }
     prevIsGeneratingRef.current = generationProgress.isGenerating;
@@ -3244,6 +3244,30 @@ Focus on the key sections and content, making it clean and modern.`;
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </Button>
+          <Button 
+            variant="code"
+            onClick={async () => {
+              try {
+                const resp = await fetch('/api/deploy', { method: 'POST' });
+                const j = await resp.json();
+                if (j.success && j.url) {
+                  addChatMessage(`Deployment ready: ${j.url}`, 'system');
+                  window.open(j.url, '_blank');
+                } else {
+                  addChatMessage(`Deploy failed: ${j.error || 'Unknown error'}`, 'error');
+                }
+              } catch (e: any) {
+                addChatMessage(`Deploy error: ${e?.message || e}`, 'error');
+              }
+            }}
+            size="sm"
+            title="Deploy your app"
+            className="cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </Button>
           <Button 
