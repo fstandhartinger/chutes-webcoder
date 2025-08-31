@@ -57,7 +57,7 @@ print(json.dumps({'files': files}))
     }
 
     const id = randomUUID();
-    const baseDir = path.join(process.cwd(), 'deployments', id);
+    const baseDir = path.join(process.cwd(), 'public', 'deployments', id);
     await fs.mkdir(baseDir, { recursive: true });
 
     // Write files
