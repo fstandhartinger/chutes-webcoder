@@ -106,10 +106,16 @@ export default function AISandboxPage() {
   const applyingRecoveryRef = useRef<boolean>(false);
   const sandboxRecreationCountRef = useRef<number>(0);
   const isMountedRef = useRef<boolean>(true);
+  const streamAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
+      try {
+        if (streamAbortRef.current) {
+          streamAbortRef.current.abort();
+        }
+      } catch {}
     };
   }, []);
   
@@ -672,6 +678,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       
       // Use streaming endpoint for real-time feedback
       console.log('[applyGeneratedCode] Calling /api/apply-ai-code-stream with sandboxId=', sandboxData?.sandboxId);
+      // Abortable streaming request guard
+      if (streamAbortRef.current) {
+        try { streamAbortRef.current.abort(); } catch {}
+      }
+      streamAbortRef.current = new AbortController();
       const response = await fetch('/api/apply-ai-code-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -680,7 +691,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           isEdit: isEdit,
           packages: pendingPackages,
           sandboxId: sandboxOverride?.sandboxId || sandboxData?.sandboxId // Ensure correct sandbox is used
-        })
+        }),
+        signal: streamAbortRef.current.signal
       });
       
       if (!response.ok) {
@@ -980,6 +992,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     } catch (error: any) {
       log(`Failed to apply code: ${error.message}`, 'error');
     } finally {
+      if (streamAbortRef.current) {
+        try { streamAbortRef.current.abort(); } catch {}
+        streamAbortRef.current = null;
+      }
       setLoading(false);
       // Clear isEdit flag after applying code
       setGenerationProgress(prev => ({
