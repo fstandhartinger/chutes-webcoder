@@ -3249,6 +3249,7 @@ Focus on the key sections and content, making it clean and modern.`;
           <Button 
             variant="code"
             onClick={async () => {
+              setStatus({ text: 'Deploying…', active: true });
               try {
                 const resp = await fetch('/api/deploy', { method: 'POST' });
                 const j = await resp.json();
@@ -3260,14 +3261,17 @@ Focus on the key sections and content, making it clean and modern.`;
                 }
               } catch (e: any) {
                 addChatMessage(`Deploy error: ${e?.message || e}`, 'error');
+              } finally {
+                setStatus({ text: 'Sandbox active', active: true });
               }
             }}
             size="sm"
             title="Deploy your app"
             className="cursor-pointer"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2l6 6-6 6-6-6 6-6z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 8v14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </Button>
           <Button 

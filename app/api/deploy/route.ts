@@ -68,7 +68,7 @@ print(json.dumps({'files': files}))
       await fs.writeFile(outPath, buf);
     }
 
-    const url = `/deploy/${id}/`;
+    const url = `/deploy/${id}`;
     return NextResponse.json({ success: true, id, url });
   } catch (error) {
     console.error('[deploy] Error:', error);
