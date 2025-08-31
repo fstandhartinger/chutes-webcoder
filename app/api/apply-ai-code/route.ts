@@ -492,7 +492,7 @@ with open(file_path, 'w') as f:
 print(f"Auto-generated: {file_path}")
           `), 30000, 'Writing index.css timed out');
           results.filesCreated.push('src/index.css (with Tailwind)');
-        } catch (error) {
+        } catch (_error) {
           results.errors.push('Failed to create index.css with Tailwind');
         }
       }
