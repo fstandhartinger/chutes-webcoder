@@ -51,17 +51,14 @@ export const appConfig = {
   // AI Model Configuration
   ai: {
     // Default AI model (Chutes-first, but UI still shows all providers)
-    defaultModel: 'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
+    defaultModel: 'chutes/deepseek-ai/DeepSeek-V3',
     
     // Available models
     availableModels: [
-      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
-      'chutes/deepseek-ai/DeepSeek-V3-0324',
-      'chutes/deepseek-ai/DeepSeek-R1-0528',
+      'chutes/deepseek-ai/DeepSeek-V3',
+      'chutes/deepseek-ai/DeepSeek-R1',
       'chutes/zai-org/GLM-4.5-FP8',
-      'chutes/moonshotai/Kimi-K2-Instruct',
-      'chutes/openai/gpt-oss-120b',
-      'moonshotai/kimi-k2-instruct-0905',
+      'chutes/moonshotai/Kimi-K2-Instruct-75k',
       'openai/gpt-5',
       'anthropic/claude-sonnet-4-20250514',
       'google/gemini-2.0-flash-exp'
@@ -69,30 +66,21 @@ export const appConfig = {
     
     // Model display names
     modelDisplayNames: {
-      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder (Chutes)',
-      'chutes/deepseek-ai/DeepSeek-V3-0324': 'DeepSeek V3 (Chutes)',
-      'chutes/deepseek-ai/DeepSeek-R1-0528': 'DeepSeek R1 (Chutes)',
+      'chutes/deepseek-ai/DeepSeek-V3': 'DeepSeek V3 (Chutes)',
+      'chutes/deepseek-ai/DeepSeek-R1': 'DeepSeek R1 (Chutes)',
       'chutes/zai-org/GLM-4.5-FP8': 'GLM 4.5 (Chutes)',
-      'chutes/moonshotai/Kimi-K2-Instruct': 'Kimi-K2 (Chutes)',
-      'chutes/openai/gpt-oss-120b': 'Open Source 120B (Chutes)',
+      'chutes/moonshotai/Kimi-K2-Instruct-75k': 'Kimi-K2 (Chutes)',
       'openai/gpt-5': 'GPT-5',
-      'moonshotai/kimi-k2-instruct-0905': 'Kimi K2 (Groq)',
       'anthropic/claude-sonnet-4-20250514': 'Sonnet 4',
       'google/gemini-2.0-flash-exp': 'Gemini 2.0 Flash (Experimental)'
     } as Record<string, string>,
     
     // Model API configuration to help downstream helpers pick the right SDK
     modelApiConfig: {
-      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': { provider: 'chutes' },
-      'chutes/deepseek-ai/DeepSeek-V3-0324': { provider: 'chutes' },
-      'chutes/deepseek-ai/DeepSeek-R1-0528': { provider: 'chutes' },
+      'chutes/deepseek-ai/DeepSeek-V3': { provider: 'chutes' },
+      'chutes/deepseek-ai/DeepSeek-R1': { provider: 'chutes' },
       'chutes/zai-org/GLM-4.5-FP8': { provider: 'chutes' },
-      'chutes/moonshotai/Kimi-K2-Instruct': { provider: 'chutes' },
-      'chutes/openai/gpt-oss-120b': { provider: 'chutes' },
-      'moonshotai/kimi-k2-instruct-0905': {
-        provider: 'groq',
-        model: 'moonshotai/kimi-k2-instruct-0905'
-      }
+      'chutes/moonshotai/Kimi-K2-Instruct-75k': { provider: 'chutes' }
     },
     
     // Temperature settings for non-reasoning models
