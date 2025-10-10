@@ -3202,6 +3202,8 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
       )}
       
+      {!showHomeScreen && (
+      <>
       <div className="bg-card/80 backdrop-blur px-4 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="h-8 w-auto text-[hsl(0_0%_92%)] cursor-pointer">
@@ -3680,6 +3682,8 @@ Focus on the key sections and content, making it clean and modern.`;
           </div>
         </div>
       </div>
+      </>
+      )}
 
 
 
