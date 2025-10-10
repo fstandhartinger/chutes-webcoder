@@ -46,7 +46,7 @@ interface ChatMessage {
   };
 }
 
-function AISandboxPageContent() {
+export default function AISandboxPage() {
   const [sandboxData, setSandboxData] = useState<SandboxData | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ text: 'Not connected', active: false });
@@ -2909,6 +2909,7 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
+    <Suspense fallback={<div className="min-h-screen w-full bg-gradient-to-br from-[#030712] via-[#040015] to-[#0c1028]" /> }>
     <div className="relative font-sans bg-background text-foreground min-h-[100svh] md:min-h-screen flex flex-col">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-[#030712] via-[#040015] to-[#0c1028] opacity-95" />
       {/* Home Screen Overlay */}
@@ -2956,7 +2957,8 @@ Focus on the key sections and content, making it clean and modern.`;
               {/* Firecrawl-style Header */}
               <div className="text-center">
                 <h1 className="text-[2.5rem] lg:text-[3.8rem] text-center text-foreground font-semibold tracking-tight leading-[0.9] animate-[fadeIn_0.8s_ease-out]">
-                  Chutes Webcoder
+                  <span className="hidden md:inline">Chutes Webcoder</span>
+                  <span className="md:hidden">Chutes Webcoder</span>
                 </h1>
                 <motion.p 
                   className="text-base lg:text-lg max-w-lg mx-auto mt-2.5 mb-3 text-muted-foreground text-center text-balance"
@@ -3685,13 +3687,6 @@ Focus on the key sections and content, making it clean and modern.`;
 
 
     </div>
-  );
-}
-
-export default function AISandboxPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen w-full bg-gradient-to-br from-[#030712] via-[#040015] to-[#0c1028]" />}>
-      <AISandboxPageContent />
     </Suspense>
   );
 }

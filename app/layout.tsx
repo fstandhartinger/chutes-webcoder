@@ -1,33 +1,22 @@
 import type { Metadata } from "next";
-import { Inter, Roboto_Mono } from "next/font/google";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
+import ConsoleCapture from "./components/ConsoleCapture";
 
-const inter = Inter({ 
-  subsets: ["latin"],
-  variable: "--font-inter"
-});
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  variable: "--font-roboto-mono",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Open Lovable v2",
-  description: "Re-imagine any website in seconds with AI-powered website builder.",
+  title: "Chutes Webcoder",
+  description: "Build and iterate React apps with Chutes AI-powered Webcoder.",
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png?v=2", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png?v=2", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "/favicon-32x32.png?v=2",
+    apple: "/favicon-32x32.png?v=2",
+  },
 };
 
 export default function RootLayout({
@@ -36,9 +25,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} ${robotoMono.variable} font-sans`}>
-        {children}
+    <html lang="en" className="dark">
+      <body className={inter.className}>
+        <ConsoleCapture />
+        <Suspense fallback={<div />}>{children}</Suspense>
       </body>
     </html>
   );

@@ -51,36 +51,30 @@ export const appConfig = {
   // AI Model Configuration
   ai: {
     // Default AI model (Chutes-first, but UI still shows all providers)
-    defaultModel: 'chutes/deepseek-ai/DeepSeek-V3',
+    defaultModel: 'chutes/zai-org/GLM-4.6-turbo',
     
     // Available models
     availableModels: [
-      'chutes/deepseek-ai/DeepSeek-V3',
-      'chutes/deepseek-ai/DeepSeek-R1',
-      'chutes/zai-org/GLM-4.5-FP8',
-      'chutes/moonshotai/Kimi-K2-Instruct-75k',
-      'openai/gpt-5',
-      'anthropic/claude-sonnet-4-20250514',
-      'google/gemini-2.0-flash-exp'
+      'chutes/zai-org/GLM-4.6-turbo',
+      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
+      'chutes/moonshotai/Kimi-K2-Instruct-0905',
+      'chutes/deepseek-ai/DeepSeek-V3.2-Exp'
     ],
     
     // Model display names
     modelDisplayNames: {
-      'chutes/deepseek-ai/DeepSeek-V3': 'DeepSeek V3 (Chutes)',
-      'chutes/deepseek-ai/DeepSeek-R1': 'DeepSeek R1 (Chutes)',
-      'chutes/zai-org/GLM-4.5-FP8': 'GLM 4.5 (Chutes)',
-      'chutes/moonshotai/Kimi-K2-Instruct-75k': 'Kimi-K2 (Chutes)',
-      'openai/gpt-5': 'GPT-5',
-      'anthropic/claude-sonnet-4-20250514': 'Sonnet 4',
-      'google/gemini-2.0-flash-exp': 'Gemini 2.0 Flash (Experimental)'
+      'chutes/zai-org/GLM-4.6-turbo': 'GLM 4.6 Turbo (Chutes)',
+      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder 480B (Chutes)',
+      'chutes/moonshotai/Kimi-K2-Instruct-0905': 'Kimi-K2 (Chutes)',
+      'chutes/deepseek-ai/DeepSeek-V3.2-Exp': 'DeepSeek V3.2 (Chutes)'
     } as Record<string, string>,
     
     // Model API configuration to help downstream helpers pick the right SDK
     modelApiConfig: {
-      'chutes/deepseek-ai/DeepSeek-V3': { provider: 'chutes' },
-      'chutes/deepseek-ai/DeepSeek-R1': { provider: 'chutes' },
-      'chutes/zai-org/GLM-4.5-FP8': { provider: 'chutes' },
-      'chutes/moonshotai/Kimi-K2-Instruct-75k': { provider: 'chutes' }
+      'chutes/zai-org/GLM-4.6-turbo': { provider: 'chutes' },
+      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': { provider: 'chutes' },
+      'chutes/moonshotai/Kimi-K2-Instruct-0905': { provider: 'chutes' },
+      'chutes/deepseek-ai/DeepSeek-V3.2-Exp': { provider: 'chutes' }
     },
     
     // Temperature settings for non-reasoning models

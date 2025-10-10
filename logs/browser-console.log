@@ -35,3 +35,64 @@
 2025-10-10T09:07:08.539Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
 2025-10-10T09:07:08.894Z | LOG | http://localhost:3000/ | [createSandbox] Response data: | {"error":"The 'x-vercel-oidc-token' header is missing from the request. Do you have the OIDC option enabled in the Vercel project settings?","details":"Error: The 'x-vercel-oidc-token' header is missing from the request. Do you have the OIDC option enabled in the Vercel project settings?\n    at getVercelOidcTokenSync (/home/flori/Dev/chutes/chutes-webcoder/.next/server/chunks/node_modules_0ec8b2a3._.js:8486:15)\n    at getCredentials (/home/flori/Dev/chutes/chutes-webcoder/.next/server/chunks/node_modules_0ec8b2a3._.js:5330:57)\n    at Sandbox.create (/home/flori/Dev/chutes/chutes-webcoder/.next/server/chunks/node_modules_0ec8b2a3._.js:5419:66)\n    at createSandboxInternal (/home/flori/Dev/chutes/chutes-webcoder/.next/server/chunks/[root-of-the-server]__46c014d4._.js:412:187)\n    at POST (/home/flori/Dev/chutes/chutes-webcoder/.next/server/chunks/[root-of-the-server]__46c014d4._.js:353:37)\n    at AsyncLocalStorage.run (node:async_hooks:335:14)\n    at AppRouteRouteModule.do (/home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:38861)\n    at /home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:48879\n    at /home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/server/lib/trace/tracer.js:169:36\n    at NoopContextManager.with (/home/flori/Dev/chutes/chutes-webcoder/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)\n    at ContextAPI.with (/home/flori/Dev/chutes/chutes-webcoder/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)\n    at NoopTracer.startActiveSpan (/home/flori/Dev/chutes/chutes-webcoder/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)\n    at ProxyTracer.startActiveSpan (/home/flori/Dev/chutes/chutes-webcoder/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)\n    at /home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/server/lib/trace/tracer.js:151:103\n    at NoopContextManager.with (/home/flori/Dev/chutes/chutes-webcoder/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)\n    at ContextAPI.with (/home/flori/Dev/chutes/chutes-webcoder/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)\n    at NextTracerImpl.trace (/home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/server/lib/trace/tracer.js:151:28)\n    at /home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:48724\n    at AsyncLocalStorage.run (node:async_hooks:346:14)\n    at /home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:46103\n    at AsyncLocalStorage.run (node:async_hooks:346:14)\n    at /home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:46060\n    at AsyncLocalStorage.run (node:async_hooks:346:14)\n    at AppRouteRouteModule.handle (/home/flori/Dev/chutes/chutes-webcoder/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:46014)"}
 2025-10-10T09:07:08.895Z | ERROR | http://localhost:3000/ | [createSandbox] Error: | {}
+2025-10-10T15:55:11.612Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-10-10T15:55:11.613Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-10T15:55:11.613Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-10T15:55:11.730Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T15:55:11.752Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 121ms
+2025-10-10T15:55:16.034Z | ERROR | http://localhost:3000/ | [createSandbox] Error: | {}
+2025-10-10T15:55:16.660Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-10-10T15:55:16.661Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-10T15:55:16.662Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-10T15:55:33.692Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T15:55:35.345Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 1753ms
+2025-10-10T15:55:49.756Z | LOG | http://localhost:3000/ | [createSandbox] Response data: | {"success":true,"sandboxId":"in9ps5aiegkol9gx5z1r8","url":"https://5173-in9ps5aiegkol9gx5z1r8.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-10T15:55:49.756Z | LOG | http://localhost:3000/ | [createSandbox] SUCCESS sandboxId= | in9ps5aiegkol9gx5z1r8 | url= | https://5173-in9ps5aiegkol9gx5z1r8.e2b.app
+2025-10-10T15:55:49.757Z | LOG | http://localhost:3000/ | [createSandbox] Suppressing URL push during active generation
+2025-10-10T15:55:49.857Z | LOG | http://localhost:3000/ | [createSandbox] Setting iframe src to sandbox URL
+2025-10-10T15:55:51.757Z | LOG | http://localhost:3000/ | [createSandbox] Ensuring Vite server is running...
+2025-10-10T15:56:04.170Z | LOG | http://localhost:3000/ | [createSandbox] Vite server started successfully
+2025-10-10T15:56:11.265Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T15:56:11.482Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 276ms
+2025-10-10T15:56:43.747Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T15:56:43.822Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 31ms
+2025-10-10T15:56:55.082Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T15:56:55.156Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 20ms
+2025-10-10T15:57:08.444Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T15:57:08.510Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 14ms
+2025-10-10T15:57:19.686Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T15:57:19.736Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 28ms
+2025-10-10T16:02:54.097Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:02:54.187Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 75ms
+2025-10-10T16:03:24.357Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:03:24.644Z | WARN | http://localhost:3000/ | [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree.
+2025-10-10T16:03:24.649Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 375ms
+2025-10-10T16:03:24.761Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:03:25.379Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 719ms
+2025-10-10T16:03:25.537Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:03:25.796Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 360ms
+2025-10-10T16:03:25.990Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:03:26.385Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 495ms
+2025-10-10T16:03:54.130Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-10-10T16:03:54.130Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-10T16:03:54.131Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-10T16:03:54.166Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:03:54.291Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 226ms
+2025-10-10T16:03:54.396Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:03:54.516Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 220ms
+2025-10-10T16:06:44.994Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 118ms
+2025-10-10T16:06:44.976Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:06:45.333Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:06:45.360Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 127ms
+2025-10-10T16:06:45.478Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-10T16:06:45.627Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-10-10T16:06:45.627Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-10T16:06:45.628Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-10T16:06:45.970Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 592ms
