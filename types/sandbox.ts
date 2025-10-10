@@ -24,9 +24,9 @@ export interface SandboxState {
 // Declare global types
 declare global {
   var activeSandbox: any;
+  var activeSandboxProvider: any;
   var sandboxState: SandboxState;
   var existingFiles: Set<string>;
-  var createdDirectories: Set<string>;
 }
 
 export {};

@@ -2,59 +2,72 @@
 
 # Chutes Webcoder
 
-Build and refactor web apps by chatting with an AI. Powered by the Chutes LLM API and designed for rapid Next.js development.
+A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl/open-lovable) that keeps pace with the upstream features (Vercel sandboxing, GitHub integration, new builder UI) while defaulting to the Chutes LLM platform.
 
 </div>
 
-## Setup
+## What's Included
 
-1. **Clone & Install**
-```bash
-git clone <your-repo-url>
-cd chutes-webcoder
-npm install   # or: pnpm install / yarn install
-```
+- **Dual Sandbox Providers** – choose between the new Vercel sandbox (default) or E2B with automatic fallback handling.
+- **Chutes-first AI defaults** – preconfigured to use Chutes' OpenAI-compatible endpoint while still supporting Groq, OpenAI, Anthropic, Gemini, and the Vercel AI Gateway.
+- **Upstream Enhancements** – AI Builder UI, morph fast-apply edits, GitHub integration hooks, CLI scaffolding (`packages/create-open-lovable`).
+- **Render-ready deployment** – `render.yaml` and sensible `NEXT_PUBLIC_APP_URL` defaults for local routing.
 
-2. **Create `.env.local`**
-Provide at least one LLM provider. Using Chutes is recommended and supported out of the box.
-```env
-# Primary (recommended)
-CHUTES_API_KEY=your_chutes_api_key
-# Optional: override if needed
-# CHUTES_BASE_URL=https://llm.chutes.ai/v1
+## Quickstart
 
-# Optional providers (enable any you use)
-GROQ_API_KEY=your_groq_api_key
-ANTHROPIC_API_KEY=your_anthropic_api_key
-ANTHROPIC_BASE_URL=https://api.anthropic.com/v1
+1. **Clone & install**
+   ```bash
+   git clone https://github.com/fstandhartinger/chutes-webcoder.git
+   cd chutes-webcoder
+   npm install   # or pnpm install / yarn install
+   ```
 
-# Optional integrations
-E2B_API_KEY=your_e2b_api_key           # Sandboxes (https://e2b.dev)
-FIRECRAWL_API_KEY=your_firecrawl_api_key # Web scraping (https://firecrawl.dev)
+2. **Copy `.env.example` ➜ `.env.local`** and set the variables you need.
+   ```env
+   # Required services
+   FIRECRAWL_API_KEY=your_firecrawl_api_key
+   CHUTES_API_KEY=your_chutes_api_key
+   CHUTES_BASE_URL=https://llm.chutes.ai/v1
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# App URL (used for internal API calls in dev)
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
+   # Sandbox provider (Vercel by default)
+   SANDBOX_PROVIDER=vercel
+   # VERCEL_OIDC_TOKEN=...
+   # or uncomment SANDBOX_PROVIDER=e2b + E2B_API_KEY=...
 
-3. **Run**
-```bash
-npm run dev
-```
+   # Optional: AI Gateway / vendor keys
+   AI_GATEWAY_API_KEY=...
+   OPENAI_API_KEY=...
+   ANTHROPIC_API_KEY=...
+   GEMINI_API_KEY=...
+   GROQ_API_KEY=...
 
-Then open http://localhost:3000
+   # Optional: Morph fast apply key
+   MORPH_API_KEY=...
+   ```
 
-## Notes
+3. **Run dev server**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000).
 
-- Defaults to the Chutes API for OpenAI-compatible chat completions (`https://llm.chutes.ai/v1`).
-- You can switch models/providers via environment variables without code changes.
-- A Render deployment config is included in `render.yaml`.
+## Configuration Notes
 
-## Credits
+- `config/app.config.ts` lists all sandbox and model settings. The default model is `chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8`, but the upstream presets (GPT‑5, Claude Sonnet 4, Gemini 2.0 Flash, Kimi K2) remain available.
+- Switching between Vercel and E2B sandboxes is a matter of flipping `SANDBOX_PROVIDER` and providing the appropriate credentials.
+- GitHub integration and the new “Builder” experience follow the upstream conventions—set `GITHUB_TOKEN`, `NEXTAUTH_SECRET`, etc., if you adopt those workflows.
 
-This project is inspired by and builds on the excellent groundwork from **Open Lovable** by Mendable AI. Huge thanks to their team for open-sourcing such a solid foundation.
+## Scripts
 
-- Repo: https://github.com/mendableai/open-lovable
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Next.js with Turbopack |
+| `npm run build` | Production build (lint + type-check included) |
+| `npm run start` | Start the production server |
+| `npm run lint` | ESLint via `next lint` |
+| `npm run test:all` | Node-based smoke tests (sandbox utils + parser) |
 
-## License
+## Credits & License
 
-MIT
+Originally created by the Firecrawl team as **Open Lovable**. This fork tracks upstream while layering in the Chutes defaults. Licensed under MIT.

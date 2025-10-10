@@ -2,32 +2,55 @@
 // This file contains all configurable settings for the application
 
 export const appConfig = {
+  // Vercel Sandbox Configuration
+  vercelSandbox: {
+    // Sandbox timeout in minutes
+    timeoutMinutes: 15,
+
+    // Convert to milliseconds for Vercel Sandbox API
+    get timeoutMs() {
+      return this.timeoutMinutes * 60 * 1000;
+    },
+
+    // Development server port (Vercel Sandbox typically uses 3000 for Next.js/React)
+    devPort: 3000,
+
+    // Time to wait for dev server to be ready (in milliseconds)
+    devServerStartupDelay: 7000,
+
+    // Time to wait for CSS rebuild (in milliseconds)
+    cssRebuildDelay: 2000,
+
+    // Working directory in sandbox
+    workingDirectory: '/app',
+
+    // Default runtime for sandbox
+    runtime: 'node22' // Available: node22, python3.13, v0-next-shadcn, cua-ubuntu-xfce
+  },
+
   // E2B Sandbox Configuration
   e2b: {
     // Sandbox timeout in minutes
-    timeoutMinutes: 15,
-    
+    timeoutMinutes: 30,
+
     // Convert to milliseconds for E2B API
     get timeoutMs() {
       return this.timeoutMinutes * 60 * 1000;
     },
-    
-    // Vite development server port
+
+    // Development server port (E2B uses 5173 for Vite)
     vitePort: 5173,
-    
-    // Time to wait for Vite to be ready (in milliseconds)
-    viteStartupDelay: 7000,
-    
-    // Time to wait for CSS rebuild (in milliseconds)
-    cssRebuildDelay: 2000,
-    
-    // Default sandbox template (if using templates)
-    defaultTemplate: undefined, // or specify a template ID
+
+    // Time to wait for Vite dev server to be ready (in milliseconds)
+    viteStartupDelay: 10000,
+
+    // Working directory in sandbox
+    workingDirectory: '/home/user/app',
   },
   
   // AI Model Configuration
   ai: {
-    // Default AI model
+    // Default AI model (Chutes-first, but UI still shows all providers)
     defaultModel: 'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
     
     // Available models
@@ -37,17 +60,39 @@ export const appConfig = {
       'chutes/deepseek-ai/DeepSeek-R1-0528',
       'chutes/zai-org/GLM-4.5-FP8',
       'chutes/moonshotai/Kimi-K2-Instruct',
-      'chutes/openai/gpt-oss-120b'
+      'chutes/openai/gpt-oss-120b',
+      'moonshotai/kimi-k2-instruct-0905',
+      'openai/gpt-5',
+      'anthropic/claude-sonnet-4-20250514',
+      'google/gemini-2.0-flash-exp'
     ],
     
     // Model display names
     modelDisplayNames: {
-      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder',
-      'chutes/deepseek-ai/DeepSeek-V3-0324': 'DeepSeek-V3 New',
-      'chutes/deepseek-ai/DeepSeek-R1-0528': 'DeepSeek R1 New',
-      'chutes/zai-org/GLM-4.5-FP8': 'GLM 4.5',
-      'chutes/moonshotai/Kimi-K2-Instruct': 'Kimi-K2',
-      'chutes/openai/gpt-oss-120b': 'OpenAI Open Source 120b'
+      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder (Chutes)',
+      'chutes/deepseek-ai/DeepSeek-V3-0324': 'DeepSeek V3 (Chutes)',
+      'chutes/deepseek-ai/DeepSeek-R1-0528': 'DeepSeek R1 (Chutes)',
+      'chutes/zai-org/GLM-4.5-FP8': 'GLM 4.5 (Chutes)',
+      'chutes/moonshotai/Kimi-K2-Instruct': 'Kimi-K2 (Chutes)',
+      'chutes/openai/gpt-oss-120b': 'Open Source 120B (Chutes)',
+      'openai/gpt-5': 'GPT-5',
+      'moonshotai/kimi-k2-instruct-0905': 'Kimi K2 (Groq)',
+      'anthropic/claude-sonnet-4-20250514': 'Sonnet 4',
+      'google/gemini-2.0-flash-exp': 'Gemini 2.0 Flash (Experimental)'
+    } as Record<string, string>,
+    
+    // Model API configuration to help downstream helpers pick the right SDK
+    modelApiConfig: {
+      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': { provider: 'chutes' },
+      'chutes/deepseek-ai/DeepSeek-V3-0324': { provider: 'chutes' },
+      'chutes/deepseek-ai/DeepSeek-R1-0528': { provider: 'chutes' },
+      'chutes/zai-org/GLM-4.5-FP8': { provider: 'chutes' },
+      'chutes/moonshotai/Kimi-K2-Instruct': { provider: 'chutes' },
+      'chutes/openai/gpt-oss-120b': { provider: 'chutes' },
+      'moonshotai/kimi-k2-instruct-0905': {
+        provider: 'groq',
+        model: 'moonshotai/kimi-k2-instruct-0905'
+      }
     },
     
     // Temperature settings for non-reasoning models
