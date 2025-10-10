@@ -1410,17 +1410,23 @@ It's better to have 3 complete files than 10 incomplete files.`
                 packagesToInstall: []
               });
               
-              await writer.close();
-              return new NextResponse(readableStream.readable, {
-                headers: {
-                  'Content-Type': 'text/event-stream',
-                  'Cache-Control': 'no-cache',
-                  'Connection': 'keep-alive',
-                },
-              });
+              // Don't return here - let it fall through to normal completion handling
             } finally {
               reader.releaseLock();
             }
+          }
+          
+          // For Chutes, we've already sent all the data via sendProgress
+          // Just return success without using streamText result
+          if (isChutes && chutesApiKey) {
+            await writer.close();
+            return new NextResponse(stream.readable, {
+              headers: {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+              },
+            });
           }
         }
         
