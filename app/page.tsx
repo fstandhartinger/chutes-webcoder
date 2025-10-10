@@ -3039,9 +3039,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="h-16 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg leading-[1.6] text-white placeholder-gray-400 px-7 pr-16 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
+                    className="min-h-[64px] h-auto w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg leading-[1.7] text-white placeholder-gray-300 px-7 pr-16 py-4 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
                     style={{
-                      boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 10px 24px rgba(0,0,0,0.45)',
+                      boxShadow: '0 0 0 1px rgba(139,92,246,0.18), 0 12px 28px rgba(0,0,0,0.5)',
                     }}
                   />
                   <button
@@ -3170,8 +3170,8 @@ Focus on the key sections and content, making it clean and modern.`;
               
               {/* Advanced - Model Selector (collapsed by default) */}
               <details className="mt-6 animate-[fadeIn_1s_ease-out]">
-                <summary className="cursor-pointer text-sm text-muted-foreground text-center">Advanced</summary>
-                <div className="mt-2 text-left w-full max-w-4xl mx-auto flex flex-col items-center">
+                <summary className="cursor-pointer text-sm text-gray-300 text-center hover:text-white transition-colors">Advanced</summary>
+                <div className="mt-3 text-left w-full max-w-4xl mx-auto flex flex-col items-center">
                   <label className="block text-xs text-muted-foreground mb-1">AI Model:</label>
                   <select
                     value={aiModel}
@@ -3185,9 +3185,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       }
                       router.push(`/?${params.toString()}`);
                     }}
-                    className="px-3 py-1.5 text-sm bg-[hsl(240_8%_7%)] text-foreground border border-border rounded-[12px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                    className="px-3.5 py-2 text-sm bg-[hsl(240_8%_7%)] text-white/90 border border-gray-700 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent hover:border-gray-600 transition-colors"
                     style={{
-                      boxShadow: '0 0 0 1px color-mix(in oklab, white 5%, transparent)'
+                      boxShadow: '0 0 0 1px rgba(255,255,255,0.06)'
                     }}
                   >
                     {appConfig.ai.availableModels.map(model => (
@@ -3373,8 +3373,8 @@ Focus on the key sections and content, making it clean and modern.`;
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-1`}>
                     <div className="block">
                       <div className={`block rounded-[10px] px-4 py-2 ${
-                        msg.type === 'user' ? 'bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 text-white ml-auto max-w-[80%]' :
-                        msg.type === 'ai' ? 'bg-[hsl(240_8%_15%)] border border-gray-600/30 text-gray-100 mr-auto max-w-[80%]' :
+                        msg.type === 'user' ? 'bg-gradient-to-r from-purple-600/25 to-blue-600/25 border border-purple-500/30 text-white ml-auto max-w-[80%] shadow-[0_6px_20px_rgba(64,64,255,0.12)]' :
+                        msg.type === 'ai' ? 'bg-[hsl(240_8%_14%)] border border-gray-600/30 text-gray-100 mr-auto max-w-[80%] shadow-[0_6px_20px_rgba(0,0,0,0.35)]' :
                         msg.type === 'system' ? 'bg-transparent text-gray-400 font-medium text-sm' :
                         msg.type === 'command' ? 'bg-gray-800 border border-gray-700 text-gray-100 font-mono text-sm' :
                         msg.type === 'error' ? 'bg-red-900/30 border border-red-600 text-red-100 text-sm' :
