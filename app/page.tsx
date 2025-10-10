@@ -2943,23 +2943,23 @@ Focus on the key sections and content, making it clean and modern.`;
           </button>
           
           {/* Header */}
-            <div className="absolute top-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-between animate-[fadeIn_0.8s_ease-out]">
-            <Link href="/" className="h-12 w-auto text-[hsl(0_0%_92%)] cursor-pointer">
-            <svg className="h-12 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+            <div className="absolute top-0 left-0 right-0 z-20 px-8 py-6 flex items-center justify-between animate-[fadeIn_0.8s_ease-out]">
+            <Link href="/" className="w-16 h-16 text-white cursor-pointer flex items-center justify-center">
+            <svg className="w-full h-full" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
             </Link>
             <div />
           </div>
           
           {/* Main content */}
-          <div className="relative z-10 h-full flex justify-center items-start pt-28 md:pt-36 px-4">
-            <div className="text-center w-full max-w-4xl mx-auto px-4">
+          <div className="relative z-10 h-full flex justify-center items-start pt-32 md:pt-40 px-4">
+            <div className="text-center w-full max-w-5xl mx-auto px-4">
               {/* Firecrawl-style Header */}
-              <div className="text-center">
-                <h1 className="text-[2.5rem] lg:text-[3.8rem] text-center text-white font-semibold tracking-tight leading-[0.9] animate-[fadeIn_0.8s_ease-out]">
+              <div className="text-center mb-10">
+                <h1 className="text-5xl lg:text-6xl text-center text-white font-bold tracking-tight leading-tight mb-4 animate-[fadeIn_0.8s_ease-out]">
                   Chutes Webcoder
                 </h1>
                 <motion.p 
-                  className="text-base lg:text-lg max-w-lg mx-auto mt-2.5 mb-3 text-gray-300 text-center text-balance"
+                  className="text-lg lg:text-xl max-w-2xl mx-auto text-gray-300 text-center"
                   animate={{
                     opacity: showStyleSelector ? 0.7 : 1
                   }}
@@ -2970,7 +2970,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </div>
               
               {/* Prompt form */}
-              <form onSubmit={handleHomePromptSubmit} className="mt-5 w-full max-w-4xl mx-auto">
+              <form onSubmit={handleHomePromptSubmit} className="mt-8 w-full max-w-3xl mx-auto">
                 <div className="w-full relative group">
                   <textarea
                     value={homePromptInput}
@@ -2983,9 +2983,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="h-48 w-full resize-y focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-2 rounded-[20px] text-base text-white px-5 pr-14 py-4 pb-12 border-2 border-gray-600/50 bg-[hsl(240_8%_10%)]"
+                    className="min-h-[180px] w-full resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg text-white placeholder-gray-500 px-6 pr-16 py-5 pb-14 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
                     style={{
-                      boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.3)',
+                      boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 8px 20px rgba(0,0,0,0.4)',
                     }}
                     autoFocus
                     onKeyDown={(e) => {
@@ -3015,15 +3015,15 @@ Focus on the key sections and content, making it clean and modern.`;
               </form>
 
               {/* Separator */}
-                <div className="relative my-8">
-                <div className="border-t border-gray-600/40" />
+                <div className="relative my-10">
+                <div className="border-t border-gray-600/50" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-[hsl(240_10%_8%)] px-4 text-sm text-gray-300 font-medium">OR</span>
+                  <span className="bg-[hsl(240_10%_8%)] px-5 py-1 text-base text-gray-300 font-semibold rounded-lg">OR</span>
                 </div>
               </div>
 
               {/* URL clone form */}
-              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-4xl mx-auto">
+              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-3xl mx-auto">
                   <div className="w-full relative group">
                   <input
                     type="text"
@@ -3039,9 +3039,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="h-14 w-full focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-2 rounded-[20px] text-base text-white px-5 pr-14 border-2 border-gray-600/50 bg-[hsl(240_8%_10%)]"
+                    className="h-16 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg text-white placeholder-gray-500 px-6 pr-16 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
                     style={{
-                      boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.3)',
+                      boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 8px 20px rgba(0,0,0,0.4)',
                     }}
                   />
                   <button
