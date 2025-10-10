@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 export default function LivePreviewFrame({
   sessionId,
@@ -31,7 +32,7 @@ export default function LivePreviewFrame({
   const [isIdle, setIsIdle] = useState(false);
 
   // Function to start the random idle movement sequence
-  const scheduleNextIdleMove = () => {
+  const scheduleNextIdleMove = useCallback(() => {
     if (idleMoveTimerRef.current) {
       clearTimeout(idleMoveTimerRef.current);
     }
@@ -49,7 +50,7 @@ export default function LivePreviewFrame({
         scheduleNextIdleMove(); // Schedule the next one
       }
     }, randomDelay);
-  };
+  }, []);
 
   // Effect to handle starting/stopping idle movement sequence
   useEffect(() => {
@@ -66,7 +67,7 @@ export default function LivePreviewFrame({
         clearTimeout(idleMoveTimerRef.current);
       }
     };
-  }, [isIdle]);
+  }, [isIdle, scheduleNextIdleMove]);
 
   // Main Animation effect (runs continuously)
   useEffect(() => {
@@ -323,7 +324,7 @@ export default function LivePreviewFrame({
       ) : null}
 
       {/* Preview image */}
-      <img
+      <Image
         ref={imgRef}
         id="live-frame"
         onLoad={() => {
@@ -336,6 +337,8 @@ export default function LivePreviewFrame({
         style={{
           backgroundColor: "#f0f0f0",
         }}
+        fill
+        alt="Live preview"
       />
     </div>
   );
