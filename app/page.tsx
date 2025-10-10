@@ -1480,14 +1480,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               className="w-full h-full object-contain"
             />
             {(generationProgress.isGenerating || isPreparingDesign) && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <div className="text-center bg-[hsl(240_8%_7%)]/80 rounded-lg p-6 backdrop-blur-sm border border-border">
-                  <div className="w-12 h-12 border-3 border-border border-t-white rounded-full animate-spin mx-auto mb-3" />
-                  <p className="text-foreground text-sm font-medium">
-                    {generationProgress.isGenerating ? 'Generating code...' : `Preparing your design for ${targetUrl}...`}
-                  </p>
-                </div>
-              </div>
+              <div className="absolute inset-0 bg-[rgba(10,12,28,0.92)]" />
             )}
           </div>
         );
@@ -2909,18 +2902,13 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <Suspense fallback={<div className="min-h-screen w-full bg-gradient-to-br from-[#030712] via-[#040015] to-[#0c1028]" /> }>
-    <div className="font-sans bg-background text-foreground min-h-[100svh] md:min-h-screen flex flex-col">
+    <Suspense fallback={<div className="min-h-screen w-full bg-gradient-to-br from-[#030712] via-[#050717] to-[#0a1030]" /> }>
+    <div className="font-sans text-foreground min-h-[100svh] md:min-h-screen flex flex-col bg-gradient-to-br from-[#030712] via-[#050717] to-[#0a1030]">
       {/* Home Screen Overlay */}
       {showHomeScreen && (
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
           {/* Background */}
-          <div className="absolute inset-0 bg-background overflow-hidden">
-            {/* Subtle, performant particle wave covering lower portion, shifted down 10% */}
-            <div className="absolute left-0 right-0 h-3/5" style={{ bottom: '-10%' }}>
-              <ParticleWave className="absolute inset-0" />
-            </div>
-          </div>
+          <div className="absolute inset-0 bg-[rgba(10,12,28,0.92)]" />
           
           
           {/* Close button on hover */}
@@ -3203,7 +3191,7 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
       )}
       
-      <div className="bg-card px-4 py-4 border-b border-border flex items-center justify-between">
+      <div className="bg-card/70 backdrop-blur border-b border-border px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="h-8 w-auto text-[hsl(0_0%_92%)] cursor-pointer">
             <svg className="h-8 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
@@ -3318,7 +3306,7 @@ Focus on the key sections and content, making it clean and modern.`;
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
         {/* Center Panel - AI Chat (1/3 of remaining width) */}
-        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[400px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-background min-h-0`}>
+        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[400px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-[rgba(13,17,35,0.85)] backdrop-blur min-h-0`}>
           {conversationContext.scrapedWebsites.length > 0 && (
             <div className="p-4 bg-card">
               <div className="flex flex-col gap-2">
@@ -3597,8 +3585,8 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
 
         {/* Right Panel - Preview or Generation (2/3 of remaining width) */}
-        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0`}>
-            <div className="px-2 sm:px-4 py-2 bg-card border-b border-border flex justify-between items-center">
+        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[rgba(8,10,24,0.9)] backdrop-blur`}>
+            <div className="px-2 sm:px-4 py-2 bg-card/70 backdrop-blur border-b border-border flex justify-between items-center">
             <div className="flex items-center gap-4">
               <div className="hidden md:flex bg-[#36322F] rounded-lg p-1">
                 <button
