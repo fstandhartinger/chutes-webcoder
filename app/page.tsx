@@ -3039,7 +3039,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="h-18 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg leading-[1.6] text-white placeholder-gray-400 px-7 pr-16 py-4 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
+                    className="h-16 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg leading-[1.6] text-white placeholder-gray-400 px-7 pr-16 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
                     style={{
                       boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 10px 24px rgba(0,0,0,0.45)',
                     }}
