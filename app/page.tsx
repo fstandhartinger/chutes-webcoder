@@ -2970,7 +2970,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </div>
               
               {/* Prompt form */}
-              <form onSubmit={handleHomePromptSubmit} className="mt-8 w-full max-w-3xl mx-auto">
+              <form onSubmit={handleHomePromptSubmit} className="mt-8 w-full max-w-4xl mx-auto">
                 <div className="w-full relative group">
                   <textarea
                     value={homePromptInput}
@@ -2983,9 +2983,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="min-h-[180px] w-full resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg text-white placeholder-gray-500 px-6 pr-16 py-5 pb-14 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
+                    className="min-h-[200px] w-full resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg leading-[1.6] text-white placeholder-gray-400 px-7 pr-16 py-6 pb-16 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
                     style={{
-                      boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 8px 20px rgba(0,0,0,0.4)',
+                      boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 10px 24px rgba(0,0,0,0.45)',
                     }}
                     autoFocus
                     onKeyDown={(e) => {
@@ -3023,7 +3023,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </div>
 
               {/* URL clone form */}
-              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-3xl mx-auto">
+              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-4xl mx-auto">
                   <div className="w-full relative group">
                   <input
                     type="text"
@@ -3039,9 +3039,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="h-16 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg text-white placeholder-gray-500 px-6 pr-16 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
+                    className="h-18 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg leading-[1.6] text-white placeholder-gray-400 px-7 pr-16 py-4 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
                     style={{
-                      boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 8px 20px rgba(0,0,0,0.4)',
+                      boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 10px 24px rgba(0,0,0,0.45)',
                     }}
                   />
                   <button
