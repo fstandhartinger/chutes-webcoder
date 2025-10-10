@@ -1342,6 +1342,88 @@ It's better to have 3 complete files than 10 incomplete files.`
         let retryCount = 0;
         const maxRetries = 2;
         
+        // Use custom fetch for Chutes since Vercel AI SDK calls wrong endpoint (/v1/responses instead of /v1/chat/completions)
+        if (isChutes && chutesApiKey) {
+          console.log('[generate-ai-code-stream] Using custom Chutes streaming implementation');
+          
+          const response = await fetch(`${chutesBaseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${chutesApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: actualModel,
+              messages: streamOptions.messages,
+              temperature: streamOptions.temperature,
+              max_tokens: streamOptions.maxTokens,
+              stream: true,
+            }),
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Chutes API error: ${response.status} - ${errorText}`);
+          }
+          
+          // Process the SSE stream manually
+          const reader = response.body?.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let generatedCode = '';
+          
+          if (reader) {
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+                
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    const data = line.slice(6);
+                    if (data === '[DONE]') continue;
+                    
+                    try {
+                      const parsed = JSON.parse(data);
+                      const content = parsed.choices?.[0]?.delta?.content || '';
+                      if (content) {
+                        generatedCode += content;
+                        await sendProgress({ type: 'stream', text: content, raw: true });
+                        process.stdout.write(content);
+                      }
+                    } catch (e) {
+                      // Skip malformed JSON
+                    }
+                  }
+                }
+              }
+              
+              // Send completion
+              await sendProgress({ 
+                type: 'complete', 
+                generatedCode, 
+                explanation: 'Code generation complete',
+                packagesToInstall: []
+              });
+              
+              await writer.close();
+              return new NextResponse(readableStream.readable, {
+                headers: {
+                  'Content-Type': 'text/event-stream',
+                  'Cache-Control': 'no-cache',
+                  'Connection': 'keep-alive',
+                },
+              });
+            } finally {
+              reader.releaseLock();
+            }
+          }
+        }
+        
         while (retryCount <= maxRetries) {
           try {
             result = await streamText(streamOptions);
