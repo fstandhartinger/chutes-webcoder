@@ -569,7 +569,7 @@ export default function AISandboxPage() {
 
     creatingSandboxRef.current = (async () => {
       try {
-        const response = await fetch('/api/create-ai-sandbox', {
+        const response = await fetch('/api/create-ai-sandbox-v2', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({})
@@ -2909,7 +2909,7 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <Suspense fallback={<div className="font-sans bg-background min-h-[100svh] md:min-h-screen" /> }>
+    <Suspense fallback={<div className="min-h-screen w-full bg-gradient-to-br from-[#030712] via-[#040015] to-[#0c1028]" /> }>
     <div className="font-sans bg-background text-foreground min-h-[100svh] md:min-h-screen flex flex-col">
       {/* Home Screen Overlay */}
       {showHomeScreen && (
