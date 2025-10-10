@@ -2,135 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { SandboxState } from '@/types/sandbox';
 import type { ConversationState } from '@/types/conversation';
 import { withTimeout } from '@/lib/retry';
+import { writeFileWithFallback } from '@/lib/sandbox/utils';
+import { parseAIResponse } from '@/lib/ai-response';
 
 declare global {
   var conversationState: ConversationState | null;
-}
-
-interface ParsedResponse {
-  explanation: string;
-  template: string;
-  files: Array<{ path: string; content: string }>;
-  packages: string[];
-  commands: string[];
-  structure: string | null;
-}
-
-function parseAIResponse(response: string): ParsedResponse {
-  const sections = {
-    files: [] as Array<{ path: string; content: string }>,
-    commands: [] as string[],
-    packages: [] as string[],
-    structure: null as string | null,
-    explanation: '',
-    template: ''
-  };
-
-  // Parse file sections - handle duplicates and prefer complete versions
-  const fileMap = new Map<string, { content: string; isComplete: boolean }>();
-  
-  const fileRegex = /<file path="([^"]+)">([\s\S]*?)(?:<\/file>|$)/g;
-  let match;
-  while ((match = fileRegex.exec(response)) !== null) {
-    const filePath = match[1];
-    const content = match[2].trim();
-    const hasClosingTag = response.substring(match.index, match.index + match[0].length).includes('</file>');
-    
-    // Check if this file already exists in our map
-    const existing = fileMap.get(filePath);
-    
-    // Decide whether to keep this version
-    let shouldReplace = false;
-    if (!existing) {
-      shouldReplace = true; // First occurrence
-    } else if (!existing.isComplete && hasClosingTag) {
-      shouldReplace = true; // Replace incomplete with complete
-      console.log(`[parseAIResponse] Replacing incomplete ${filePath} with complete version`);
-    } else if (existing.isComplete && hasClosingTag && content.length > existing.content.length) {
-      shouldReplace = true; // Replace with longer complete version
-      console.log(`[parseAIResponse] Replacing ${filePath} with longer complete version`);
-    } else if (!existing.isComplete && !hasClosingTag && content.length > existing.content.length) {
-      shouldReplace = true; // Both incomplete, keep longer one
-    }
-    
-    if (shouldReplace) {
-      // Additional validation: reject obviously broken content
-      if (content.includes('...') && !content.includes('...props') && !content.includes('...rest')) {
-        console.warn(`[parseAIResponse] Warning: ${filePath} contains ellipsis, may be truncated`);
-        // Still use it if it's the only version we have
-        if (!existing) {
-          fileMap.set(filePath, { content, isComplete: hasClosingTag });
-        }
-      } else {
-        fileMap.set(filePath, { content, isComplete: hasClosingTag });
-      }
-    }
-  }
-  
-  // Convert map to array for sections.files
-  for (const [path, { content, isComplete }] of fileMap.entries()) {
-    if (!isComplete) {
-      console.log(`[parseAIResponse] Warning: File ${path} appears to be truncated (no closing tag)`);
-    }
-    
-    sections.files.push({
-      path,
-      content
-    });
-  }
-
-  // Parse commands
-  const cmdRegex = /<command>(.*?)<\/command>/g;
-  while ((match = cmdRegex.exec(response)) !== null) {
-    sections.commands.push(match[1].trim());
-  }
-
-  // Parse packages - support both <package> and <packages> tags
-  const pkgRegex = /<package>(.*?)<\/package>/g;
-  while ((match = pkgRegex.exec(response)) !== null) {
-    sections.packages.push(match[1].trim());
-  }
-  
-  // Also parse <packages> tag with multiple packages
-  const packagesRegex = /<packages>([\s\S]*?)<\/packages>/;
-  const packagesMatch = response.match(packagesRegex);
-  if (packagesMatch) {
-    const packagesContent = packagesMatch[1].trim();
-    // Split by newlines or commas
-    const packagesList = packagesContent.split(/[\n,]+/)
-      .map(pkg => pkg.trim())
-      .filter(pkg => pkg.length > 0);
-    sections.packages.push(...packagesList);
-  }
-
-  // Parse structure
-  const structureMatch = /<structure>([\s\S]*?)<\/structure>/;
-  const structResult = response.match(structureMatch);
-  if (structResult) {
-    sections.structure = structResult[1].trim();
-  }
-
-  // Parse explanation
-  const explanationMatch = /<explanation>([\s\S]*?)<\/explanation>/;
-  const explResult = response.match(explanationMatch);
-  if (explResult) {
-    sections.explanation = explResult[1].trim();
-  }
-
-  // Parse template
-  const templateMatch = /<template>(.*?)<\/template>/;
-  const templResult = response.match(templateMatch);
-  if (templResult) {
-    sections.template = templResult[1].trim();
-  }
-
-  return sections;
 }
 
 declare global {
   var activeSandbox: any;
   var existingFiles: Set<string>;
   var sandboxState: SandboxState;
+  var createdDirectories: Set<string>;
 }
 
 export async function POST(request: NextRequest) {
@@ -149,6 +32,9 @@ export async function POST(request: NextRequest) {
     // Initialize existingFiles if not already
     if (!global.existingFiles) {
       global.existingFiles = new Set<string>();
+    }
+    if (!global.createdDirectories) {
+      global.createdDirectories = new Set<string>();
     }
     
     // If no active sandbox, just return parsed results
@@ -337,13 +223,14 @@ export async function POST(request: NextRequest) {
           fileContent = fileContent.replace(/import\s+['"]\.\/[^'\"]+\.css['"];?\s*\n?/g, '');
         }
         
-        console.log(`[apply-ai-code] Writing file using E2B files API: ${fullPath}`);
-        
+        console.log(`[apply-ai-code] Preparing to write file: ${fullPath}`);
+
         try {
-          // Use the correct E2B API - sandbox.files.write()
-          await withTimeout(global.activeSandbox.files.write(fullPath, fileContent), 30000, 'Writing file timed out');
-          console.log(`[apply-ai-code] Successfully wrote file: ${fullPath}`);
-          
+          const method = await writeFileWithFallback(global.activeSandbox, fullPath, fileContent, {
+            directoryCache: global.createdDirectories,
+            logger: console
+          });
+
           // Update file cache
           if (global.sandboxState?.fileCache) {
             global.sandboxState.fileCache.files[normalizedPath] = {
@@ -352,9 +239,10 @@ export async function POST(request: NextRequest) {
             };
             console.log(`[apply-ai-code] Updated file cache for: ${normalizedPath}`);
           }
-          
+
+          console.log(`[apply-ai-code] Successfully wrote file via ${method}: ${fullPath}`);
         } catch (writeError) {
-          console.error(`[apply-ai-code] E2B file write error:`, writeError);
+          console.error(`[apply-ai-code] File write failure for ${fullPath}:`, writeError);
           throw writeError;
         }
         

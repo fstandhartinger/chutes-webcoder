@@ -26,6 +26,7 @@ declare global {
   var activeSandbox: any;
   var sandboxState: SandboxState;
   var existingFiles: Set<string>;
+  var createdDirectories: Set<string>;
 }
 
 export {};

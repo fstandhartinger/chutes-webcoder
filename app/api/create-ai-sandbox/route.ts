@@ -10,22 +10,62 @@ declare global {
   var sandboxData: any;
   var existingFiles: Set<string>;
   var sandboxState: SandboxState;
+  var sandboxCreationInProgress: boolean;
+  var sandboxCreationPromise: Promise<any> | null;
+  var createdDirectories: Set<string>;
 }
 
 export async function POST() {
+  // If a sandbox is currently being created, wait for that process to finish
+  if (global.sandboxCreationInProgress && global.sandboxCreationPromise) {
+    console.log('[create-ai-sandbox] Sandbox creation already in progress, awaiting existing promise...');
+    try {
+      const existingResult = await global.sandboxCreationPromise;
+      return NextResponse.json(existingResult);
+    } catch (error) {
+      console.error('[create-ai-sandbox] Existing sandbox creation failed, proceeding with new creation:', error);
+    }
+  }
+
+  // Reuse active sandbox when available
+  if (global.activeSandbox && global.sandboxData) {
+    console.log('[create-ai-sandbox] Returning existing sandbox instance');
+    return NextResponse.json({
+      success: true,
+      sandboxId: global.sandboxData.sandboxId,
+      url: global.sandboxData.url
+    });
+  }
+
+  global.sandboxCreationInProgress = true;
+  global.sandboxCreationPromise = createSandboxInternal();
+
+  try {
+    const result = await global.sandboxCreationPromise;
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('[create-ai-sandbox] Sandbox creation failed:', error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Failed to create sandbox',
+        details: error instanceof Error ? error.stack : undefined
+      },
+      { status: 500 }
+    );
+  } finally {
+    global.sandboxCreationInProgress = false;
+    global.sandboxCreationPromise = null;
+  }
+}
+
+async function createSandboxInternal() {
   let sandbox: any = null;
 
   try {
     // Ensure E2B API key is configured
     if (!process.env.E2B_API_KEY) {
       console.error('[create-ai-sandbox] E2B_API_KEY is not set');
-      return NextResponse.json(
-        {
-          error: 'E2B API key is not configured. Set E2B_API_KEY in your environment.',
-          details: 'Missing E2B_API_KEY environment variable'
-        },
-        { status: 500 }
-      );
+      throw new Error('E2B API key is not configured. Set E2B_API_KEY in your environment.');
     }
 
     console.log('[create-ai-sandbox] Creating base sandbox...');
@@ -47,6 +87,9 @@ export async function POST() {
     } else {
       global.existingFiles = new Set<string>();
     }
+
+    // Reset directory cache to avoid stale entries between sandboxes
+    global.createdDirectories = new Set<string>();
 
     // Create base sandbox - we'll set up Vite ourselves for full control
     console.log(`[create-ai-sandbox] Creating base E2B sandbox with ${appConfig.e2b.timeoutMinutes} minute timeout...`);
@@ -356,12 +399,12 @@ print('✓ Tailwind CSS should be loaded')
     
     console.log('[create-ai-sandbox] Sandbox ready at:', `https://${host}`);
     
-    return NextResponse.json({
+    return {
       success: true,
       sandboxId,
       url: `https://${host}`,
       message: 'Sandbox created and Vite React app initialized'
-    });
+    };
 
   } catch (error) {
     console.error('[create-ai-sandbox] Error:', error);
@@ -375,12 +418,6 @@ print('✓ Tailwind CSS should be loaded')
       }
     }
     
-    return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Failed to create sandbox',
-        details: error instanceof Error ? error.stack : undefined
-      },
-      { status: 500 }
-    );
+    throw error instanceof Error ? error : new Error(String(error));
   }
 }

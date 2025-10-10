@@ -8,10 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:integration": "node tests/e2b-integration.test.js",
-    "test:api": "node tests/api-endpoints.test.js",
-    "test:code": "node tests/code-execution.test.js",
-    "test:all": "npm run test:integration && npm run test:api && npm run test:code"
+    "test:unit": "tsx tests/sandbox-utils.unit.test.ts",
+    "test:integration": "tsx tests/sandbox-utils.integration.test.ts",
+    "test:api": "tsx tests/parse-ai-response.test.ts",
+    "test:code": "tsx tests/code-application-flow.test.ts",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:api && npm run test:code"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.1",
@@ -52,6 +53,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.4.3",
     "tailwindcss": "^4.1.11",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
