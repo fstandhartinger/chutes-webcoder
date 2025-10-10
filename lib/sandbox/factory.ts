@@ -5,8 +5,16 @@ import { VercelProvider } from './providers/vercel-provider';
 export class SandboxFactory {
   static create(provider?: string, config?: SandboxProviderConfig): SandboxProvider {
     // Use environment variable if provider not specified
-    const selectedProvider = provider || process.env.SANDBOX_PROVIDER || 'e2b';
+    let selectedProvider = provider || process.env.SANDBOX_PROVIDER || 'e2b';
     
+    // Fallback for Vercel if no credentials
+    if (selectedProvider.toLowerCase() === 'vercel') {
+      if (!process.env.VERCEL_OIDC_TOKEN && 
+          !(process.env.VERCEL_TOKEN && process.env.VERCEL_TEAM_ID && process.env.VERCEL_PROJECT_ID)) {
+        console.warn('[SandboxFactory] Vercel credentials missing, falling back to E2B');
+        selectedProvider = 'e2b';
+      }
+    }
     
     switch (selectedProvider.toLowerCase()) {
       case 'e2b':
