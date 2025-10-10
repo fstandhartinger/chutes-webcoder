@@ -47,6 +47,7 @@ const openai = createOpenAI({
 const chutesBaseUrl = process.env.CHUTES_BASE_URL || 'https://llm.chutes.ai/v1';
 const chutesApiKey = process.env.CHUTES_API_KEY;
 
+// Note: Vercel AI SDK appends /chat/completions, so baseURL should point to the base
 const chutes = createOpenAI({
   apiKey: chutesApiKey ?? (isUsingAIGateway ? process.env.AI_GATEWAY_API_KEY : process.env.OPENAI_API_KEY),
   baseURL: chutesApiKey ? chutesBaseUrl : (isUsingAIGateway ? aiGatewayBaseURL : process.env.OPENAI_BASE_URL),
