@@ -2944,8 +2944,8 @@ Focus on the key sections and content, making it clean and modern.`;
           
           {/* Header */}
             <div className="absolute top-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-between animate-[fadeIn_0.8s_ease-out]">
-            <Link href="/" className="h-8 w-auto text-[hsl(0_0%_92%)] cursor-pointer">
-            <svg className="h-8 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+            <Link href="/" className="h-12 w-auto text-[hsl(0_0%_92%)] cursor-pointer">
+            <svg className="h-12 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
             </Link>
             <div />
           </div>
@@ -2955,11 +2955,11 @@ Focus on the key sections and content, making it clean and modern.`;
             <div className="text-center w-full max-w-4xl mx-auto px-4">
               {/* Firecrawl-style Header */}
               <div className="text-center">
-                <h1 className="text-[2.5rem] lg:text-[3.8rem] text-center text-foreground font-semibold tracking-tight leading-[0.9] animate-[fadeIn_0.8s_ease-out]">
+                <h1 className="text-[2.5rem] lg:text-[3.8rem] text-center text-white font-semibold tracking-tight leading-[0.9] animate-[fadeIn_0.8s_ease-out]">
                   Chutes Webcoder
                 </h1>
                 <motion.p 
-                  className="text-base lg:text-lg max-w-lg mx-auto mt-2.5 mb-3 text-muted-foreground text-center text-balance"
+                  className="text-base lg:text-lg max-w-lg mx-auto mt-2.5 mb-3 text-gray-300 text-center text-balance"
                   animate={{
                     opacity: showStyleSelector ? 0.7 : 1
                   }}
@@ -2983,10 +2983,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="h-40 w-full resize-y focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-2 rounded-[18px] text-sm text-foreground px-4 pr-12 py-3 pb-10 border border-border bg-[hsl(240_8%_7%)]"
+                    className="h-48 w-full resize-y focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-2 rounded-[20px] text-base text-white px-5 pr-14 py-4 pb-12 border-2 border-gray-600/50 bg-[hsl(240_8%_10%)]"
                     style={{
-                      boxShadow: '0 0 0 1px #e3e1de66, 0 1px 2px #5f4a2e14, 0 4px 6px #5f4a2e0a, 0 40px 40px -24px #684b2514',
-                      filter: 'drop-shadow(rgba(249, 224, 184, 0.3) -0.731317px -0.731317px 35.6517px)'
+                      boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.3)',
                     }}
                     autoFocus
                     onKeyDown={(e) => {
@@ -2997,13 +2996,13 @@ Focus on the key sections and content, making it clean and modern.`;
                       }
                     }}
                   />
-                  <span className="absolute bottom-3 left-4 text-[10px] text-[hsl(240_5%_50%)] select-none pointer-events-none">
+                  <span className="absolute bottom-4 left-5 text-xs text-gray-400 select-none pointer-events-none">
                     Press Enter to send, Shift+Enter for linebreaks
                   </span>
                   <button
                     type="submit"
                     disabled={!homePromptInput.trim()}
-                    className="absolute bottom-3 right-2 flex h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-zinc-500 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-lg"
                     title="Send"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -3016,10 +3015,10 @@ Focus on the key sections and content, making it clean and modern.`;
               </form>
 
               {/* Separator */}
-                <div className="relative my-6">
-                <div className="border-t border-border" />
+                <div className="relative my-8">
+                <div className="border-t border-gray-600/40" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-background px-2 text-xs text-muted-foreground">OR</span>
+                  <span className="bg-[hsl(240_10%_8%)] px-4 text-sm text-gray-300 font-medium">OR</span>
                 </div>
               </div>
 
@@ -3040,12 +3039,15 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="h-[3.25rem] w-full focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-2 rounded-[18px] text-sm text-foreground px-4 pr-12 border border-border bg-[hsl(240_8%_7%)]"
+                    className="h-14 w-full focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-2 rounded-[20px] text-base text-white px-5 pr-14 border-2 border-gray-600/50 bg-[hsl(240_8%_10%)]"
+                    style={{
+                      boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.3)',
+                    }}
                   />
                   <button
                     type="submit"
                     disabled={!homeUrlInput.trim()}
-                    className="absolute top-1/2 transform -translate-y-1/2 right-2 flex h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-zinc-500 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    className="absolute top-1/2 transform -translate-y-1/2 right-2 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-lg"
                     title="Clone Website"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -3371,12 +3373,12 @@ Focus on the key sections and content, making it clean and modern.`;
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-1`}>
                     <div className="block">
                       <div className={`block rounded-[10px] px-4 py-2 ${
-                        msg.type === 'user' ? 'bg-[hsl(240_8%_10%)] text-foreground ml-auto max-w-[80%]' :
-                        msg.type === 'ai' ? 'bg-[hsl(240_8%_7%)] text-foreground mr-auto max-w-[80%]' :
-                        msg.type === 'system' ? 'bg-transparent text-muted-foreground font-medium text-sm' :
-                        msg.type === 'command' ? 'bg-[#36322F] text-white font-mono text-sm' :
-                        msg.type === 'error' ? 'bg-red-900 text-red-100 text-sm border border-red-700' :
-                        'bg-[#36322F] text-white text-sm'
+                        msg.type === 'user' ? 'bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 text-white ml-auto max-w-[80%]' :
+                        msg.type === 'ai' ? 'bg-[hsl(240_8%_15%)] border border-gray-600/30 text-gray-100 mr-auto max-w-[80%]' :
+                        msg.type === 'system' ? 'bg-transparent text-gray-400 font-medium text-sm' :
+                        msg.type === 'command' ? 'bg-gray-800 border border-gray-700 text-gray-100 font-mono text-sm' :
+                        msg.type === 'error' ? 'bg-red-900/30 border border-red-600 text-red-100 text-sm' :
+                        'bg-gray-800 border border-gray-700 text-gray-100 text-sm'
                       }`}>
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
