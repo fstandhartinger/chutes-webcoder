@@ -30,10 +30,13 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
    CHUTES_BASE_URL=https://llm.chutes.ai/v1
    NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-   # Sandbox provider (Vercel by default)
-   SANDBOX_PROVIDER=vercel
-   # VERCEL_OIDC_TOKEN=...
-   # or uncomment SANDBOX_PROVIDER=e2b + E2B_API_KEY=...
+   # Sandbox provider (E2B by default)
+   SANDBOX_PROVIDER=e2b
+   E2B_API_KEY=your_e2b_api_key
+
+   # Optional: Vercel sandbox (requires Vercel account setup)
+   # SANDBOX_PROVIDER=vercel
+   # VERCEL_OIDC_TOKEN=... or VERCEL_TOKEN + VERCEL_TEAM_ID + VERCEL_PROJECT_ID
 
    # Optional: AI Gateway / vendor keys
    AI_GATEWAY_API_KEY=...

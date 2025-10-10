@@ -97,7 +97,7 @@ export default function SandboxPreview({
         <iframe
           key={iframeKey}
           src={previewUrl}
-          className="w-full h-[420px] md:h-[600px] bg-white"
+          className="w-full h-[420px] md:h-[600px] bg-gray-900"
           title={`${type} preview`}
           sandbox="allow-scripts allow-same-origin allow-forms"
         />
