@@ -2985,7 +2985,6 @@ Focus on the key sections and content, making it clean and modern.`;
               <form onSubmit={handleHomePromptSubmit} className="mt-16 w-full max-w-3xl mx-auto">
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-0 rounded-xl bg-moss-200/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-                  <span className="pointer-events-none absolute -inset-[1px] rounded-xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
                   <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
                   <textarea
                     value={homePromptInput}
@@ -3036,7 +3035,6 @@ Focus on the key sections and content, making it clean and modern.`;
               <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-3xl mx-auto mt-12">
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-0 rounded-xl bg-moss-200/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-                  <span className="pointer-events-none absolute -inset-[1px] rounded-xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
                   <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
                   <input
                     type="text"
@@ -3082,7 +3080,7 @@ Focus on the key sections and content, making it clean and modern.`;
 
               {showStyleSelector && (
                 <div className="mt-12 w-full max-w-3xl mx-auto">
-                  <div className="rounded-2xl border border-surface-ink-600/60 bg-surface-ink-900/80 px-6 py-6 backdrop-blur-2xl shadow-[var(--shadow-elevated)] transition-all">
+                  <div className="rounded-2xl border border-neutral-800 bg-ink-800/50 px-6 py-6 backdrop-blur-xl shadow-[var(--shadow-elevated)] transition-all">
                     <p className="text-label-medium uppercase tracking-[0.15em] text-ink-300 mb-5">
                       Choose a style preset
                     </p>
@@ -3119,8 +3117,8 @@ Focus on the key sections and content, making it clean and modern.`;
                             }}
                             className={`flex flex-col items-start gap-1.5 rounded-xl border px-4 py-3.5 transition-all duration-200 text-left ${
                               selectedStyle === style.name
-                                ? 'border-moss-400/80 bg-surface-ink-800 text-ink-50 shadow-[var(--shadow-floating)]'
-                                : 'border-surface-ink-600/60 bg-surface-ink-850/70 text-ink-200 hover:border-moss-400/60 hover:bg-surface-ink-800/80 hover:text-ink-100'
+                                ? 'border-moss-400/80 bg-ink-800/70 text-ink-100 shadow-[var(--shadow-floating)]'
+                                : 'border-neutral-800 bg-ink-800/30 text-ink-200 hover:border-moss-400/60 hover:bg-ink-800/50 hover:text-ink-100'
                             }`}
                           >
                             <span className="text-label-medium text-ink-50">{style.name}</span>

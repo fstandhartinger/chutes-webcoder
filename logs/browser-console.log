@@ -631,3 +631,113 @@ Fast Refresh requires at least one parent function component in your React tree.
 2025-10-11T16:19:51.900Z | LOG | http://localhost:3002/ | [home] Cleared old conversation data on mount
 2025-10-11T16:19:51.900Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
 2025-10-11T16:19:51.901Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T16:20:11.827Z | ERROR | http://localhost:3002/ | [createSandbox] Error: | {}
+2025-10-11T16:24:25.304Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:24:26.014Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 811ms
+2025-10-11T16:24:26.127Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:24:26.582Z | LOG | http://localhost:3002/ | [home] Cleared old conversation data on mount
+2025-10-11T16:24:26.583Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T16:24:26.585Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T16:24:27.157Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 1131ms
+2025-10-11T16:24:27.268Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:24:27.298Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 131ms
+2025-10-11T16:25:00.082Z | LOG | http://localhost:3002/ | [createSandbox] Response data: | {"success":true,"sandboxId":"i8cyb43ykn3y9o62581vi","url":"https://5173-i8cyb43ykn3y9o62581vi.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T16:25:00.083Z | LOG | http://localhost:3002/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T16:25:00.083Z | LOG | http://localhost:3002/ | [createSandbox] SUCCESS sandboxId= | i8cyb43ykn3y9o62581vi | url= | https://5173-i8cyb43ykn3y9o62581vi.e2b.app
+2025-10-11T16:25:02.084Z | LOG | http://localhost:3002/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T16:25:02.225Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:25:02.314Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 190ms
+2025-10-11T16:25:14.585Z | LOG | http://localhost:3002/ | [createSandbox] Vite server started successfully
+2025-10-11T16:25:21.534Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:25:21.952Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 460ms
+2025-10-11T16:25:22.979Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:25:23.140Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 260ms
+2025-10-11T16:25:25.016Z | LOG | http://localhost:3002/ | [home] Cleared old conversation data on mount
+2025-10-11T16:25:25.017Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T16:25:25.019Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T16:25:35.165Z | LOG | http://localhost:3002/ | [chat] Using backend file cache for context
+2025-10-11T16:25:35.166Z | LOG | http://localhost:3002/ | [chat] - sandboxId: | pending
+2025-10-11T16:25:35.164Z | LOG | http://localhost:3002/ | [createSandbox] Reusing in-flight creation promise
+2025-10-11T16:25:35.165Z | LOG | http://localhost:3002/ | [chat] Sending context to AI:
+2025-10-11T16:25:35.166Z | LOG | http://localhost:3002/ | [chat] - isEdit: | false
+2025-10-11T16:25:35.349Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:25:36.179Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 930ms
+2025-10-11T16:25:36.282Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:25:36.398Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 216ms
+2025-10-11T16:25:57.136Z | LOG | http://localhost:3002/ | [createSandbox] Response data: | {"success":true,"sandboxId":"iz6xpi7mcpjsy9eshnmgn","url":"https://5173-iz6xpi7mcpjsy9eshnmgn.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T16:25:57.138Z | LOG | http://localhost:3002/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T16:25:57.137Z | LOG | http://localhost:3002/ | [createSandbox] SUCCESS sandboxId= | iz6xpi7mcpjsy9eshnmgn | url= | https://5173-iz6xpi7mcpjsy9eshnmgn.e2b.app
+2025-10-11T16:25:59.185Z | LOG | http://localhost:3002/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T16:26:11.930Z | LOG | http://localhost:3002/ | [createSandbox] Vite server started successfully
+2025-10-11T16:26:16.675Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:17.231Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 599ms
+2025-10-11T16:26:22.062Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:22.521Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 504ms
+2025-10-11T16:26:26.310Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:27.354Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 1139ms
+2025-10-11T16:26:27.788Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:27.895Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 207ms
+2025-10-11T16:26:29.179Z | LOG | http://localhost:3002/ | [Fast Refresh] done in NaNms
+2025-10-11T16:26:29.480Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:29.609Z | LOG | http://localhost:3002/ | [home] Cleared old conversation data on mount
+2025-10-11T16:26:29.609Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T16:26:29.627Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 441ms
+2025-10-11T16:26:29.610Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T16:26:29.731Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:30.118Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 487ms
+2025-10-11T16:26:30.289Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:30.817Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 628ms
+2025-10-11T16:26:30.995Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:31.496Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 602ms
+2025-10-11T16:26:31.601Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:31.661Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 159ms
+2025-10-11T16:26:31.868Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:32.002Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 234ms
+2025-10-11T16:26:32.111Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:32.681Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 670ms
+2025-10-11T16:26:32.975Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:33.530Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 655ms
+2025-10-11T16:26:33.847Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:33.969Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 223ms
+2025-10-11T16:26:34.076Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:34.204Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 227ms
+2025-10-11T16:26:34.311Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:34.992Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 782ms
+2025-10-11T16:26:35.149Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:37.619Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 2570ms
+2025-10-11T16:26:38.073Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:38.936Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 963ms
+2025-10-11T16:26:39.083Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:39.349Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 367ms
+2025-10-11T16:26:39.466Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:39.524Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 157ms
+2025-10-11T16:26:39.741Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:39.892Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 250ms
+2025-10-11T16:26:39.999Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:40.054Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 156ms
+2025-10-11T16:26:40.334Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:40.439Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 205ms
+2025-10-11T16:26:40.692Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:40.896Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 304ms
+2025-10-11T16:26:41.002Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:41.136Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 233ms
+2025-10-11T16:26:41.278Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:41.339Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 161ms
+2025-10-11T16:26:41.446Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:41.869Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 523ms
+2025-10-11T16:26:42.034Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:42.042Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 108ms
+2025-10-11T16:26:42.372Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:42.535Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 267ms
+2025-10-11T16:26:42.720Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:42.966Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 347ms
+2025-10-11T16:26:43.140Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:43.141Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 101ms
+2025-10-11T16:26:43.409Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:43.543Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 235ms
+2025-10-11T16:26:43.813Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T16:26:43.920Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 207ms
+2025-10-11T16:26:47.855Z | LOG | http://localhost:3002/ | [chat] Using backend file cache for context
+2025-10-11T16:26:47.856Z | LOG | http://localhost:3002/ | [chat] - sandboxId: | iz6xpi7mcpjsy9eshnmgn
+2025-10-11T16:26:47.855Z | LOG | http://localhost:3002/ | [chat] Sending context to AI:
+2025-10-11T16:26:47.856Z | LOG | http://localhost:3002/ | [chat] - isEdit: | false
