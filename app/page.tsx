@@ -2999,7 +2999,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         setShowStyleSelector(hasValidUrl || hasPrompt);
                       }}
                       placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                      className="min-h-[280px] w-full resize-y rounded-3xl border border-surface-ink-600/50 bg-surface-ink-900/80 backdrop-blur-xl px-10 pr-24 py-10 pb-[80px] text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)]"
+                      className="min-h-[280px] w-full resize-y rounded-3xl border border-surface-ink-600/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-24 py-10 pb-[80px] text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -3066,7 +3066,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         }, 100);
                       }}
                       placeholder="https://example.com"
-                      className="h-[64px] w-full rounded-3xl border border-surface-ink-600/50 bg-surface-ink-900/80 backdrop-blur-xl px-10 pr-20 py-4 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)]"
+                      className="h-[64px] w-full rounded-3xl border border-surface-ink-600/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-20 py-4 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
                     />
                     <button
                       type="submit"
