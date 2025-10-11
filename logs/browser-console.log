@@ -1125,3 +1125,72 @@ Fast Refresh requires at least one parent function component in your React tree.
 2025-10-11T17:02:52.118Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
 2025-10-11T17:02:52.545Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 533ms
 2025-10-11T17:02:52.653Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:52.992Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 439ms
+2025-10-11T17:02:53.097Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:53.205Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 208ms
+2025-10-11T17:02:53.310Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:53.517Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 306ms
+2025-10-11T17:02:53.621Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:53.686Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 166ms
+2025-10-11T17:02:53.791Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:54.920Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 1228ms
+2025-10-11T17:02:55.147Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:55.151Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 105ms
+2025-10-11T17:02:55.253Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:55.307Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 154ms
+2025-10-11T17:02:55.418Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:55.811Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 493ms
+2025-10-11T17:02:55.919Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:56.240Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 421ms
+2025-10-11T17:02:56.642Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:56.695Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 153ms
+2025-10-11T17:02:56.862Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:57.205Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 444ms
+2025-10-11T17:02:57.368Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:57.762Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 495ms
+2025-10-11T17:02:57.987Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:58.054Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 167ms
+2025-10-11T17:02:58.215Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:58.275Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 160ms
+2025-10-11T17:02:58.381Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:58.429Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 149ms
+2025-10-11T17:02:58.630Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:58.772Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 243ms
+2025-10-11T17:02:59.389Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:02:59.698Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 409ms
+2025-10-11T17:02:59.930Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:01.018Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 1189ms
+2025-10-11T17:03:01.178Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:01.560Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 483ms
+2025-10-11T17:03:01.668Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:01.774Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 206ms
+2025-10-11T17:03:01.943Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:02.047Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 203ms
+2025-10-11T17:03:02.155Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:02.275Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 220ms
+2025-10-11T17:03:02.379Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:02.646Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 367ms
+2025-10-11T17:03:02.851Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:02.913Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 162ms
+2025-10-11T17:03:03.018Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:03.436Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 518ms
+2025-10-11T17:03:03.591Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:03.785Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 294ms
+2025-10-11T17:03:04.263Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:04.560Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 396ms
+2025-10-11T17:03:04.665Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:04.909Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 345ms
+2025-10-11T17:03:18.773Z | LOG | http://localhost:3002/ | [createSandbox] Response data: | {"success":true,"sandboxId":"iu0ea3wwxxy8ygyxtq807","url":"https://5173-iu0ea3wwxxy8ygyxtq807.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T17:03:18.773Z | LOG | http://localhost:3002/ | [createSandbox] SUCCESS sandboxId= | iu0ea3wwxxy8ygyxtq807 | url= | https://5173-iu0ea3wwxxy8ygyxtq807.e2b.app
+2025-10-11T17:03:18.774Z | LOG | http://localhost:3002/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T17:03:20.774Z | LOG | http://localhost:3002/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T17:03:20.884Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:03:20.985Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 203ms
+2025-10-11T17:03:33.284Z | LOG | http://localhost:3002/ | [createSandbox] Vite server started successfully
+2025-10-11T17:10:05.693Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 317ms
+2025-10-11T17:10:05.477Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:10:05.805Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:10:06.043Z | LOG | http://localhost:3002/ | [home] Cleared old conversation data on mount
+2025-10-11T17:10:06.045Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T17:10:06.044Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T17:10:06.309Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 605ms

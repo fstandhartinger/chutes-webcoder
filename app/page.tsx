@@ -2919,23 +2919,6 @@ Focus on the key sections and content, making it clean and modern.`;
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              setHomeScreenFading(true);
-              setTimeout(() => {
-                setShowHomeScreen(false);
-                setHomeScreenFading(false);
-              }, 500);
-            }}
-            className="absolute top-8 right-8 text-ink-400 hover:text-ink-50 transition-all duration-300 bg-surface-ink-800/80 backdrop-blur-md p-2 rounded-xl shadow-[var(--shadow-floating)] border border-surface-ink-600/80"
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
-            style={{ opacity: 0.7 }}
-          >
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
 
           <div className="absolute top-0 left-0 right-0 z-20 px-6 md:px-12 py-9 flex items-center justify-between">
             <Link
