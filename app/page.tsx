@@ -1290,7 +1290,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
                         <div className="mb-6">
-                          <div className="w-12 h-12 border-3 border-neutral-800 border-t-white rounded-full animate-spin mx-auto" />
+                          <div className="w-12 h-12 border-3 border-neutral-800 border-t-neutral-600 rounded-full animate-spin mx-auto" />
                         </div>
                         <h3 className="text-xl font-medium text-white mb-2">AI is analyzing your request</h3>
                         <p className="text-muted-foreground text-sm">{generationProgress.status || 'Preparing to generate code...'}</p>
@@ -1572,7 +1572,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             </div>
           ) : sandboxData ? (
             <div className="text-muted-foreground">
-              <div className="w-8 h-8 border-2 border-gray-300 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              <div className="w-8 h-8 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
               <p className="text-sm">Loading preview...</p>
             </div>
           ) : (
@@ -3358,7 +3358,7 @@ Focus on the key sections and content, making it clean and modern.`;
                     ) : (
                       msg.content === 'Waiting for sandbox to be ready...' ? (
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <div className="w-3 h-3 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
                           <span>Waiting for sandbox to be ready...</span>
                         </div>
                       ) : (

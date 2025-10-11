@@ -1129,7 +1129,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         <div className="absolute inset-0 flex overflow-hidden">
           {/* File Explorer - Hide during edits */}
           {!generationProgress.isEdit && (
-            <div className="w-[250px] border-r border-gray-200 bg-white flex flex-col flex-shrink-0">
+            <div className="w-[250px] border-r border-neutral-600 bg-white flex flex-col flex-shrink-0">
             <div className="p-4 bg-gray-100 text-gray-900 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BsFolderFill style={{ width: '16px', height: '16px' }} />
@@ -1280,7 +1280,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 {/* Show selected file if one is selected */}
                 {selectedFile ? (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="bg-black border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                    <div className="bg-black border border-neutral-600 rounded-lg overflow-hidden shadow-sm">
                       <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {getFileIcon(selectedFile)}
@@ -1339,7 +1339,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-black border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="bg-black border border-neutral-600 rounded-lg overflow-hidden">
                       <div className="px-4 py-2 bg-gray-100 text-gray-900 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
@@ -1368,10 +1368,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   <div className="space-y-4">
                     {/* Show current file being generated */}
                     {generationProgress.currentFile && (
-                      <div className="bg-black border-2 border-gray-400 rounded-lg overflow-hidden shadow-sm">
+                      <div className="bg-black border-2 border-neutral-500 rounded-lg overflow-hidden shadow-sm">
                         <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">{generationProgress.currentFile.path}</span>
                             <span className={`px-2 py-0.5 text-xs rounded ${
                               generationProgress.currentFile.type === 'css' ? 'bg-blue-600 text-white' :
@@ -1409,7 +1409,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     
                     {/* Show completed files */}
                     {generationProgress.files.map((file, idx) => (
-                      <div key={idx} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                      <div key={idx} className="bg-white border border-neutral-600 rounded-lg overflow-hidden">
                         <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-green-500">✓</span>
@@ -1450,10 +1450,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     
                     {/* Show remaining raw stream if there's content after the last file */}
                     {!generationProgress.currentFile && generationProgress.streamedCode.length > 0 && (
-                      <div className="bg-black border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="bg-black border border-neutral-600 rounded-lg overflow-hidden">
                         <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-neutral-500 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">Processing...</span>
                           </div>
                         </div>
@@ -1549,7 +1549,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   </div>
                   
                   {/* Spinner */}
-                  <div className="w-12 h-12 border-3 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+                  <div className="w-12 h-12 border-3 border-neutral-600/30 border-t-neutral-600 rounded-full animate-spin mx-auto mb-4" />
                   
                   {/* Status text */}
                   <p className="text-white text-lg font-medium">
@@ -1685,7 +1685,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             </div>
           ) : sandboxData ? (
             <div className="text-gray-500">
-              <div className="w-8 h-8 border-2 border-gray-300 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              <div className="w-8 h-8 border-2 border-neutral-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
               <p className="text-sm">Loading preview...</p>
             </div>
           ) : (
@@ -3089,7 +3089,7 @@ Focus on the key sections and content, making it clean and modern.`;
               }
               router.push(`/generation?${params.toString()}`);
             }}
-            className="px-3 py-1.5 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-300 transition-colors"
+            className="px-3 py-1.5 text-sm text-gray-900 bg-gray-50 border border-neutral-600 rounded-lg focus:outline-none focus:border-neutral-500 transition-colors"
           >
             {appConfig.ai.availableModels.map(model => (
               <option key={model} value={model}>
@@ -3099,7 +3099,7 @@ Focus on the key sections and content, making it clean and modern.`;
           </select>
           <button 
             onClick={() => createSandbox()}
-            className="p-8 rounded-lg transition-colors bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100"
+            className="p-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100"
             title="Create new sandbox"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3108,7 +3108,7 @@ Focus on the key sections and content, making it clean and modern.`;
           </button>
           <button 
             onClick={reapplyLastGeneration}
-            className="p-8 rounded-lg transition-colors bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
           >
@@ -3119,7 +3119,7 @@ Focus on the key sections and content, making it clean and modern.`;
           <button 
             onClick={downloadZip}
             disabled={!sandboxData}
-            className="p-8 rounded-lg transition-colors bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Download your Vite app as ZIP"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3161,7 +3161,7 @@ Focus on the key sections and content, making it clean and modern.`;
           ) : null}
 
           {conversationContext.scrapedWebsites.length > 0 && (
-            <div className="p-4 bg-card border-b border-gray-200">
+            <div className="p-4 bg-card border-b border-neutral-600">
               <div className="flex flex-col gap-4">
                 {conversationContext.scrapedWebsites.map((site, idx) => {
                   // Extract favicon and site info from the scraped data
@@ -3198,7 +3198,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       {/* Pinned screenshot */}
                       {screenshot && (
                         <div 
-                          className="w-full rounded-lg overflow-hidden border border-gray-200 transition-all duration-300"
+                          className="w-full rounded-lg overflow-hidden border border-neutral-600 transition-all duration-300"
                           style={{ 
                             opacity: sidebarScrolled ? 0 : 1,
                             transform: sidebarScrolled ? 'translateY(-20px)' : 'translateY(0)',
@@ -3375,7 +3375,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   {generationProgress.currentFile && (
                     <div className="flex items-center gap-1 px-2 py-1 bg-[#36322F]/70 text-white rounded-[10px] text-xs animate-pulse"
                       style={{ animationDelay: `${generationProgress.files.length * 30}ms` }}>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
                       {generationProgress.currentFile.path.split('/').pop()}
                     </div>
                   )}
@@ -3388,7 +3388,7 @@ Focus on the key sections and content, making it clean and modern.`;
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="mt-3 border-t border-gray-300 pt-3"
+                    className="mt-3 border-t border-neutral-500 pt-3"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="flex items-center gap-1">

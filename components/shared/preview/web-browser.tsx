@@ -54,7 +54,7 @@ export default function WebBrowser({
 
           <div className="flex items-center gap-2">
             {/* Spinner */}
-            <div className="browser-spinner animate-spin w-4 h-4 border-2 border-zinc-300 border-t-zinc-600 rounded-full" />
+            <div className="browser-spinner animate-spin w-4 h-4 border-2 border-neutral-500 border-t-neutral-600 rounded-full" />
           </div>
         </div>
 

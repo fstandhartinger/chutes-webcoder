@@ -158,8 +158,8 @@ export function JsonErrorHighlighter({
       <textarea
         ref={textareaRef}
         className={cn(
-          "absolute inset-0 resize-none bg-transparent border rounded-md text-black dark:text-white focus:overline-none focus:border-zinc-200 focus-visible:border-zinc-200 focus-visible:outline-none",
-          error?.message ? "!border-destructive" : "border-zinc-200",
+          "absolute inset-0 resize-none bg-transparent border rounded-md text-black dark:text-white focus:overline-none focus:border-neutral-600 focus-visible:border-neutral-600 focus-visible:outline-none",
+          error?.message ? "!border-destructive" : "border-neutral-600",
         )}
         value={value}
         onChange={onChange}
