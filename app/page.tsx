@@ -2971,7 +2971,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 </motion.p>
               </div>
 
-              <form onSubmit={handleHomePromptSubmit} className="mt-24 w-full max-w-3xl mx-auto">
+              <form onSubmit={handleHomePromptSubmit} className="mt-16 w-full max-w-3xl mx-auto">
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-0 rounded-2xl bg-moss-100/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                   <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
@@ -3015,14 +3015,14 @@ Focus on the key sections and content, making it clean and modern.`;
                 </div>
               </form>
 
-              <div className="relative my-16 flex items-center justify-center">
+              <div className="relative my-12 flex items-center justify-center">
                 <div className="h-px w-full max-w-3xl bg-surface-ink-600/80" />
                 <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-900 px-5 py-2 text-label-small uppercase tracking-[0.18em] text-ink-400 border border-surface-ink-600/80">
                   OR
                 </span>
               </div>
 
-              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-3xl mx-auto mt-10">
+              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-3xl mx-auto mt-12">
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-0 rounded-2xl bg-moss-100/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                   <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
@@ -3059,7 +3059,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </form>
 
               {showStyleSelector && (
-                <div className="mt-16 w-full max-w-3xl mx-auto">
+                <div className="mt-12 w-full max-w-3xl mx-auto">
                   <div className="rounded-2xl border border-surface-ink-600/60 bg-surface-ink-850/85 px-6 py-6 backdrop-blur-xl shadow-[var(--shadow-elevated)] transition-all">
                     <p className="text-label-medium uppercase tracking-[0.15em] text-ink-400 mb-5">
                       Choose a style preset
@@ -3269,7 +3269,7 @@ Focus on the key sections and content, making it clean and modern.`;
               
               return (
                 <div key={idx} className="block">
-                  <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-1`}>
+                  <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
                       <div className={`block rounded-xl px-5 py-3 text-sm leading-relaxed ${
                         msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-moss-400/60 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
