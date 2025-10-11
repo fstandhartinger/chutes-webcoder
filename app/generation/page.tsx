@@ -3426,7 +3426,7 @@ Focus on the key sections and content, making it clean and modern.`;
             )}
           </div>
 
-          <div className="p-4 border-t border-border bg-background-base">
+          <div className="p-4 border-t border-surface-ink-600/70 bg-surface-ink-900/85">
             <HeroInput
               value={aiChatInput}
               onChange={setAiChatInput}
@@ -3439,20 +3439,20 @@ Focus on the key sections and content, making it clean and modern.`;
 
         {/* Right Panel - Preview or Generation (2/3 of remaining width) */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-3 pt-4 pb-4 bg-white border-b border-gray-200 flex justify-between items-center">
+          <div className="px-3 pt-4 pb-4 bg-surface-ink-850/90 border-b border-surface-ink-600/70 flex justify-between items-center">
             <div className="flex items-center gap-2">
               {/* Toggle-style Code/View switcher */}
-              <div className="inline-flex bg-gray-100 border border-gray-200 rounded-md p-0.5">
+              <div className="inline-flex bg-surface-ink-800/90 border border-surface-ink-600/70 rounded-lg p-1">
                 <button
                   onClick={() => setActiveTab('generation')}
-                  className={`px-3 py-1 rounded transition-all text-xs font-medium ${
+                  className={`px-4 py-2 rounded-lg transition-all text-sm font-medium ${
                     activeTab === 'generation' 
-                      ? 'bg-white text-gray-900 shadow-sm' 
-                      : 'bg-transparent text-gray-600 hover:text-gray-900'
+                      ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]' 
+                      : 'bg-transparent text-ink-300 hover:text-ink-100'
                   }`}
                 >
-                  <div className="flex items-center gap-1.5">
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                     </svg>
                     <span>Code</span>
@@ -3460,14 +3460,14 @@ Focus on the key sections and content, making it clean and modern.`;
                 </button>
                 <button
                   onClick={() => setActiveTab('preview')}
-                  className={`px-3 py-1 rounded transition-all text-xs font-medium ${
+                  className={`px-4 py-2 rounded-lg transition-all text-sm font-medium ${
                     activeTab === 'preview' 
-                      ? 'bg-white text-gray-900 shadow-sm' 
-                      : 'bg-transparent text-gray-600 hover:text-gray-900'
+                      ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]' 
+                      : 'bg-transparent text-ink-300 hover:text-ink-100'
                   }`}
                 >
-                  <div className="flex items-center gap-1.5">
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
@@ -3479,23 +3479,23 @@ Focus on the key sections and content, making it clean and modern.`;
             <div className="flex gap-2 items-center">
               {/* Files generated count */}
               {activeTab === 'generation' && !generationProgress.isEdit && generationProgress.files.length > 0 && (
-                <div className="text-gray-500 text-xs font-medium">
+                <div className="text-ink-400 text-sm font-medium">
                   {generationProgress.files.length} files generated
                 </div>
               )}
               
               {/* Live Code Generation Status */}
               {activeTab === 'generation' && generationProgress.isGenerating && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-xs font-medium text-gray-700">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-surface-ink-600/70 rounded-lg text-xs font-medium text-ink-100">
+                  <div className="w-2 h-2 bg-moss-500 rounded-full animate-pulse" />
                   {generationProgress.isEdit ? 'Editing code' : 'Live generation'}
                 </div>
               )}
               
               {/* Sandbox Status Indicator */}
               {sandboxData && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-xs font-medium text-gray-700">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-surface-ink-600/70 rounded-lg text-xs font-medium text-ink-100">
+                  <div className="w-2.5 h-2.5 bg-moss-500 rounded-full" />
                   Sandbox active
                 </div>
               )}
@@ -3507,9 +3507,9 @@ Focus on the key sections and content, making it clean and modern.`;
                   target="_blank" 
                   rel="noopener noreferrer"
                   title="Open in new tab"
-                  className="p-1.5 rounded-md transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  className="p-2 rounded-lg border border-surface-ink-600/70 text-ink-200 hover:text-ink-50 hover:bg-surface-ink-750 transition-all"
                 >
-                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                 </a>

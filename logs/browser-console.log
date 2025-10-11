@@ -413,3 +413,77 @@ Fast Refresh requires at least one parent function component in your React tree.
 2025-10-11T11:13:16.614Z | LOG | http://localhost:3003/ | [refresh] Health check 1/12 active=true reachable=true
 2025-10-11T11:13:18.035Z | LOG | http://localhost:3003/ | [refresh] Starting refresh sequence. reason= | default | url= | https://5173-il1hhak73mcslphg5zzy0.e2b.app
 2025-10-11T11:13:18.717Z | LOG | http://localhost:3003/ | [refresh] Health check 1/12 active=true reachable=true
+2025-10-11T12:12:28.692Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:12:29.014Z | LOG | http://localhost:3005/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T12:12:29.014Z | LOG | http://localhost:3005/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T12:12:29.013Z | LOG | http://localhost:3005/ | [home] Cleared old conversation data on mount
+2025-10-11T12:12:29.277Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 687ms
+2025-10-11T12:13:01.296Z | LOG | http://localhost:3005/ | [createSandbox] SUCCESS sandboxId= | iixujjhqas64g02vctq7j | url= | https://5173-iixujjhqas64g02vctq7j.e2b.app
+2025-10-11T12:13:01.295Z | LOG | http://localhost:3005/ | [createSandbox] Response data: | {"success":true,"sandboxId":"iixujjhqas64g02vctq7j","url":"https://5173-iixujjhqas64g02vctq7j.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T12:13:01.296Z | LOG | http://localhost:3005/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T12:13:03.297Z | LOG | http://localhost:3005/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T12:13:03.440Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:13:03.531Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 191ms
+2025-10-11T12:13:15.806Z | LOG | http://localhost:3005/ | [createSandbox] Vite server started successfully
+2025-10-11T12:20:41.070Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:20:41.485Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 466ms
+2025-10-11T12:21:01.926Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:21:02.394Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 510ms
+2025-10-11T12:21:16.056Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:21:16.331Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 341ms
+2025-10-11T12:21:43.825Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:21:44.150Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 373ms
+2025-10-11T12:22:07.234Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:22:07.522Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 350ms
+2025-10-11T12:23:31.816Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:23:32.095Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 385ms
+2025-10-11T12:23:41.580Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:23:41.874Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 400ms
+2025-10-11T12:25:02.399Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:25:02.627Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 322ms
+2025-10-11T12:25:26.101Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:25:26.274Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 274ms
+2025-10-11T12:25:51.425Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:25:51.615Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 290ms
+2025-10-11T12:27:39.012Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:27:39.416Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 455ms
+2025-10-11T12:29:09.399Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:29:09.868Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 471ms
+2025-10-11T12:29:43.907Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:29:44.300Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 493ms
+2025-10-11T12:30:19.033Z | LOG | http://localhost:3005/ | [Fast Refresh] rebuilding
+2025-10-11T12:30:19.399Z | LOG | http://localhost:3005/ | [Fast Refresh] done in 384ms
+2025-10-11T15:41:28.222Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T15:41:28.571Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T15:41:28.570Z | LOG | http://localhost:3002/ | [home] Cleared old conversation data on mount
+2025-10-11T15:41:28.570Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T15:41:28.578Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 459ms
+2025-10-11T15:41:28.712Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T15:41:28.818Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 205ms
+2025-10-11T15:41:59.641Z | LOG | http://localhost:3002/ | [createSandbox] Response data: | {"success":true,"sandboxId":"ixdlrjbf2n694cbyio8cf","url":"https://5173-ixdlrjbf2n694cbyio8cf.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T15:41:59.641Z | LOG | http://localhost:3002/ | [createSandbox] SUCCESS sandboxId= | ixdlrjbf2n694cbyio8cf | url= | https://5173-ixdlrjbf2n694cbyio8cf.e2b.app
+2025-10-11T15:41:59.642Z | LOG | http://localhost:3002/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T15:42:01.642Z | LOG | http://localhost:3002/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T15:42:01.783Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T15:42:01.859Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 177ms
+2025-10-11T15:42:14.547Z | LOG | http://localhost:3002/ | [createSandbox] Vite server started successfully
+2025-10-11T15:46:10.121Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T15:46:10.418Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 368ms
+2025-10-11T15:47:29.610Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T15:47:29.914Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 373ms
+2025-10-11T15:51:43.952Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T15:51:44.223Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 334ms
+2025-10-11T15:54:00.993Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 108ms
+2025-10-11T15:54:00.986Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T15:54:01.234Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T15:54:01.587Z | LOG | http://localhost:3001/ | [home] Cleared old conversation data on mount
+2025-10-11T15:54:01.587Z | LOG | http://localhost:3001/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T15:54:01.588Z | LOG | http://localhost:3001/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T15:54:01.885Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 889ms
+2025-10-11T15:54:35.463Z | LOG | http://localhost:3001/ | [createSandbox] Response data: | {"success":true,"sandboxId":"ixvjqwgxsewpru3tc3hh8","url":"https://5173-ixvjqwgxsewpru3tc3hh8.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T15:54:35.464Z | LOG | http://localhost:3001/ | [createSandbox] SUCCESS sandboxId= | ixvjqwgxsewpru3tc3hh8 | url= | https://5173-ixvjqwgxsewpru3tc3hh8.e2b.app
+2025-10-11T15:54:35.464Z | LOG | http://localhost:3001/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T15:54:37.465Z | LOG | http://localhost:3001/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T15:54:37.605Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T15:54:37.684Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 179ms
+2025-10-11T15:54:49.953Z | LOG | http://localhost:3001/ | [createSandbox] Vite server started successfully

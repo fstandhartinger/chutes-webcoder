@@ -184,11 +184,11 @@ export default function InlineResults({
               <div 
                 className="relative w-120 h-120 rounded-full flex flex-col items-center justify-center"
                 style={{ 
-                  background: `conic-gradient(from 0deg, ${getScoreColor(mockResults.score)} ${displayScore * 3.6}deg, #f0f0f0 ${displayScore * 3.6}deg)`,
+                  background: `conic-gradient(from 0deg, ${getScoreColor(mockResults.score)} ${displayScore * 3.6}deg, rgba(17,23,38,0.85) ${displayScore * 3.6}deg)`,
                   padding: "4px",
                 }}
               >
-                <div className="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                <div className="w-full h-full bg-surface-ink-900/90 rounded-full flex flex-col items-center justify-center border border-surface-ink-600/70">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -202,7 +202,7 @@ export default function InlineResults({
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7 }}
-                    className="text-label-medium text-black-alpha-48"
+                    className="text-label-medium text-ink-400"
                   >
                     AI Ready
                   </motion.div>

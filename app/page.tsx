@@ -2938,8 +2938,19 @@ Focus on the key sections and content, making it clean and modern.`;
           </button>
 
           <div className="absolute top-0 left-0 right-0 z-20 px-6 md:px-12 py-9 flex items-center justify-between">
-            <Link href="/" className="flex h-14 w-auto items-center justify-center text-ink-100 hover:text-moss-400 transition-colors">
-              <svg className="h-14 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <Link
+              href="/"
+              className="flex items-center justify-center text-ink-100 hover:text-moss-400 transition-colors"
+              style={{ width: '64px', height: '64px' }}
+            >
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 62 41"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-full w-full"
+              >
                 <path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="url(#logoGradient)" />
                 <path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#logoGradient)" />
                 <defs>
@@ -2956,14 +2967,14 @@ Focus on the key sections and content, making it clean and modern.`;
           <div className="relative z-10 h-full flex justify-center items-start pt-36 md:pt-44 px-4">
             <div className="text-center w-full max-w-4xl mx-auto px-3 sm:px-6">
               <div className="mb-12 space-y-4">
-                <span className="inline-flex items-center gap-2 rounded-full bg-moss-100 text-moss-400 px-4 py-1.5 text-label-small uppercase tracking-[0.18em]">
+                <span className="inline-flex items-center gap-2 rounded-full bg-moss-200/20 text-moss-400 px-4 py-1.5 text-label-small uppercase tracking-[0.18em]">
                   Chutes AI
                 </span>
-                <h1 className="text-title-h1 text-balance text-ink-200">
+                <h1 className="text-title-h1 text-balance text-ink-50">
                   Chutes Webcoder
                 </h1>
                 <motion.p
-                  className="text-body-large text-ink-400 max-w-2xl mx-auto"
+                  className="text-body-large text-ink-300 max-w-2xl mx-auto"
                   animate={{ opacity: showStyleSelector ? 0.72 : 1 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
                 >
@@ -2973,8 +2984,8 @@ Focus on the key sections and content, making it clean and modern.`;
 
               <form onSubmit={handleHomePromptSubmit} className="mt-16 w-full max-w-3xl mx-auto">
                 <div className="relative group">
-                  <span className="pointer-events-none absolute inset-0 rounded-2xl bg-moss-100/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-                  <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
+                  <span className="pointer-events-none absolute inset-0 rounded-xl bg-moss-200/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                  <span className="pointer-events-none absolute -inset-[1px] rounded-xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
                   <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
                   <textarea
                     value={homePromptInput}
@@ -2987,7 +2998,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="min-h-[220px] w-full resize-y rounded-2xl border border-transparent bg-surface-ink-850/95 px-8 pr-20 py-7 pb-[68px] text-body-large text-ink-100 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all"
+                    className="min-h-[200px] w-full resize-y rounded-xl border border-surface-ink-600/70 bg-surface-ink-900/85 px-7 pr-18 py-6 pb-[60px] text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all"
                     style={{ backdropFilter: 'blur(24px)' }}
                     autoFocus
                     onKeyDown={(e) => {
@@ -2998,13 +3009,13 @@ Focus on the key sections and content, making it clean and modern.`;
                       }
                     }}
                   />
-                  <span className="absolute bottom-8 left-9 text-label-small text-ink-500 select-none">
+                  <span className="absolute bottom-7 left-7 text-label-small text-ink-400 select-none">
                     Press Enter to send, Shift+Enter for linebreaks
                   </span>
                   <button
                     type="submit"
                     disabled={!homePromptInput.trim()}
-                    className="absolute bottom-8 right-8 flex h-9 w-9 items-center justify-center rounded-lg text-ink-100 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="absolute bottom-6 right-6 flex h-10 w-10 items-center justify-center rounded-lg text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     title="Send"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -3017,15 +3028,15 @@ Focus on the key sections and content, making it clean and modern.`;
 
               <div className="relative my-12 flex items-center justify-center">
                 <div className="h-px w-full max-w-3xl bg-surface-ink-600/80" />
-                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-900 px-5 py-2 text-label-small uppercase tracking-[0.18em] text-ink-400 border border-surface-ink-600/80">
+                <span className="absolute inline-flex items-center justify-center gap-3 rounded-full bg-surface-ink-850 px-6 py-2 text-label-small uppercase tracking-[0.18em] text-ink-300 border border-surface-ink-600/80">
                   OR
                 </span>
               </div>
 
               <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-3xl mx-auto mt-12">
                 <div className="relative group">
-                  <span className="pointer-events-none absolute inset-0 rounded-2xl bg-moss-100/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-                  <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
+                  <span className="pointer-events-none absolute inset-0 rounded-xl bg-moss-200/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                  <span className="pointer-events-none absolute -inset-[1px] rounded-xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
                   <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
                   <input
                     type="text"
@@ -3041,16 +3052,27 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="h-[56px] w-full rounded-2xl border border-transparent bg-surface-ink-850/95 px-8 pr-16 py-4 text-body-large text-ink-100 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all"
+                    className="h-[48px] w-full rounded-xl border border-surface-ink-600/70 bg-surface-ink-900/85 px-7 pr-14 py-3.5 text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all"
                     style={{ backdropFilter: 'blur(24px)' }}
                   />
                   <button
                     type="submit"
                     disabled={!homeUrlInput.trim()}
-                    className="absolute top-1/2 right-4 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-100 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="absolute top-1/2 right-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     title="Clone Website"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-6 w-6"
+                  >
                       <polyline points="9 10 4 15 9 20"></polyline>
                       <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                     </svg>
@@ -3060,8 +3082,8 @@ Focus on the key sections and content, making it clean and modern.`;
 
               {showStyleSelector && (
                 <div className="mt-12 w-full max-w-3xl mx-auto">
-                  <div className="rounded-2xl border border-surface-ink-600/60 bg-surface-ink-850/85 px-6 py-6 backdrop-blur-xl shadow-[var(--shadow-elevated)] transition-all">
-                    <p className="text-label-medium uppercase tracking-[0.15em] text-ink-400 mb-5">
+                  <div className="rounded-2xl border border-surface-ink-600/60 bg-surface-ink-900/80 px-6 py-6 backdrop-blur-2xl shadow-[var(--shadow-elevated)] transition-all">
+                    <p className="text-label-medium uppercase tracking-[0.15em] text-ink-300 mb-5">
                       Choose a style preset
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -3097,12 +3119,12 @@ Focus on the key sections and content, making it clean and modern.`;
                             }}
                             className={`flex flex-col items-start gap-1.5 rounded-xl border px-4 py-3.5 transition-all duration-200 text-left ${
                               selectedStyle === style.name
-                                ? 'border-moss-400/90 bg-surface-ink-800 text-ink-50 shadow-[var(--shadow-floating)]'
-                                : 'border-surface-ink-600/50 bg-surface-ink-850/60 text-ink-200 hover:border-moss-400/60 hover:bg-surface-ink-800/80 hover:text-ink-100'
+                                ? 'border-moss-400/80 bg-surface-ink-800 text-ink-50 shadow-[var(--shadow-floating)]'
+                                : 'border-surface-ink-600/60 bg-surface-ink-850/70 text-ink-200 hover:border-moss-400/60 hover:bg-surface-ink-800/80 hover:text-ink-100'
                             }`}
                           >
-                            <span className="text-label-medium text-ink-100">{style.name}</span>
-                            <span className="text-label-small text-ink-500">{style.description}</span>
+                            <span className="text-label-medium text-ink-50">{style.name}</span>
+                            <span className="text-label-small text-ink-400">{style.description}</span>
                           </button>
                         ))}
                     </div>
@@ -3118,8 +3140,8 @@ Focus on the key sections and content, making it clean and modern.`;
       <>
       <div className="bg-surface-ink-850/90 backdrop-blur-lg px-6 py-4 border-b border-surface-ink-600/80 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/" className="h-12 w-auto text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
-            <svg className="h-12 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+          <Link href="/" className="h-16 w-16 text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
+            <svg className="h-16 w-16" width="64" height="64" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
           </Link>
         </div>
         <div className="flex items-center gap-2">
@@ -3488,7 +3510,19 @@ Focus on the key sections and content, making it clean and modern.`;
                 className="absolute right-3 bottom-3 p-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 rounded-xl shadow-[0_14px_28px_rgba(64,64,255,0.35)] transition-all cursor-pointer"
                 title="Send message (Enter)"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-6 w-6"
+                      style={{ width: '24px', height: '24px' }}
+                    >
                   <polyline points="9 10 4 15 9 20"></polyline>
                   <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                 </svg>
