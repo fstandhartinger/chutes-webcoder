@@ -45,6 +45,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Variables for Chutes Design System */
+:root {
+  /* Heat colors */
+  --heat-4: #fa5d190a;
+  --heat-8: #fa5d1914;
+  --heat-12: #fa5d191f;
+  --heat-16: #fa5d1929;
+  --heat-20: #fa5d1933;
+  --heat-40: #fa5d1966;
+  --heat-90: #fa5d19e6;
+  --heat-100: #fa5d19ff;
+
+  /* Ink colors */
+  --ink-50: #f9fafbff;
+  --ink-100: #f3f4f6ff;
+  --ink-200: #e5e7ebff;
+  --ink-300: #d1d5dbff;
+  --ink-400: #9ca3afff;
+  --ink-500: #6b7280ff;
+  --ink-600: #4b5563ff;
+  --ink-700: #374151ff;
+  --ink-800: #1f2937ff;
+  --ink-900: #111827ff;
+
+  /* Surface ink colors */
+  --surface-ink-950: #0b0f14ff;
+  --surface-ink-900: #0b0f14ff;
+  --surface-ink-850: #111726ff;
+  --surface-ink-800: #111726ff;
+  --surface-ink-750: #142030ff;
+  --surface-ink-700: #142030ff;
+  --surface-ink-650: #1a274fff;
+  --surface-ink-600: #1f2937ff;
+  --surface-ink-500: #243047ff;
+
+  /* Moss colors */
+  --moss-100: #63d2971a;
+  --moss-200: #63d29733;
+  --moss-400: #63d297ff;
+  --moss-500: #54bd86ff;
+  --moss-600: #449c6fff;
+  --moss-700: #357c59ff;
+}
+
 
 @keyframes slide {
   0% { transform: translate(0, 0); }
