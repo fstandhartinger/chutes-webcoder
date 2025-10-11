@@ -3384,10 +3384,10 @@ Focus on the key sections and content, making it clean and modern.`;
                               return (
                                 <div
                                   key={`applied-${fileIdx}`}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-lg text-xs animate-fade-in-up"
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-full text-xs animate-fade-in-up"
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
-                                  <span className={`inline-block w-2 h-2 rounded-full ${
+                                  <span className={`inline-block w-2.5 h-2.5 rounded-full ${
                                     fileType === 'css' ? 'bg-moss-400' :
                                     fileType === 'javascript' ? 'bg-heat-100' :
                                     fileType === 'json' ? 'bg-moss-500' :
@@ -3408,10 +3408,10 @@ Focus on the key sections and content, making it clean and modern.`;
                             {generationProgress.files.map((file, fileIdx) => (
                               <div
                                 key={`complete-${fileIdx}`}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-lg text-xs animate-fade-in-up"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-full text-xs animate-fade-in-up"
                                 style={{ animationDelay: `${fileIdx * 30}ms` }}
                               >
-                                <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                                <span className={`inline-block w-2.5 h-2.5 rounded-full ${
                                   file.type === 'css' ? 'bg-moss-400' :
                                   file.type === 'javascript' ? 'bg-heat-100' :
                                   file.type === 'json' ? 'bg-moss-500' :
@@ -3451,7 +3451,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   {generationProgress.files.map((file, idx) => (
                     <div
                       key={`file-${idx}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-lg text-xs animate-fade-in-up"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-full text-xs animate-fade-in-up"
                       style={{ animationDelay: `${idx * 30}ms` }}
                     >
                       <svg className="w-3 h-3 text-moss-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3463,7 +3463,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                   {/* Show current file being generated */}
                   {generationProgress.currentFile && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-ink-800 text-ink-100 rounded-lg text-xs animate-pulse"
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-ink-800 text-ink-100 rounded-full text-xs animate-pulse"
                       style={{ animationDelay: `${generationProgress.files.length * 30}ms` }}>
                       <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
                       {generationProgress.currentFile.path.split('/').pop()}
