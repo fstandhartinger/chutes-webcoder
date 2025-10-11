@@ -1225,7 +1225,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   </div>
                 </div>
                 {generationProgress.thinkingText && (
-                  <div className="bg-purple-950 border border-purple-700 rounded-lg p-4 max-h-48 overflow-y-auto scrollbar-hide">
+                  <div className="bg-purple-950 border border-purple-700 rounded-2xl p-4 max-h-48 overflow-y-auto scrollbar-hide">
                     <pre className="text-xs font-mono text-purple-300 whitespace-pre-wrap">
                       {generationProgress.thinkingText}
                     </pre>
