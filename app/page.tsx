@@ -3306,7 +3306,7 @@ Focus on the key sections and content, making it clean and modern.`;
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-6 pb-5 flex flex-col gap-4 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
+          <div className="flex-1 min-h-0 overflow-y-auto px-8 pt-8 pb-6 flex flex-col gap-6 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
             {chatMessages.map((msg, idx) => {
               // Check if this message is from a successful generation
               const isGenerationComplete = msg.content.includes('Successfully recreated') || 
@@ -3320,7 +3320,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div key={idx} className="block">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
-                      <div className={`block rounded-2xl px-6 py-4 text-sm leading-relaxed ${
+                      <div className={`block rounded-2xl px-8 py-6 text-sm leading-relaxed ${
                         msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-neutral-800 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
                         msg.type === 'ai' ? 'bg-neutral-800/90 backdrop-blur-xl border border-neutral-800 text-ink-100 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
                         msg.type === 'system' ? 'bg-transparent text-ink-400 font-medium text-xs tracking-wide uppercase' :
@@ -3384,10 +3384,10 @@ Focus on the key sections and content, making it clean and modern.`;
                               return (
                                 <div
                                   key={`applied-${fileIdx}`}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-full text-xs animate-fade-in-up"
+                                  className="inline-flex items-center gap-3 px-4 py-2 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
-                                  <span className={`inline-block w-2.5 h-2.5 rounded-full ${
+                                  <span className={`inline-block w-3.5 h-3.5 rounded-full ${
                                     fileType === 'css' ? 'bg-moss-400' :
                                     fileType === 'javascript' ? 'bg-heat-100' :
                                     fileType === 'json' ? 'bg-moss-500' :
@@ -3408,10 +3408,10 @@ Focus on the key sections and content, making it clean and modern.`;
                             {generationProgress.files.map((file, fileIdx) => (
                               <div
                                 key={`complete-${fileIdx}`}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-full text-xs animate-fade-in-up"
+                                className="inline-flex items-center gap-3 px-4 py-2 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                                 style={{ animationDelay: `${fileIdx * 30}ms` }}
                               >
-                                <span className={`inline-block w-2.5 h-2.5 rounded-full ${
+                                <span className={`inline-block w-3.5 h-3.5 rounded-full ${
                                   file.type === 'css' ? 'bg-moss-400' :
                                   file.type === 'javascript' ? 'bg-heat-100' :
                                   file.type === 'json' ? 'bg-moss-500' :
@@ -3517,7 +3517,7 @@ Focus on the key sections and content, making it clean and modern.`;
             )}
           </div>
 
-          <div className="p-6 border-t border-neutral-800 bg-card">
+          <div className="p-8 border-t border-neutral-800 bg-card">
             <div className="relative">
               <Textarea
                     className="min-h-[80px] pr-16 pl-6 resize-y rounded-2xl border border-neutral-800 bg-neutral-800/90 backdrop-blur-xl text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)]"
