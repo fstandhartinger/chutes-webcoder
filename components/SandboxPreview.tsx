@@ -60,14 +60,14 @@ export default function SandboxPreview({
             className="p-2 hover:bg-gray-700 rounded transition-colors"
             title="Toggle console"
           >
-            <Terminal className="w-4 h-4" />
+            <Terminal className="w-5 h-5" />
           </button>
           <button
             onClick={handleRefresh}
             className="p-2 hover:bg-gray-700 rounded transition-colors"
             title="Refresh preview"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-5 h-5" />
           </button>
           <a
             href={previewUrl}
@@ -76,7 +76,7 @@ export default function SandboxPreview({
             className="p-2 hover:bg-gray-700 rounded transition-colors"
             title="Open in new tab"
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-5 h-5" />
           </a>
         </div>
       </div>

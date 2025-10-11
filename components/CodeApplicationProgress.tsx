@@ -32,7 +32,7 @@ export default function CodeApplicationProgress({ state }: CodeApplicationProgre
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-4 h-4"
+            className="w-5 h-5"
           >
             <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
               <circle 

@@ -1091,7 +1091,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             <div className="hidden sm:flex w-full sm:w-[240px] md:w-[250px] sm:flex-col border-b sm:border-b-0 sm:border-r border-neutral-800 bg-surface-ink-850 flex-shrink-0">
             <div className="p-3 bg-surface-ink-800 text-ink-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BsFolderFill className="w-4 h-4" />
+                <BsFolderFill className="w-5 h-5" />
                 <span className="text-sm font-medium">Explorer</span>
               </div>
             </div>
@@ -1105,14 +1105,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   onClick={() => toggleFolder('app')}
                 >
                   {expandedFolders.has('app') ? (
-                    <FiChevronDown className="w-4 h-4 text-muted-foreground" />
+                    <FiChevronDown className="w-5 h-5 text-muted-foreground" />
                   ) : (
-                    <FiChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <FiChevronRight className="w-5 h-5 text-muted-foreground" />
                   )}
                   {expandedFolders.has('app') ? (
-                    <BsFolder2Open className="w-4 h-4 text-blue-500" />
+                    <BsFolder2Open className="w-5 h-5 text-blue-500" />
                   ) : (
-                    <BsFolderFill className="w-4 h-4 text-blue-500" />
+                    <BsFolderFill className="w-5 h-5 text-blue-500" />
                   )}
                   <span className="font-medium text-foreground">app</span>
                 </div>
@@ -1152,14 +1152,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               onClick={() => toggleFolder(dir)}
                             >
                               {expandedFolders.has(dir) ? (
-                                <FiChevronDown className="w-4 h-4 text-muted-foreground" />
+                                <FiChevronDown className="w-5 h-5 text-muted-foreground" />
                               ) : (
-                                <FiChevronRight className="w-4 h-4 text-muted-foreground" />
+                                <FiChevronRight className="w-5 h-5 text-muted-foreground" />
                               )}
                               {expandedFolders.has(dir) ? (
-                                <BsFolder2Open className="w-4 h-4 text-moss-400" />
+                                <BsFolder2Open className="w-5 h-5 text-moss-400" />
                               ) : (
-                                <BsFolderFill className="w-4 h-4 text-moss-400" />
+                                <BsFolderFill className="w-5 h-5 text-moss-400" />
                               )}
                               <span className="text-ink-100">{dir.split('/').pop()}</span>
                             </div>
@@ -1250,7 +1250,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           onClick={() => setSelectedFile(null)}
                           className="hover:bg-black/20 p-1 rounded transition-colors"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
@@ -1542,7 +1542,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               className="absolute bottom-5 right-5 bg-surface-ink-850/90 hover:bg-surface-ink-800 text-ink-100 p-2.5 rounded-xl shadow-[var(--shadow-floating)] transition-all duration-200 hover:scale-105 border border-neutral-800/70"
               title="Refresh sandbox"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
@@ -2119,15 +2119,15 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     const ext = fileName.split('.').pop()?.toLowerCase();
     
     if (ext === 'jsx' || ext === 'js') {
-      return <SiJavascript className="w-4 h-4 text-yellow-500" />;
+      return <SiJavascript className="w-5 h-5 text-yellow-500" />;
     } else if (ext === 'tsx' || ext === 'ts') {
-      return <SiReact className="w-4 h-4 text-blue-500" />;
+      return <SiReact className="w-5 h-5 text-blue-500" />;
     } else if (ext === 'css') {
-      return <SiCss3 className="w-4 h-4 text-blue-500" />;
+      return <SiCss3 className="w-5 h-5 text-blue-500" />;
     } else if (ext === 'json') {
-      return <SiJson className="w-4 h-4 text-muted-foreground" />;
+      return <SiJson className="w-5 h-5 text-muted-foreground" />;
     } else {
-      return <FiFile className="w-4 h-4 text-muted-foreground" />;
+      return <FiFile className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
@@ -3186,7 +3186,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="min-h-[64px] h-16 px-6 py-4 text-lg bg-surface-ink-800 text-ink-100 border border-neutral-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
+              className="min-h-[80px] h-20 px-6 py-4 text-lg bg-surface-ink-800 text-ink-100 border border-neutral-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3206,7 +3206,7 @@ Focus on the key sections and content, making it clean and modern.`;
             title="Create new sandbox"
             className="cursor-pointer h-12 w-12"
           >
-            <svg className="w-10 h-10" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px' }}>
+            <svg className="w-12 h-12" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
@@ -3218,7 +3218,7 @@ Focus on the key sections and content, making it clean and modern.`;
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
             className="cursor-pointer h-12 w-12"
           >
-            <Clipboard className="w-10 h-10" style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px' }} />
+            <Clipboard className="w-12 h-12" style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }} />
           </Button>
           <Button
             variant="code"
@@ -3228,13 +3228,13 @@ Focus on the key sections and content, making it clean and modern.`;
             title="Download your Vite app as ZIP"
             className="cursor-pointer h-12 w-12"
           >
-            <svg className="w-10 h-10" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px' }}>
+            <svg className="w-12 h-12" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
           <div className="inline-flex items-center gap-4 bg-surface-ink-700 text-ink-100 px-6 py-4 rounded-xl text-lg font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-neutral-800/70">
             <span id="status-text">{status.text}</span>
-            <div className={`w-5 h-5 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
+            <div className={`w-6 h-6 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
           </div>
         </div>
       </div>
@@ -3246,7 +3246,7 @@ Focus on the key sections and content, making it clean and modern.`;
             onClick={() => { userTabbedRef.current = true; setMobileTab('chat'); }}
             title="Chat"
           >
-            <MessageSquare className="w-4 h-4" />
+            <MessageSquare className="w-5 h-5" />
             <span className="hidden min-[380px]:inline">Chat</span>
           </button>
           <button
@@ -3254,7 +3254,7 @@ Focus on the key sections and content, making it clean and modern.`;
             onClick={() => { userTabbedRef.current = true; setMobileTab('code'); }}
             title="Code"
           >
-            <Code2 className="w-4 h-4" />
+            <Code2 className="w-5 h-5" />
             <span className="hidden min-[380px]:inline">Code</span>
           </button>
           <button
@@ -3262,7 +3262,7 @@ Focus on the key sections and content, making it clean and modern.`;
             onClick={() => { userTabbedRef.current = true; setMobileTab('preview'); }}
             title="Preview"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-5 h-5" />
             <span className="hidden min-[380px]:inline">Preview</span>
           </button>
         </div>
@@ -3285,7 +3285,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       <img 
                         src={favicon} 
                         alt={siteName}
-                        className="w-4 h-4 rounded"
+                        className="w-5 h-5 rounded"
                         onError={(e) => {
                           e.currentTarget.src = `https://www.google.com/s2/favicons?domain=${new URL(sourceURL).hostname}&sz=32`;
                         }}
@@ -3577,7 +3577,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   }`}
                   title="Code Editor"
                 >
-                  <svg className="w-10 h-10" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '40px', height: '40px' }}>
+                  <svg className="w-12 h-12" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '48px', height: '48px' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
                   <span>Code</span>
@@ -3591,7 +3591,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   }`}
                   title="Live Preview"
                 >
-                  <svg className="w-10 h-10" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '40px', height: '40px' }}>
+                  <svg className="w-12 h-12" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '48px', height: '48px' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
@@ -3636,7 +3636,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       rel="noopener noreferrer"
                       title="Open in new tab"
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </a>
