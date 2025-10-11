@@ -3168,13 +3168,13 @@ Focus on the key sections and content, making it clean and modern.`;
       
       {!showHomeScreen && (
       <>
-      <div className="bg-surface-ink-850/90 backdrop-blur-lg px-8 py-6 border-b border-surface-ink-600/80 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="h-16 w-16 text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
-            <svg className="h-16 w-16" width="64" height="64" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+      <div className="bg-surface-ink-850/90 backdrop-blur-lg px-8 py-8 border-b border-surface-ink-600/80 flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <Link href="/" className="h-20 w-20 text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
+            <svg className="h-20 w-20" width="80" height="80" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
           </Link>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <div className="hidden md:block">
             <label className="sr-only">AI Model</label>
             <select
@@ -3189,7 +3189,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="h-10 px-4 py-2 text-base bg-surface-ink-800 text-ink-100 border border-surface-ink-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90"
+              className="h-12 px-6 py-3 text-lg bg-surface-ink-800 text-ink-100 border border-surface-ink-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3205,39 +3205,39 @@ Focus on the key sections and content, making it clean and modern.`;
           <Button
             variant="code"
             onClick={() => createSandbox()}
-            size="default"
+            size="lg"
             title="Create new sandbox"
-            className="cursor-pointer"
+            className="cursor-pointer h-12 w-12"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
           <Button
             variant="code"
             onClick={reapplyLastGeneration}
-            size="default"
+            size="lg"
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
-            className="cursor-pointer"
+            className="cursor-pointer h-12 w-12"
           >
-            <Clipboard className="w-5 h-5" />
+            <Clipboard className="w-6 h-6" />
           </Button>
           <Button
             variant="code"
             onClick={downloadZip}
             disabled={!sandboxData}
-            size="default"
+            size="lg"
             title="Download your Vite app as ZIP"
-            className="cursor-pointer"
+            className="cursor-pointer h-12 w-12"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
-          <div className="inline-flex items-center gap-3 bg-surface-ink-700 text-ink-100 px-5 py-3 rounded-lg text-base font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-surface-ink-600/70">
+          <div className="inline-flex items-center gap-4 bg-surface-ink-700 text-ink-100 px-6 py-4 rounded-xl text-lg font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-surface-ink-600/70">
             <span id="status-text">{status.text}</span>
-            <div className={`w-4 h-4 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
+            <div className={`w-5 h-5 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
           </div>
         </div>
       </div>

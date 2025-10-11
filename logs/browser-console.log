@@ -1255,3 +1255,30 @@ Fast Refresh requires at least one parent function component in your React tree.
 2025-10-11T17:24:32.979Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
 2025-10-11T17:24:32.980Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
 2025-10-11T17:24:33.279Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 746ms
+2025-10-11T17:25:05.141Z | LOG | http://localhost:3002/ | [createSandbox] Response data: | {"success":true,"sandboxId":"ikk0hrvu8a3pjteqtkran","url":"https://5173-ikk0hrvu8a3pjteqtkran.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T17:25:05.143Z | LOG | http://localhost:3002/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T17:25:05.141Z | LOG | http://localhost:3002/ | [createSandbox] SUCCESS sandboxId= | ikk0hrvu8a3pjteqtkran | url= | https://5173-ikk0hrvu8a3pjteqtkran.e2b.app
+2025-10-11T17:25:07.143Z | LOG | http://localhost:3002/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T17:25:07.250Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:25:07.346Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 196ms
+2025-10-11T17:25:19.610Z | LOG | http://localhost:3002/ | [createSandbox] Vite server started successfully
+2025-10-11T17:31:31.567Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:31:31.979Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T17:31:31.979Z | LOG | http://localhost:3002/ | [home] Cleared old conversation data on mount
+2025-10-11T17:31:31.981Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T17:31:32.029Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 575ms
+2025-10-11T17:31:32.134Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:31:32.260Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 226ms
+2025-10-11T17:32:06.708Z | LOG | http://localhost:3002/ | [createSandbox] Response data: | {"success":true,"sandboxId":"ivyhp2zhusdox84kcoylx","url":"https://5173-ivyhp2zhusdox84kcoylx.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T17:32:06.708Z | LOG | http://localhost:3002/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T17:32:06.708Z | LOG | http://localhost:3002/ | [createSandbox] SUCCESS sandboxId= | ivyhp2zhusdox84kcoylx | url= | https://5173-ivyhp2zhusdox84kcoylx.e2b.app
+2025-10-11T17:32:08.709Z | LOG | http://localhost:3002/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T17:32:08.816Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:32:08.915Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 200ms
+2025-10-11T17:32:21.153Z | LOG | http://localhost:3002/ | [createSandbox] Vite server started successfully
+2025-10-11T17:32:39.271Z | LOG | http://localhost:3002/ | [chat] Using backend file cache for context
+2025-10-11T17:32:39.273Z | LOG | http://localhost:3002/ | [chat] - isEdit: | false
+2025-10-11T17:32:39.272Z | LOG | http://localhost:3002/ | [chat] - sandboxId: | ivyhp2zhusdox84kcoylx
+2025-10-11T17:32:39.272Z | LOG | http://localhost:3002/ | [chat] Sending context to AI:
+2025-10-11T17:32:39.445Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:32:40.001Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 656ms
