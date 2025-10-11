@@ -3157,7 +3157,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="h-9 px-3 py-2 text-sm bg-surface-ink-800 text-ink-100 border border-surface-ink-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90"
+              className="h-10 px-4 py-2 text-base bg-surface-ink-800 text-ink-100 border border-surface-ink-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3173,39 +3173,39 @@ Focus on the key sections and content, making it clean and modern.`;
           <Button
             variant="code"
             onClick={() => createSandbox()}
-            size="sm"
+            size="default"
             title="Create new sandbox"
             className="cursor-pointer"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
           <Button
             variant="code"
             onClick={reapplyLastGeneration}
-            size="sm"
+            size="default"
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
             className="cursor-pointer"
           >
-            <Clipboard className="w-4 h-4" />
+            <Clipboard className="w-5 h-5" />
           </Button>
           <Button
             variant="code"
             onClick={downloadZip}
             disabled={!sandboxData}
-            size="sm"
+            size="default"
             title="Download your Vite app as ZIP"
             className="cursor-pointer"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
-          <div className="inline-flex items-center gap-3 bg-surface-ink-700 text-ink-100 px-4 py-2 rounded-lg text-sm font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-surface-ink-600/70">
+          <div className="inline-flex items-center gap-3 bg-surface-ink-700 text-ink-100 px-5 py-3 rounded-lg text-base font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-surface-ink-600/70">
             <span id="status-text">{status.text}</span>
-            <div className={`w-3 h-3 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
+            <div className={`w-4 h-4 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
           </div>
         </div>
       </div>
