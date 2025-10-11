@@ -13,7 +13,7 @@ import {
   FiChevronRight, 
   FiChevronDown,
   BsFolderFill, 
-  BsFolder2Open,
+  BsFolder2Open, 
   SiJavascript, 
   SiReact, 
   SiCss3, 
@@ -1088,8 +1088,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         <div className="absolute inset-0 flex overflow-hidden">
           {/* File Explorer - Hide during edits */}
           {!generationProgress.isEdit && (
-            <div className="hidden sm:flex w-full sm:w-[240px] md:w-[250px] sm:flex-col border-b sm:border-b-0 sm:border-r border-border bg-[hsl(240_8%_7%)] flex-shrink-0">
-            <div className="p-3 bg-[hsl(240_8%_10%)] text-foreground flex items-center justify-between">
+            <div className="hidden sm:flex w-full sm:w-[240px] md:w-[250px] sm:flex-col border-b sm:border-b-0 sm:border-r border-surface-ink-600 bg-surface-ink-850 flex-shrink-0">
+            <div className="p-3 bg-surface-ink-800 text-ink-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BsFolderFill className="w-4 h-4" />
                 <span className="text-sm font-medium">Explorer</span>
@@ -1101,7 +1101,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               <div className="text-sm">
                 {/* Root app folder */}
                 <div 
-                  className="flex items-center gap-1 py-1 px-2 hover:bg-[hsl(240_8%_10%)] rounded cursor-pointer text-[hsl(0_0%_90%)]"
+                  className="flex items-center gap-1 py-1 px-2 hover:bg-surface-ink-750 rounded cursor-pointer text-ink-50"
                   onClick={() => toggleFolder('app')}
                 >
                   {expandedFolders.has('app') ? (
@@ -1148,7 +1148,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         <div key={dir} className="mb-1">
                           {dir && (
                             <div 
-                              className="flex items-center gap-1 py-1 px-2 hover:bg-[hsl(240_8%_10%)] rounded cursor-pointer text-[hsl(0_0%_90%)]"
+                              className="flex items-center gap-1 py-1 px-2 hover:bg-surface-ink-750 rounded cursor-pointer text-ink-50"
                               onClick={() => toggleFolder(dir)}
                             >
                               {expandedFolders.has(dir) ? (
@@ -1157,11 +1157,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                 <FiChevronRight className="w-4 h-4 text-muted-foreground" />
                               )}
                               {expandedFolders.has(dir) ? (
-                                <BsFolder2Open className="w-4 h-4 text-yellow-600" />
+                                <BsFolder2Open className="w-4 h-4 text-moss-400" />
                               ) : (
-                                <BsFolderFill className="w-4 h-4 text-yellow-600" />
+                                <BsFolderFill className="w-4 h-4 text-moss-400" />
                               )}
-                              <span className="text-[hsl(0_0%_90%)]">{dir.split('/').pop()}</span>
+                              <span className="text-ink-100">{dir.split('/').pop()}</span>
                             </div>
                           )}
                           {(!dir || expandedFolders.has(dir)) && (
@@ -1175,8 +1175,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                     key={fullPath} 
                                     className={`flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-all ${
                                       isSelected 
-                                        ? 'bg-blue-600 text-white' 
-                                        : 'text-[hsl(0_0%_90%)] hover:bg-[hsl(240_8%_10%)]'
+                                        ? 'bg-moss-500 text-surface-ink-950' 
+                                        : 'text-ink-50 hover:bg-surface-ink-750'
                                     }`}
                                     onClick={() => handleFileClick(fullPath)}
                                   >
@@ -1240,8 +1240,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 {/* Show selected file if one is selected */}
                 {selectedFile ? (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="bg-[hsl(240_8%_7%)] border border-border rounded-lg overflow-hidden shadow-sm">
-                      <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between rounded-t-lg">
+                    <div className="bg-surface-ink-850 border border-surface-ink-600 rounded-lg overflow-hidden shadow-[var(--shadow-floating)]">
+                      <div className="px-4 py-2 bg-surface-ink-800 text-ink-50 flex items-center justify-between rounded-t-lg">
                         <div className="flex items-center gap-2">
                           {getFileIcon(selectedFile)}
                           <span className="font-mono text-sm">{selectedFile}</span>
@@ -1255,7 +1255,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           </svg>
                         </button>
                       </div>
-                      <div className="bg-[hsl(240_8%_5%)] border border-border rounded-b-lg">
+                      <div className="bg-surface-ink-800/80 border border-surface-ink-600 rounded-b-lg">
                         <SyntaxHighlighter
                           language={(() => {
                             const ext = selectedFile.split('.').pop()?.toLowerCase();
@@ -1297,14 +1297,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-[hsl(240_8%_7%)] border border-border rounded-lg overflow-hidden">
-                      <div className="px-4 py-2 bg-[hsl(240_8%_10%)] text-foreground flex items-center justify-between rounded-t-lg">
+                    <div className="bg-surface-ink-850 border border-surface-ink-600 rounded-xl overflow-hidden shadow-[var(--shadow-floating)]">
+                      <div className="px-4 py-2 bg-surface-ink-800 text-ink-100 flex items-center justify-between rounded-t-xl">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
                           <span className="font-mono text-sm">Streaming code...</span>
                         </div>
                       </div>
-                      <div className="p-4 bg-[hsl(240_8%_5%)] rounded-b-lg">
+                      <div className="p-4 bg-surface-ink-900/80 rounded-b-xl">
                         <SyntaxHighlighter
                           language="jsx"
                           style={vscDarkPlus}
@@ -1327,22 +1327,22 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   <div className="space-y-4">
                     {/* Show current file being generated */}
                     {generationProgress.currentFile && (
-                      <div className="bg-[hsl(240_8%_7%)] border-2 border-border rounded-lg overflow-hidden shadow-sm">
-                        <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between rounded-t-lg">
+                      <div className="bg-surface-ink-850 border border-surface-ink-600 rounded-xl overflow-hidden shadow-[var(--shadow-floating)]">
+                        <div className="px-4 py-2.5 bg-surface-ink-800 text-ink-100 flex items-center justify-between rounded-t-xl">
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">{generationProgress.currentFile.path}</span>
-                            <span className={`px-2 py-0.5 text-xs rounded ${
-                              generationProgress.currentFile.type === 'css' ? 'bg-blue-600 text-white' :
-                              generationProgress.currentFile.type === 'javascript' ? 'bg-yellow-600 text-white' :
-                              generationProgress.currentFile.type === 'json' ? 'bg-green-600 text-white' :
-                              'bg-[hsl(240_8%_12%)] text-[hsl(0_0%_90%)]'
+                            <span className={`px-2 py-0.5 text-xs rounded-md ${
+                              generationProgress.currentFile.type === 'css' ? 'bg-moss-400/20 text-moss-400' :
+                              generationProgress.currentFile.type === 'javascript' ? 'bg-heat-100/20 text-heat-100' :
+                              generationProgress.currentFile.type === 'json' ? 'bg-moss-500/20 text-moss-500' :
+                              'bg-surface-ink-700 text-ink-300'
                             }`}>
                               {generationProgress.currentFile.type === 'javascript' ? 'JSX' : generationProgress.currentFile.type.toUpperCase()}
                             </span>
                           </div>
                         </div>
-                      <div className="bg-[hsl(240_8%_5%)] border border-border rounded-b-lg">
+                      <div className="bg-surface-ink-900/80 border border-surface-ink-600 rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               generationProgress.currentFile.type === 'css' ? 'css' :
@@ -1369,22 +1369,22 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     
                     {/* Show completed files */}
                     {generationProgress.files.map((file, idx) => (
-                      <div key={idx} className="bg-[hsl(240_8%_7%)] border border-border rounded-lg overflow-hidden">
-                        <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between rounded-t-lg">
+                      <div key={idx} className="bg-surface-ink-850 border border-surface-ink-600 rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-4 py-2.5 bg-surface-ink-800 text-ink-100 flex items-center justify-between rounded-t-xl">
                           <div className="flex items-center gap-2">
-                            <span className="text-green-500">✓</span>
+                            <span className="text-moss-500">✓</span>
                             <span className="font-mono text-sm">{file.path}</span>
                           </div>
-                          <span className={`px-2 py-0.5 text-xs rounded ${
-                            file.type === 'css' ? 'bg-blue-600 text-white' :
-                            file.type === 'javascript' ? 'bg-yellow-600 text-white' :
-                            file.type === 'json' ? 'bg-green-600 text-white' :
-                            'bg-[hsl(240_8%_12%)] text-[hsl(0_0%_90%)]'
+                          <span className={`px-2 py-0.5 text-xs rounded-md ${
+                            file.type === 'css' ? 'bg-moss-400/20 text-moss-400' :
+                            file.type === 'javascript' ? 'bg-heat-100/20 text-heat-100' :
+                            file.type === 'json' ? 'bg-moss-500/20 text-moss-500' :
+                            'bg-surface-ink-700 text-ink-300'
                           }`}>
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
                           </span>
                         </div>
-                        <div className="bg-[hsl(240_8%_5%)] border border-border  max-h-48 overflow-y-auto scrollbar-dark rounded-b-lg">
+                        <div className="bg-surface-ink-900/80 border border-surface-ink-600 max-h-48 overflow-y-auto scrollbar-dark rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               file.type === 'css' ? 'css' :
@@ -1411,14 +1411,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     
                     {/* Show remaining raw stream if there's content after the last file */}
                     {!generationProgress.currentFile && generationProgress.streamedCode.length > 0 && generationProgress.isGenerating && (
-                      <div className="bg-[hsl(240_8%_7%)] border border-border rounded-lg overflow-hidden">
-                        <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
+                      <div className="bg-surface-ink-850 border border-surface-ink-600 rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-4 py-2.5 bg-surface-ink-800 text-ink-100 flex items-center justify-between rounded-t-xl">
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 border-2 border-border border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">Processing...</span>
                           </div>
                         </div>
-                        <div className="bg-[hsl(240_8%_5%)] border border-border rounded-b-lg">
+                        <div className="bg-surface-ink-900/80 border border-surface-ink-600 rounded-b-xl">
                           <SyntaxHighlighter
                             language="jsx"
                             style={vscDarkPlus}
@@ -1456,9 +1456,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             {/* Progress indicator */}
             {generationProgress.components.length > 0 && (
               <div className="mx-6 mb-6">
-                <div className="h-2 bg-[hsl(240_6%_14%)] rounded-full overflow-hidden">
+                <div className="h-2 bg-surface-ink-750 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-moss-500 to-moss-400 transition-all duration-300"
                     style={{
                       width: `${(generationProgress.currentComponent / Math.max(generationProgress.components.length, 1)) * 100}%`
                     }}
@@ -1473,17 +1473,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Show screenshot when we have one and (loading OR generating OR no sandbox yet)
       if (urlScreenshot && (loading || generationProgress.isGenerating || !sandboxData?.url || isPreparingDesign)) {
         return (
-          <div className="absolute inset-0 w-full h-full bg-[hsl(240_8%_10%)]">
+          <div className="absolute inset-0 w-full h-full bg-surface-ink-900">
             <img 
               src={urlScreenshot} 
               alt="Website preview" 
               className="w-full h-full object-contain"
             />
             {(generationProgress.isGenerating || isPreparingDesign) && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <div className="text-center bg-[hsl(240_8%_7%)]/80 rounded-lg p-6 backdrop-blur-sm border border-border">
-                  <div className="w-12 h-12 border-3 border-border border-t-white rounded-full animate-spin mx-auto mb-3" />
-                  <p className="text-foreground text-sm font-medium">
+              <div className="absolute inset-0 bg-surface-ink-950/60 backdrop-blur-sm flex items-center justify-center">
+                <div className="text-center bg-surface-ink-850/90 rounded-2xl px-8 py-7 backdrop-blur-md border border-surface-ink-600/70 shadow-[var(--shadow-elevated)]">
+                  <div className="w-14 h-14 border-4 border-moss-400/30 border-t-moss-500 rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-ink-100 text-base font-medium">
                     {generationProgress.isGenerating ? 'Generating code...' : `Preparing your design for ${targetUrl}...`}
                   </p>
                 </div>
@@ -1497,17 +1497,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Don't show loading overlay for edits
       if (loadingStage || (generationProgress.isGenerating && !generationProgress.isEdit)) {
         return (
-          <div className="absolute inset-0 w-full h-full bg-[hsl(240_8%_10%)] flex items-center justify-center">
+          <div className="absolute inset-0 w-full h-full bg-surface-ink-900 flex items-center justify-center">
             <div className="text-center">
               <div className="mb-8">
-                <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
+                <div className="w-16 h-16 border-4 border-moss-400/30 border-t-moss-500 rounded-full animate-spin mx-auto"></div>
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">
+              <h3 className="text-xl font-semibold text-ink-100 mb-2">
                 {loadingStage === 'gathering' && 'Gathering website information...'}
                 {loadingStage === 'planning' && 'Planning your design...'}
                 {(loadingStage === 'generating' || generationProgress.isGenerating) && 'Generating your application...'}
               </h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-ink-400 text-sm">
                 {loadingStage === 'gathering' && 'Analyzing the website structure and content'}
                 {loadingStage === 'planning' && 'Creating the optimal React component architecture'}
                 {(loadingStage === 'generating' || generationProgress.isGenerating) && 'Writing clean, modern code for your app'}
@@ -1539,7 +1539,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   iframeRef.current.src = newSrc;
                 }
               }}
-              className="absolute bottom-4 right-4 bg-card/90 hover:bg-card text-foreground p-2 rounded-lg shadow-lg transition-all duration-200 hover:scale-105 border border-border"
+              className="absolute bottom-5 right-5 bg-surface-ink-850/90 hover:bg-surface-ink-800 text-ink-100 p-2.5 rounded-xl shadow-[var(--shadow-floating)] transition-all duration-200 hover:scale-105 border border-surface-ink-600/70"
               title="Refresh sandbox"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1553,10 +1553,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Show loading animation when capturing screenshot
       if (isCapturingScreenshot) {
         return (
-          <div className="flex items-center justify-center h-full bg-[hsl(240_8%_7%)]">
+          <div className="flex items-center justify-center h-full bg-surface-ink-900">
             <div className="text-center">
-              <div className="w-12 h-12 border-3 border-gray-600 border-t-white rounded-full animate-spin mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white">Gathering website information</h3>
+              <div className="w-14 h-14 border-4 border-moss-400/30 border-t-moss-500 rounded-full animate-spin mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-ink-100">Gathering website information</h3>
             </div>
           </div>
         );
@@ -1564,7 +1564,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       
       // Default state when no sandbox and no screenshot
       return (
-        <div className="flex items-center justify-center h-full bg-[hsl(240_8%_10%)] text-muted-foreground text-lg">
+        <div className="flex items-center justify-center h-full bg-surface-ink-900 text-ink-400 text-lg">
           {screenshotError ? (
             <div className="text-center">
               <p className="mb-2">Failed to capture screenshot</p>
@@ -2346,9 +2346,9 @@ Focus on the key sections and content, making it clean and modern while preservi
                     ...prev,
                     status: `Generated ${data.name}`,
                     components: [...prev.components, { 
-                      name: data.name,
-                      path: data.path,
-                      completed: true
+                      name: data.name, 
+                      path: data.path, 
+                      completed: true 
                     }],
                     currentComponent: prev.currentComponent + 1
                   }));
@@ -2909,21 +2909,16 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <div className="relative font-sans bg-background text-foreground min-h-[100svh] md:min-h-screen flex flex-col">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-[#050505] via-[#0b0b10] to-[#111216] opacity-95" />
-      {/* Home Screen Overlay */}
+    <div className="relative font-sans bg-surface-ink-950 text-ink-50 min-h-[100svh] md:min-h-screen flex flex-col">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-surface-ink-950 via-surface-ink-850 to-surface-ink-800" />
       {showHomeScreen && (
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
-          {/* Background */}
-          <div className="absolute inset-0 overflow-hidden bg-[#0b0c10]">
-            {/* Subtle, performant particle wave covering lower portion, shifted down 10% */}
-            <div className="absolute left-0 right-0 h-3/5" style={{ bottom: '-10%' }}>
-              <ParticleWave className="absolute inset-0" />
+          <div className="absolute inset-0 overflow-hidden bg-surface-ink-900/95">
+            <div className="absolute left-0 right-0 h-3/5 bottom-[-10%]">
+              <ParticleWave className="absolute inset-0 opacity-80" />
             </div>
           </div>
-          
-          
-          {/* Close button on hover */}
+
           <button
             onClick={() => {
               setHomeScreenFading(true);
@@ -2932,46 +2927,55 @@ Focus on the key sections and content, making it clean and modern.`;
                 setHomeScreenFading(false);
               }, 500);
             }}
-            className="absolute top-8 right-8 text-muted-foreground hover:text-foreground transition-all duration-300 opacity-0 hover:opacity-100 bg-card/80 backdrop-blur-sm p-2 rounded-lg shadow-sm border border-border"
-            style={{ opacity: 0 }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+            className="absolute top-8 right-8 text-ink-400 hover:text-ink-50 transition-all duration-300 bg-surface-ink-800/80 backdrop-blur-md p-2 rounded-xl shadow-[var(--shadow-floating)] border border-surface-ink-600/80"
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+            style={{ opacity: 0.7 }}
           >
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          
-          {/* Header */}
-            <div className="absolute top-0 left-0 right-0 z-20 px-14 py-9 flex items-center justify-between animate-[fadeIn_0.8s_ease-out]">
-            <Link href="/" className="w-32 h-32 text-white cursor-pointer flex items-center justify-center">
-            <svg className="w-full h-full" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+
+          <div className="absolute top-0 left-0 right-0 z-20 px-6 md:px-12 py-9 flex items-center justify-between">
+            <Link href="/" className="flex h-14 w-auto items-center justify-center text-ink-100 hover:text-moss-400 transition-colors">
+              <svg className="h-14 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="url(#logoGradient)" />
+                <path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#logoGradient)" />
+                <defs>
+                  <linearGradient id="logoGradient" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="currentColor" />
+                    <stop offset="1" stopColor="currentColor" />
+                  </linearGradient>
+                </defs>
+              </svg>
             </Link>
             <div />
           </div>
-          
-          {/* Main content */}
-          <div className="relative z-10 h-full flex justify-center items-start pt-40 md:pt-48 px-4">
-            <div className="text-center w-full max-w-5xl mx-auto px-4">
-              {/* Firecrawl-style Header */}
-              <div className="text-center mb-10">
-                <h1 className="text-5xl lg:text-[3.75rem] text-center text-white font-bold tracking-tight leading-tight mb-6 animate-[fadeIn_0.8s_ease-out]">
+
+          <div className="relative z-10 h-full flex justify-center items-start pt-36 md:pt-44 px-4">
+            <div className="text-center w-full max-w-4xl mx-auto px-3 sm:px-6">
+              <div className="mb-12 space-y-4">
+                <span className="inline-flex items-center gap-2 rounded-full bg-moss-100 text-moss-400 px-4 py-1.5 text-label-small uppercase tracking-[0.18em]">
+                  Chutes AI
+                </span>
+                <h1 className="text-title-h1 text-balance text-ink-200">
                   Chutes Webcoder
                 </h1>
-                <motion.p 
-                  className="text-lg lg:text-xl max-w-2xl mx-auto text-gray-300 text-center"
-                  animate={{
-                    opacity: showStyleSelector ? 0.7 : 1
-                  }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
+                <motion.p
+                  className="text-body-large text-ink-400 max-w-2xl mx-auto"
+                  animate={{ opacity: showStyleSelector ? 0.72 : 1 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
                 >
                   Build React apps with AI. Describe your idea or clone a URL.
                 </motion.p>
               </div>
-              
-              {/* Prompt form */}
-              <form onSubmit={handleHomePromptSubmit} className="mt-24 w-full max-w-4xl mx-auto">
-                <div className="w-full relative group">
+
+              <form onSubmit={handleHomePromptSubmit} className="mt-24 w-full max-w-3xl mx-auto">
+                <div className="relative group">
+                  <span className="pointer-events-none absolute inset-0 rounded-2xl bg-moss-100/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                  <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
+                  <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-[20px]" />
                   <textarea
                     value={homePromptInput}
                     onChange={(e) => {
@@ -2983,48 +2987,46 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="min-h-[220px] w-full resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/80 rounded-[24px] text-lg leading-[1.65] text-white/95 placeholder-gray-400 px-9 pr-24 py-8 pb-20 border border-white/12 bg-[rgba(16,18,24,0.92)] hover:border-white/18 transition-all duration-200"
-                    style={{
-                      boxShadow: '0 18px 48px rgba(0,0,0,0.55)',
-                    }}
+                    className="min-h-[220px] w-full resize-y rounded-2xl border border-transparent bg-surface-ink-850/95 px-8 pr-20 py-7 pb-[68px] text-body-large text-ink-100 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all"
+                    style={{ backdropFilter: 'blur(24px)' }}
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        const form = e.currentTarget.closest('form');
-                        if (form) (form as HTMLFormElement).requestSubmit();
+                        const form = e.currentTarget.closest('form') as HTMLFormElement | null;
+                        form?.requestSubmit();
                       }
                     }}
                   />
-                  <span className="absolute bottom-7 left-6 text-xs text-gray-400 select-none pointer-events-none">
+                  <span className="absolute bottom-8 left-9 text-label-small text-ink-500 select-none">
                     Press Enter to send, Shift+Enter for linebreaks
                   </span>
                   <button
                     type="submit"
                     disabled={!homePromptInput.trim()}
-                    className="absolute bottom-6 right-6 flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:from-purple-500 hover:to-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-lg"
+                    className="absolute bottom-8 right-8 flex h-9 w-9 items-center justify-center rounded-lg text-ink-100 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     title="Send"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
                       <polyline points="9 10 4 15 9 20"></polyline>
                       <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                     </svg>
                   </button>
                 </div>
-                
               </form>
 
-              {/* Separator */}
-                <div className="relative my-16">
-                <div className="border-t border-white/12" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-[rgba(16,18,24,0.98)] px-6 py-1.5 text-sm tracking-[0.2em] text-gray-200 font-semibold rounded-full uppercase">OR</span>
-                </div>
+              <div className="relative my-16 flex items-center justify-center">
+                <div className="h-px w-full max-w-3xl bg-surface-ink-600/80" />
+                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-900 px-5 py-2 text-label-small uppercase tracking-[0.18em] text-ink-400 border border-surface-ink-600/80">
+                  OR
+                </span>
               </div>
 
-              {/* URL clone form */}
-              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-4xl mx-auto mt-16">
-                  <div className="w-full relative group">
+              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-3xl mx-auto mt-10">
+                <div className="relative group">
+                  <span className="pointer-events-none absolute inset-0 rounded-2xl bg-moss-100/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                  <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
+                  <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-[20px]" />
                   <input
                     type="text"
                     onChange={(e) => {
@@ -3039,206 +3041,116 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="min-h-[74px] h-auto w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/80 rounded-[24px] text-lg leading-[1.7] text-white/95 placeholder-gray-300 px-9 pr-24 py-5 border border-white/12 bg-[rgba(16,18,24,0.92)] hover:border-white/18 transition-all duration-200"
-                    style={{
-                      boxShadow: '0 18px 48px rgba(0,0,0,0.55)',
-                    }}
+                    className="h-[56px] w-full rounded-2xl border border-transparent bg-surface-ink-850/95 px-8 pr-16 py-4 text-body-large text-ink-100 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all"
+                    style={{ backdropFilter: 'blur(24px)' }}
                   />
                   <button
                     type="submit"
                     disabled={!homeUrlInput.trim()}
-                    className="absolute top-1/2 transform -translate-y-1/2 right-2 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-lg"
+                    className="absolute top-1/2 right-4 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-100 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     title="Clone Website"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
                       <polyline points="9 10 4 15 9 20"></polyline>
                       <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                     </svg>
                   </button>
                 </div>
               </form>
-              
-              {/* Style Selector - Slides out when valid domain is entered */}
+
               {showStyleSelector && (
-                <>
-                <div className="overflow-hidden mt-18 max-w-4xl mx-auto w-full">
-                <div className={`transition-all duration-500 ease-out transform ${showStyleSelector ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
-                <div className="bg-[rgba(20,22,28,0.92)] backdrop-blur-sm border border-white/8 rounded-2xl p-5 shadow-[0_20px_60px_rgba(5,5,10,0.55)]">
-                  <p className="text-sm text-gray-300 mb-4 font-medium tracking-wide uppercase">Choose a style preset</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {[
-                      { name: 'Neobrutalist', description: 'Bold colors, thick borders' },
-                      { name: 'Glassmorphism', description: 'Frosted glass effects' },
-                      { name: 'Minimalist', description: 'Clean and simple' },
-                      { name: 'Dark Mode', description: 'Dark theme' },
-                      { name: 'Gradient', description: 'Colorful gradients' },
-                      { name: 'Retro', description: '80s/90s aesthetic' },
-                      { name: 'Modern', description: 'Contemporary design' },
-                      { name: 'Monochrome', description: 'Black and white' }
-                    ].map((style) => (
-                      <button
-                        key={style.name}
-                        type="button"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // Submit the form
-                            const form = e.currentTarget.closest('form');
-                            if (form) {
-                              form.requestSubmit();
-                            }
-                          }
-                        }}
-                        onClick={() => {
-                          if (selectedStyle === style.name) {
-                            // Deselect if clicking the same style
-                            setSelectedStyle(null);
-                            // Keep only additional context, remove the style theme part
-                            const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
-                            setHomeContextInput(currentAdditional);
-                          } else {
-                            // Select new style
-                            setSelectedStyle(style.name);
-                            // Extract any additional context (everything after the style theme)
-                            const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
-                            setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
-                          }
-                        }}
-                        className={`p-3 rounded-xl border transition-all duration-200 text-left ${
-                          selectedStyle === style.name
-                            ? 'border-white/18 bg-[rgba(34,37,48,0.95)] text-white shadow-[0_12px_30px_rgba(0,0,0,0.45)]'
-                            : 'border-white/10 bg-[rgba(20,22,30,0.88)] hover:border-white/18 hover:bg-[rgba(28,30,40,0.9)] text-gray-200'
-                        }`}
-                      >
-                        <div className="text-sm font-semibold tracking-wide">{style.name}</div>
-                        <div className="text-xs text-gray-400 mt-1 leading-relaxed">{style.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                  
-                  {/* Additional context input - part of the style selector */}
-                  <div className="mt-4 mb-2">
-                    <input
-                      type="text"
-                      value={(() => {
-                        if (!selectedStyle) return homeContextInput;
-                        // Extract additional context by removing the style theme part
-                        const additional = homeContextInput.replace(new RegExp('^' + selectedStyle.toLowerCase() + ' theme\\s*,?\\s*', 'i'), '');
-                        return additional;
-                      })()}
-                      onChange={(e) => {
-                        const additionalContext = e.target.value;
-                        if (selectedStyle) {
-                          setHomeContextInput(selectedStyle.toLowerCase() + ' theme' + (additionalContext.trim() ? ', ' + additionalContext : ''));
-                        } else {
-                          setHomeContextInput(additionalContext);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          const form = e.currentTarget.closest('form');
-                          if (form) {
-                            form.requestSubmit();
-                          }
-                        }
-                      }}
-                      placeholder="Add more details: specific features, color preferences..."
-                    className="w-full px-4 py-2.5 text-sm bg-[rgba(20,22,30,0.88)] border border-white/10 rounded-xl text-white/90 placeholder-gray-400 focus:outline-none focus:border-white/25 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 shadow-[0_16px_32px_rgba(0,0,0,0.45)]"
-                    />
+                <div className="mt-16 w-full max-w-3xl mx-auto">
+                  <div className="rounded-2xl border border-surface-ink-600/60 bg-surface-ink-850/85 px-6 py-6 backdrop-blur-xl shadow-[var(--shadow-elevated)] transition-all">
+                    <p className="text-label-medium uppercase tracking-[0.15em] text-ink-400 mb-5">
+                      Choose a style preset
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {[{ name: 'Moss Glass', description: 'Frosted glass with moss accents' },
+                        { name: 'Ink Minimal', description: 'Pure dark minimal layout' },
+                        { name: 'Gradient Glow', description: 'Soft gradients and lighting' },
+                        { name: 'Neo Grid', description: 'Structured layout with grid lines' },
+                        { name: 'Aurora', description: 'Color washed aurora gradients' },
+                        { name: 'Retro', description: 'Warm highlights, retro typography' },
+                        { name: 'Modern', description: 'Contemporary card surfaces' },
+                        { name: 'Monochrome', description: 'Monochrome ink palette' }].map((style) => (
+                          <button
+                            key={style.name}
+                            type="button"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const form = e.currentTarget.closest('form') as HTMLFormElement | null;
+                                form?.requestSubmit();
+                              }
+                            }}
+                            onClick={() => {
+                              if (selectedStyle === style.name) {
+                                setSelectedStyle(null);
+                                const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
+                                setHomeContextInput(currentAdditional);
+                              } else {
+                                setSelectedStyle(style.name);
+                                const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
+                                setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
+                              }
+                            }}
+                            className={`flex flex-col items-start gap-1.5 rounded-xl border px-4 py-3.5 transition-all duration-200 text-left ${
+                              selectedStyle === style.name
+                                ? 'border-moss-400/90 bg-surface-ink-800 text-ink-50 shadow-[var(--shadow-floating)]'
+                                : 'border-surface-ink-600/50 bg-surface-ink-850/60 text-ink-200 hover:border-moss-400/60 hover:bg-surface-ink-800/80 hover:text-ink-100'
+                            }`}
+                          >
+                            <span className="text-label-medium text-ink-100">{style.name}</span>
+                            <span className="text-label-small text-ink-500">{style.description}</span>
+                          </button>
+                        ))}
+                    </div>
                   </div>
                 </div>
-                  </div>
-                </div>
-                {/* Mobile quick start button when a style is selected */}
-                {selectedStyle && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void handleHomePromptSubmit({ preventDefault: () => {} } as any);
-                    }}
-                    className="fixed md:hidden bottom-6 right-6 z-50 rounded-full bg-primary text-primary-foreground w-12 h-12 flex items-center justify-center shadow-lg border border-border"
-                    title="Start"
-                    aria-label="Start generation"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                  </button>
-                )}
-              </>
               )}
-              
-              {/* Advanced - Model Selector (collapsed by default) */}
-              <details className="mt-12 animate-[fadeIn_1s_ease-out]">
-                <summary className="cursor-pointer text-sm text-gray-300 text-center hover:text-white transition-colors tracking-wide uppercase">Advanced</summary>
-                <div className="mt-4 text-left w-full max-w-4xl mx-auto flex flex-col items-center gap-2">
-                  <label className="block text-xs text-gray-400 tracking-wide">AI Model</label>
-                  <select
-                    value={aiModel}
-                    onChange={(e) => {
-                      const newModel = e.target.value;
-                      setAiModel(newModel);
-                      const params = new URLSearchParams(searchParams);
-                      params.set('model', newModel);
-                      if (sandboxData?.sandboxId) {
-                        params.set('sandbox', sandboxData.sandboxId);
-                      }
-                      router.push(`/?${params.toString()}`);
-                    }}
-                    className="px-3.5 py-2 text-sm bg-[hsl(240_8%_7%)] text-white/90 border border-gray-700 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent hover:border-gray-600 transition-colors"
-                    style={{
-                      boxShadow: '0 0 0 1px rgba(255,255,255,0.06)'
-                    }}
-                  >
-                    {appConfig.ai.availableModels.map(model => (
-                      <option key={model} value={model}>
-                        {(appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </details>
             </div>
-            {/* ParticleWave removed */}
           </div>
         </div>
       )}
       
       {!showHomeScreen && (
       <>
-      <div className="bg-[rgba(15,18,24,0.94)] backdrop-blur-lg px-6 py-4 border-b border-white/12 flex items-center justify-between">
+      <div className="bg-surface-ink-850/90 backdrop-blur-lg px-6 py-4 border-b border-surface-ink-600/80 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/" className="h-10 w-auto text-white/95 cursor-pointer">
-            <svg className="h-10 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+          <Link href="/" className="h-12 w-auto text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
+            <svg className="h-12 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
           </Link>
         </div>
         <div className="flex items-center gap-2">
-          {/* Advanced - Model Selector (collapsed by default) */}
-              {/* Permanent model selector on main app view */}
-              <div className="hidden md:block">
-                <label className="sr-only">AI Model</label>
-                <select
-                  value={aiModel}
-                  onChange={(e) => {
-                    const newModel = e.target.value;
-                    setAiModel(newModel);
-                    const params = new URLSearchParams(searchParams);
-                    params.set('model', newModel);
-                    if (sandboxData?.sandboxId) {
-                      params.set('sandbox', sandboxData.sandboxId);
-                    }
-                    router.push(`/?${params.toString()}`);
-                  }}
-                  className="px-3 py-1.5 text-sm bg-[rgba(20,22,30,0.88)] text-white/90 border border-white/10 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-purple-500/70 focus:border-white/20 hover:border-white/18 transition-colors"
-                >
-                  {appConfig.ai.availableModels.map(model => (
-                    <option key={model} value={model}>
-                      {(appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model}
-                    </option>
-                  ))}
-                </select>
-              </div>
-          <Button 
+          <div className="hidden md:block">
+            <label className="sr-only">AI Model</label>
+            <select
+              value={aiModel}
+              onChange={(e) => {
+                const newModel = e.target.value;
+                setAiModel(newModel);
+                const params = new URLSearchParams(searchParams);
+                params.set('model', newModel);
+                if (sandboxData?.sandboxId) {
+                  params.set('sandbox', sandboxData.sandboxId);
+                }
+                router.push(`/?${params.toString()}`);
+              }}
+              className="h-9 px-3 py-2 text-sm bg-surface-ink-800/90 text-ink-100 border border-surface-ink-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors"
+            >
+              {appConfig.ai.availableModels.map(model => {
+                const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
+                const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
+                return (
+                  <option key={model} value={model}>
+                    {cleanName}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          <Button
             variant="code"
             onClick={() => createSandbox()}
             size="sm"
@@ -3249,18 +3161,7 @@ Focus on the key sections and content, making it clean and modern.`;
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
-          {false && (
-            <Button 
-              variant="code"
-              onClick={async () => {}}
-              size="sm"
-              title="Deploy your app"
-              className="cursor-pointer"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </Button>
-          )}
-          <Button 
+          <Button
             variant="code"
             onClick={reapplyLastGeneration}
             size="sm"
@@ -3270,7 +3171,7 @@ Focus on the key sections and content, making it clean and modern.`;
           >
             <Clipboard className="w-4 h-4" />
           </Button>
-          <Button 
+          <Button
             variant="code"
             onClick={downloadZip}
             disabled={!sandboxData}
@@ -3282,18 +3183,17 @@ Focus on the key sections and content, making it clean and modern.`;
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
-          <div className="inline-flex items-center gap-2 bg-[#36322F] text-white px-3 py-1.5 rounded-[10px] text-sm font-medium [box-shadow:inset_0px_-2px_0px_0px_#171310,_0px_1px_6px_0px_rgba(58,_33,_8,_58%)]">
+          <div className="inline-flex items-center gap-2 bg-surface-ink-700 text-ink-100 px-3 py-1.5 rounded-[10px] text-sm font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-surface-ink-600/70">
             <span id="status-text">{status.text}</span>
-            <div className={`w-2 h-2 rounded-full ${status.active ? 'bg-green-500' : 'bg-[hsl(240_6%_25%)]'}`} />
+            <div className={`w-2 h-2 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
           </div>
         </div>
       </div>
 
-      {/* Mobile portrait global tabs */}
-      <div className="md:hidden bg-card/80 backdrop-blur border-b border-border px-2 py-2">
-        <div className="flex bg-[#36322F] rounded-lg p-1 w-full max-w-sm mx-auto justify-between">
+      <div className="md:hidden bg-surface-ink-850/80 backdrop-blur border-b border-surface-ink-600/70 px-2 py-2">
+        <div className="flex bg-surface-ink-800/80 rounded-lg p-1 w-full max-w-sm mx-auto justify-between">
           <button
-            className={`${mobileTab === 'chat' ? 'bg-black text-white' : 'text-[hsl(0_0%_85%)] hover:text-white hover:bg-[hsl(240_8%_12%)]'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            className={`${mobileTab === 'chat' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('chat'); }}
             title="Chat"
           >
@@ -3301,7 +3201,7 @@ Focus on the key sections and content, making it clean and modern.`;
             <span className="hidden min-[380px]:inline">Chat</span>
           </button>
           <button
-            className={`${mobileTab === 'code' ? 'bg-black text-white' : 'text-[hsl(0_0%_85%)] hover:text-white hover:bg-[hsl(240_8%_12%)]'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            className={`${mobileTab === 'code' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('code'); }}
             title="Code"
           >
@@ -3309,7 +3209,7 @@ Focus on the key sections and content, making it clean and modern.`;
             <span className="hidden min-[380px]:inline">Code</span>
           </button>
           <button
-            className={`${mobileTab === 'preview' ? 'bg-black text-white' : 'text-[hsl(0_0%_85%)] hover:text-white hover:bg-[hsl(240_8%_12%)]'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            className={`${mobileTab === 'preview' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('preview'); }}
             title="Preview"
           >
@@ -3320,8 +3220,7 @@ Focus on the key sections and content, making it clean and modern.`;
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
-        {/* Center Panel - AI Chat (1/3 of remaining width) */}
-        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[420px] flex flex-col border-b md:border-b-0 md:border-r border-white/10 bg-[rgba(12,14,20,0.92)] backdrop-blur-lg min-h-0`}>
+        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[420px] flex flex-col border-b md:border-b-0 md:border-r border-surface-ink-600/70 bg-surface-ink-850/90 backdrop-blur-lg min-h-0`}>
           {conversationContext.scrapedWebsites.length > 0 && (
             <div className="p-4 bg-card">
               <div className="flex flex-col gap-2">
@@ -3373,38 +3272,38 @@ Focus on the key sections and content, making it clean and modern.`;
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-1`}>
                     <div className="block">
                       <div className={`block rounded-[18px] px-5 py-3 text-sm leading-relaxed ${
-                        msg.type === 'user' ? 'bg-gradient-to-r from-purple-600/35 to-blue-600/35 border border-purple-500/35 text-white ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(64,64,255,0.2)]' :
-                        msg.type === 'ai' ? 'bg-[rgba(22,24,32,0.95)] border border-white/10 text-gray-200 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(0,0,0,0.45)]' :
-                        msg.type === 'system' ? 'bg-transparent text-gray-400 font-medium text-xs tracking-wide uppercase' :
-                        msg.type === 'command' ? 'bg-[rgba(18,20,28,0.95)] border border-white/12 text-gray-100 font-mono text-xs' :
-                        msg.type === 'error' ? 'bg-red-900/30 border border-red-600 text-red-100 text-sm' :
-                        'bg-[rgba(18,20,28,0.95)] border border-white/10 text-gray-100 text-sm'
+                        msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-moss-400/60 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
+                        msg.type === 'ai' ? 'bg-surface-ink-850/95 border border-surface-ink-600/70 text-ink-200 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
+                        msg.type === 'system' ? 'bg-transparent text-ink-400 font-medium text-xs tracking-wide uppercase' :
+                        msg.type === 'command' ? 'bg-surface-ink-850/95 border border-surface-ink-600/70 text-ink-100 font-mono text-xs' :
+                        msg.type === 'error' ? 'bg-heat-12 border border-heat-40 text-heat-100 text-sm' :
+                        'bg-surface-ink-850/95 border border-surface-ink-600/70 text-ink-100 text-sm'
                       }`}>
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
                         <span className={`text-xs ${
-                          msg.metadata?.commandType === 'input' ? 'text-blue-400' :
-                          msg.metadata?.commandType === 'error' ? 'text-red-400' :
-                          msg.metadata?.commandType === 'success' ? 'text-green-400' :
-                          'text-[hsl(240_5%_65%)]'
+                          msg.metadata?.commandType === 'input' ? 'text-moss-400' :
+                          msg.metadata?.commandType === 'error' ? 'text-heat-100' :
+                          msg.metadata?.commandType === 'success' ? 'text-moss-500' :
+                          'text-ink-400'
                         }`}>
                           {msg.metadata?.commandType === 'input' ? '$' : '>'}
                         </span>
-                        <span className="flex-1 whitespace-pre-wrap text-white">{msg.content}</span>
+                        <span className="flex-1 whitespace-pre-wrap text-ink-50">{msg.content}</span>
                       </div>
                     ) : msg.type === 'error' ? (
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0">
-                          <div className="w-8 h-8 bg-red-800 rounded-full flex items-center justify-center">
-                            <svg className="w-5 h-5 text-red-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className="w-8 h-8 bg-moss-500/20 border border-moss-500/60 rounded-full flex items-center justify-center">
+                            <svg className="w-5 h-5 text-moss-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                           </div>
                         </div>
                         <div className="flex-1">
-                          <div className="font-semibold mb-1">Build Errors Detected</div>
-                          <div className="whitespace-pre-wrap text-sm">{msg.content}</div>
-                          <div className="mt-2 text-xs opacity-70">Press 'F' or click the Fix button above to resolve</div>
+                          <div className="font-semibold mb-1 text-ink-50">Build Errors Detected</div>
+                          <div className="whitespace-pre-wrap text-sm text-ink-100/90">{msg.content}</div>
+                          <div className="mt-2 text-xs text-ink-400">Press 'F' or click the Fix button above to resolve</div>
                         </div>
                       </div>
                     ) : (
@@ -3421,67 +3320,66 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show applied files if this is an apply success message */}
                       {msg.metadata?.appliedFiles && msg.metadata.appliedFiles.length > 0 && (
-                    <div className="mt-2 inline-block bg-[hsl(240_8%_10%)] rounded-[10px] p-3 border border-border">
-                      <div className="text-xs font-medium mb-1 text-foreground">
-                        {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
-                      </div>
-                      <div className="flex flex-wrap items-start gap-1">
-                        {msg.metadata.appliedFiles.map((filePath, fileIdx) => {
-                          const fileName = filePath.split('/').pop() || filePath;
-                          const fileExt = fileName.split('.').pop() || '';
-                          const fileType = fileExt === 'jsx' || fileExt === 'js' ? 'javascript' :
-                                          fileExt === 'css' ? 'css' :
-                                          fileExt === 'json' ? 'json' : 'text';
-                          
-                          return (
-                            <div
-                              key={`applied-${fileIdx}`}
-                              className="inline-flex items-center gap-1 px-2 py-1 bg-[#36322F] text-white rounded-[10px] text-xs animate-fade-in-up"
-                              style={{ animationDelay: `${fileIdx * 30}ms` }}
-                            >
-                              <span className={`inline-block w-1.5 h-1.5 rounded-full ${
-                                fileType === 'css' ? 'bg-blue-400' :
-                                fileType === 'javascript' ? 'bg-yellow-400' :
-                                fileType === 'json' ? 'bg-green-400' :
-                                'bg-[hsl(240_6%_30%)]'
-                              }`} />
-                              {fileName}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  
-                      {/* Show generated files for completion messages - but only if no appliedFiles already shown */}
-                      {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
-                    <div className="mt-2 inline-block bg-[hsl(240_8%_10%)] rounded-[10px] p-3 border border-border">
-                      <div className="text-xs font-medium mb-1 text-foreground">Generated Files:</div>
-                      <div className="flex flex-wrap items-start gap-1">
-                        {generationProgress.files.map((file, fileIdx) => (
-                          <div
-                            key={`complete-${fileIdx}`}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-[#36322F] text-white rounded-[10px] text-xs animate-fade-in-up"
-                            style={{ animationDelay: `${fileIdx * 30}ms` }}
-                          >
-                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${
-                              file.type === 'css' ? 'bg-blue-400' :
-                              file.type === 'javascript' ? 'bg-yellow-400' :
-                              file.type === 'json' ? 'bg-green-400' :
-                              'bg-[hsl(240_6%_30%)]'
-                            }`} />
-                            {file.path.split('/').pop()}
+                        <div className="mt-2 inline-block bg-surface-ink-850 rounded-[10px] p-3 border border-surface-ink-600/70">
+                          <div className="text-xs font-medium mb-1 text-ink-300">
+                            {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
                           </div>
-                        ))}
-                      </div>
-                      {!sandboxData && (
-                        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                          <div className="w-3 h-3 border-2 border-border border-t-white rounded-full animate-spin" />
-                          <span>Deploying sandbox preview…</span>
+                          <div className="flex flex-wrap items-start gap-1">
+                            {msg.metadata.appliedFiles.map((filePath, fileIdx) => {
+                              const fileName = filePath.split('/').pop() || filePath;
+                              const fileExt = fileName.split('.').pop() || '';
+                              const fileType = fileExt === 'jsx' || fileExt === 'js' ? 'javascript' :
+                                              fileExt === 'css' ? 'css' :
+                                              fileExt === 'json' ? 'json' : 'text';
+
+                              return (
+                                <div
+                                  key={`applied-${fileIdx}`}
+                                  className="inline-flex items-center gap-1 px-2 py-1 bg-surface-ink-750 text-ink-100 rounded-[10px] text-xs animate-fade-in-up"
+                                  style={{ animationDelay: `${fileIdx * 30}ms` }}
+                                >
+                                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                                    fileType === 'css' ? 'bg-moss-400' :
+                                    fileType === 'javascript' ? 'bg-heat-100' :
+                                    fileType === 'json' ? 'bg-moss-500' :
+                                    'bg-surface-ink-600'
+                                  }`} />
+                                  {fileName}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
-                    </div>
-                  )}
+
+                      {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
+                        <div className="mt-2 inline-block bg-surface-ink-850 rounded-[10px] p-3 border border-surface-ink-600/70">
+                          <div className="text-xs font-medium mb-1 text-ink-300">Generated Files:</div>
+                          <div className="flex flex-wrap items-start gap-1">
+                            {generationProgress.files.map((file, fileIdx) => (
+                              <div
+                                key={`complete-${fileIdx}`}
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-surface-ink-750 text-ink-100 rounded-[10px] text-xs animate-fade-in-up"
+                                style={{ animationDelay: `${fileIdx * 30}ms` }}
+                              >
+                                <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                                  file.type === 'css' ? 'bg-moss-400' :
+                                  file.type === 'javascript' ? 'bg-heat-100' :
+                                  file.type === 'json' ? 'bg-moss-500' :
+                                  'bg-surface-ink-600'
+                                }`} />
+                                {file.path.split('/').pop()}
+                              </div>
+                            ))}
+                          </div>
+                          {!sandboxData && (
+                            <div className="mt-3 flex items-center gap-2 text-xs text-ink-400">
+                              <div className="w-3 h-3 border-2 border-surface-ink-600 border-t-transparent rounded-full animate-spin" />
+                              <span>Deploying sandbox preview…</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     </div>
                   </div>
@@ -3495,19 +3393,19 @@ Focus on the key sections and content, making it clean and modern.`;
             
             {/* File generation progress - inline display (during generation) */}
             {generationProgress.isGenerating && (
-              <div className="inline-block bg-[hsl(240_8%_10%)] rounded-lg p-3 border border-border">
-                <div className="text-sm font-medium mb-2 text-foreground">
+              <div className="inline-block bg-surface-ink-850 rounded-xl p-4 border border-surface-ink-600/70 shadow-sm">
+                <div className="text-sm font-medium mb-3 text-ink-200">
                   {generationProgress.status}
                 </div>
-                <div className="flex flex-wrap items-start gap-1">
+                <div className="flex flex-wrap items-start gap-2">
                   {/* Show completed files */}
                   {generationProgress.files.map((file, idx) => (
                     <div
                       key={`file-${idx}`}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-[#36322F] text-white rounded-[10px] text-xs animate-fade-in-up"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-lg text-xs animate-fade-in-up"
                       style={{ animationDelay: `${idx * 30}ms` }}
                     >
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3 h-3 text-moss-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                       {file.path.split('/').pop()}
@@ -3516,9 +3414,9 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                   {/* Show current file being generated */}
                   {generationProgress.currentFile && (
-                    <div className="flex items-center gap-1 px-2 py-1 bg-[#36322F]/70 text-white rounded-[10px] text-xs animate-pulse"
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-ink-800 text-ink-100 rounded-lg text-xs animate-pulse"
                       style={{ animationDelay: `${generationProgress.files.length * 30}ms` }}>
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
                       {generationProgress.currentFile.path.split('/').pop()}
                     </div>
                   )}
@@ -3531,16 +3429,16 @@ Focus on the key sections and content, making it clean and modern.`;
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                   className="mt-3 border-t border-border pt-3"
+                   className="mt-4 border-t border-surface-ink-600/70 pt-4"
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-xs font-medium text-muted-foreground">AI Response Stream</span>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 bg-moss-500 rounded-full animate-pulse" />
+                        <span className="text-xs font-medium text-ink-400">AI Response Stream</span>
                       </div>
-                      <div className="flex-1 h-px bg-gradient-to-r from-gray-300 to-transparent" />
+                      <div className="flex-1 h-px bg-gradient-to-r from-surface-ink-600/50 to-transparent" />
                     </div>
-                   <div className="bg-[hsl(240_8%_5%)] border border-border rounded max-h-32 overflow-y-auto scrollbar-dark">
+                   <div className="bg-surface-ink-900/80 border border-surface-ink-600 rounded-lg max-h-32 overflow-y-auto scrollbar-dark">
                       <SyntaxHighlighter
                         language="jsx"
                         style={vscDarkPlus}
@@ -3573,7 +3471,7 @@ Focus on the key sections and content, making it clean and modern.`;
           <div className="p-4 border-t border-border bg-card">
             <div className="relative">
               <Textarea
-                    className="min-h-[70px] pr-14 pl-5 resize-y rounded-2xl border border-white/10 bg-[rgba(20,22,30,0.9)] text-white/90 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/60 focus:border-white/20 shadow-[0_12px_28px_rgba(0,0,0,0.45)]"
+                    className="min-h-[70px] pr-14 pl-5 resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-850/95 text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)]"
                 placeholder="Continue the conversation..."
                 value={aiChatInput}
                 onChange={(e) => setAiChatInput(e.target.value)}
@@ -3599,11 +3497,10 @@ Focus on the key sections and content, making it clean and modern.`;
           </div>
         </div>
 
-        {/* Right Panel - Preview or Generation (2/3 of remaining width) */}
-        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[rgba(8,10,18,0.94)] backdrop-blur-lg`}>
-            <div className="px-3 sm:px-5 py-3 bg-[rgba(14,17,26,0.95)] backdrop-blur border-b border-white/12 flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex bg-[rgba(26,29,40,0.95)] border border-white/10 rounded-xl p-1">
+        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-surface-ink-900/95 backdrop-blur-lg`}>
+          <div className="px-3 sm:px-5 py-3 bg-surface-ink-850/90 backdrop-blur border-b border-surface-ink-600/70 flex justify-between items-center">
+            <div className="flex items-center gap-2 text-ink-200">
+              <div className="hidden md:flex bg-surface-ink-800/90 border border-surface-ink-600/70 rounded-xl p-1">
                 <button
                   onClick={() => setActiveTab('generation')}
                   className={`px-3 py-2 rounded-lg transition-all text-sm font-medium ${
@@ -3642,15 +3539,15 @@ Focus on the key sections and content, making it clean and modern.`;
                       {generationProgress.files.length} files generated
                     </div>
                   )}
-                  <div className={`inline-flex items-center justify-center whitespace-nowrap rounded-[12px] font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-[rgba(26,29,40,0.95)] text-white/85 hover:text-white hover:bg-[rgba(32,35,48,0.95)] shadow-[0_12px_24px_rgba(0,0,0,0.4)] h-9 px-4 gap-2`}>
+                  <div className={`inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800 text-ink-100 hover:text-ink-50 hover:bg-surface-ink-750 shadow-sm h-9 px-4 gap-2`}>
                     {generationProgress.isGenerating ? (
                       <>
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                        <div className="w-2 h-2 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
                         {generationProgress.isEdit ? 'Editing code' : 'Live code generation'}
                       </>
                     ) : (
                       <>
-                        <div className="w-2 h-2 bg-[hsl(240_6%_30%)] rounded-full" />
+                        <div className="w-2 h-2 bg-surface-ink-600 rounded-full" />
                         COMPLETE
                       </>
                     )}
@@ -3679,7 +3576,7 @@ Focus on the key sections and content, making it clean and modern.`;
               )}
             </div>
           </div>
-        <div className="flex-1 relative overflow-hidden min-h-0">
+          <div className="flex-1 relative overflow-hidden min-h-0">
             {renderMainContent()}
           </div>
         </div>

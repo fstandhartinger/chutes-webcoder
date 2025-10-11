@@ -4,17 +4,17 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-[12px] text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:opacity-95 [box-shadow:0_10px_30px_-15px_rgba(132,94,247,0.45)]",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-[hsl(240_6%_18%)]",
-        outline: "border border-border bg-transparent hover:bg-[hsl(240_6%_14%)] text-foreground",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-[hsl(0_72%_50%)]",
-        code: "bg-[hsl(240_8%_9%)] text-foreground hover:bg-[hsl(240_8%_12%)]",
-        orange: "bg-accent text-accent-foreground hover:opacity-95",
-        ghost: "hover:bg-[hsl(240_6%_14%)] text-foreground",
+        default: "bg-primary text-primary-foreground hover:bg-moss-400",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-surface-ink-650",
+        outline: "border border-border bg-transparent hover:bg-surface-ink-750 text-foreground",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-heat-90/90",
+        code: "bg-surface-ink-800/90 text-ink-100 hover:bg-surface-ink-750",
+        orange: "bg-accent text-accent-foreground hover:bg-moss-400/90",
+        ghost: "hover:bg-surface-ink-750 text-foreground",
       },
       size: {
         default: "h-10 px-4 py-2",
