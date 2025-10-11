@@ -3206,7 +3206,7 @@ Focus on the key sections and content, making it clean and modern.`;
             title="Create new sandbox"
             className="cursor-pointer h-12 w-12"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-10 h-10" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
@@ -3218,7 +3218,7 @@ Focus on the key sections and content, making it clean and modern.`;
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
             className="cursor-pointer h-12 w-12"
           >
-            <Clipboard className="w-6 h-6" />
+            <Clipboard className="w-10 h-10" style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px' }} />
           </Button>
           <Button
             variant="code"
@@ -3228,7 +3228,7 @@ Focus on the key sections and content, making it clean and modern.`;
             title="Download your Vite app as ZIP"
             className="cursor-pointer h-12 w-12"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-10 h-10" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
