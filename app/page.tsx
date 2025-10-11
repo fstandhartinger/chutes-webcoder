@@ -3186,7 +3186,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="min-h-[80px] h-20 px-6 py-4 text-lg bg-surface-ink-800 text-ink-100 border border-neutral-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
+              className="min-h-[120px] h-28 px-6 py-4 text-lg bg-surface-ink-800 text-ink-100 border border-neutral-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
