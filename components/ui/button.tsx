@@ -12,7 +12,7 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-surface-ink-650",
         outline: "border border-border bg-transparent hover:bg-surface-ink-750 text-foreground",
         destructive: "bg-destructive text-destructive-foreground hover:bg-heat-90/90",
-        code: "bg-surface-ink-800/90 text-ink-100 hover:bg-surface-ink-750",
+        code: "bg-surface-ink-800 text-ink-100 hover:bg-surface-ink-750 opacity-90",
         orange: "bg-accent text-accent-foreground hover:bg-moss-400/90",
         ghost: "hover:bg-surface-ink-750 text-foreground",
       },

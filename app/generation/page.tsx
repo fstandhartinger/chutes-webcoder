@@ -3442,7 +3442,7 @@ Focus on the key sections and content, making it clean and modern.`;
           <div className="px-3 pt-4 pb-4 bg-surface-ink-850/90 border-b border-surface-ink-600/70 flex justify-between items-center">
             <div className="flex items-center gap-2">
               {/* Toggle-style Code/View switcher */}
-              <div className="inline-flex bg-surface-ink-800/90 border border-surface-ink-600/70 rounded-lg p-1">
+              <div className="inline-flex bg-surface-ink-800 border border-surface-ink-600/70 rounded-lg p-1 opacity-90">
                 <button
                   onClick={() => setActiveTab('generation')}
                   className={`px-4 py-2 rounded-lg transition-all text-sm font-medium ${

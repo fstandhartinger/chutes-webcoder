@@ -2998,7 +2998,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="min-h-[200px] w-full resize-y rounded-xl border border-surface-ink-600/70 bg-surface-ink-900/85 px-7 pr-18 py-6 pb-[60px] text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all"
+                    className="min-h-[200px] w-full resize-y rounded-xl border border-surface-ink-600/70 bg-surface-ink-900 px-7 pr-18 py-6 pb-[60px] text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all opacity-85"
                     style={{ backdropFilter: 'blur(24px)' }}
                     autoFocus
                     onKeyDown={(e) => {
@@ -3052,7 +3052,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="h-[48px] w-full rounded-xl border border-surface-ink-600/70 bg-surface-ink-900/85 px-7 pr-14 py-3.5 text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all"
+                    className="h-[48px] w-full rounded-xl border border-surface-ink-600/70 bg-surface-ink-900 px-7 pr-14 py-3.5 text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all opacity-85"
                     style={{ backdropFilter: 'blur(24px)' }}
                   />
                   <button
@@ -3159,7 +3159,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="h-9 px-3 py-2 text-sm bg-surface-ink-800/90 text-ink-100 border border-surface-ink-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors"
+              className="h-9 px-3 py-2 text-sm bg-surface-ink-800 text-ink-100 border border-surface-ink-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3295,11 +3295,11 @@ Focus on the key sections and content, making it clean and modern.`;
                     <div className="block">
                       <div className={`block rounded-xl px-5 py-3 text-sm leading-relaxed ${
                         msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-moss-400/60 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
-                        msg.type === 'ai' ? 'bg-surface-ink-850/95 border border-surface-ink-600/70 text-ink-200 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
+                        msg.type === 'ai' ? 'bg-surface-ink-850 border border-surface-ink-600/70 text-ink-200 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)] opacity-95' :
                         msg.type === 'system' ? 'bg-transparent text-ink-400 font-medium text-xs tracking-wide uppercase' :
-                        msg.type === 'command' ? 'bg-surface-ink-850/95 border border-surface-ink-600/70 text-ink-100 font-mono text-xs' :
+                        msg.type === 'command' ? 'bg-surface-ink-850 border border-surface-ink-600/70 text-ink-100 font-mono text-xs opacity-95' :
                         msg.type === 'error' ? 'bg-heat-12 border border-heat-40 text-heat-100 text-sm' :
-                        'bg-surface-ink-850/95 border border-surface-ink-600/70 text-ink-100 text-sm'
+                        'bg-surface-ink-850 border border-surface-ink-600/70 text-ink-100 text-sm opacity-95'
                       }`}>
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
@@ -3493,7 +3493,7 @@ Focus on the key sections and content, making it clean and modern.`;
           <div className="p-4 border-t border-border bg-card">
             <div className="relative">
               <Textarea
-                    className="min-h-[70px] pr-14 pl-5 resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-850/95 text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)]"
+                    className="min-h-[70px] pr-14 pl-5 resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-850 text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)] opacity-95"
                 placeholder="Continue the conversation..."
                 value={aiChatInput}
                 onChange={(e) => setAiChatInput(e.target.value)}
@@ -3534,7 +3534,7 @@ Focus on the key sections and content, making it clean and modern.`;
         <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-surface-ink-900/95 backdrop-blur-lg`}>
           <div className="px-3 sm:px-5 py-3 bg-surface-ink-850/90 backdrop-blur border-b border-surface-ink-600/70 flex justify-between items-center">
             <div className="flex items-center gap-3 text-ink-200">
-              <div className="hidden md:flex bg-surface-ink-800/90 border border-surface-ink-600/70 rounded-xl p-1.5">
+              <div className="hidden md:flex bg-surface-ink-800 border border-surface-ink-600/70 rounded-xl p-1.5 opacity-90">
                 <button
                   onClick={() => setActiveTab('generation')}
                   className={`px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
