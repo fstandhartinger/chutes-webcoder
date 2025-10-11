@@ -178,5 +178,89 @@
   "background-base": {
     "hex": "f9f9f9ff",
     "p3": "0.976471 0.976471 0.976471 / 1.000000"
+  },
+  "ink-50": {
+    "hex": "f6f8fbff"
+  },
+  "ink-100": {
+    "hex": "e8ecf4ff"
+  },
+  "ink-200": {
+    "hex": "cad4e5ff"
+  },
+  "ink-300": {
+    "hex": "aab9d4ff"
+  },
+  "ink-400": {
+    "hex": "889cc0ff"
+  },
+  "ink-500": {
+    "hex": "667cabff"
+  },
+  "ink-600": {
+    "hex": "4a5f94ff"
+  },
+  "ink-700": {
+    "hex": "364a7eff"
+  },
+  "ink-800": {
+    "hex": "28386aff"
+  },
+  "ink-900": {
+    "hex": "1a274fff"
+  },
+  "surface-ink-950": {
+    "hex": "04070cff"
+  },
+  "surface-ink-900": {
+    "hex": "060a10ff"
+  },
+  "surface-ink-850": {
+    "hex": "090e15ff"
+  },
+  "surface-ink-800": {
+    "hex": "0c121bff"
+  },
+  "surface-ink-800/50": {
+    "hex": "0c121b80"
+  },
+  "surface-ink-750": {
+    "hex": "0f1622ff"
+  },
+  "surface-ink-700": {
+    "hex": "131b2bff"
+  },
+  "surface-ink-700/70": {
+    "hex": "131b2bb3"
+  },
+  "surface-ink-650": {
+    "hex": "172233ff"
+  },
+  "surface-ink-600": {
+    "hex": "1d293cff"
+  },
+  "surface-ink-500": {
+    "hex": "243047ff"
+  },
+  "surface-neutral-900/40": {
+    "hex": "10141e66"
+  },
+  "moss-100": {
+    "hex": "71dcb71f"
+  },
+  "moss-200": {
+    "hex": "6dd4b133"
+  },
+  "moss-400": {
+    "hex": "63d297ff"
+  },
+  "moss-500": {
+    "hex": "54bd86ff"
+  },
+  "moss-600": {
+    "hex": "3f9c70ff"
+  },
+  "moss-700": {
+    "hex": "2f7b58ff"
   }
 }

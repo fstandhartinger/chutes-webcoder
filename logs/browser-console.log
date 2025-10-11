@@ -211,3 +211,205 @@ Fast Refresh requires at least one parent function component in your React tree.
 2025-10-10T16:46:18.076Z | LOG | http://localhost:3000/ | [createSandbox] Vite server started successfully
 2025-10-10T16:46:18.545Z | LOG | http://localhost:3000/ | [refresh] Final health active= | true | reachable= | true
 2025-10-10T16:46:20.364Z | LOG | http://localhost:3000/ | [refresh] Final health active= | true | reachable= | true
+2025-10-11T10:11:17.326Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:11:17.149Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T10:11:17.148Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T10:11:17.147Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-10-11T10:11:17.520Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 294ms
+2025-10-11T10:11:19.439Z | ERROR | http://localhost:3000/ | [createSandbox] Error: | {}
+2025-10-11T10:11:39.042Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-10-11T10:11:39.043Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T10:11:39.042Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T10:11:39.099Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:11:39.124Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 125ms
+2025-10-11T10:12:11.006Z | LOG | http://localhost:3000/ | [createSandbox] Response data: | {"success":true,"sandboxId":"ihaob33tbhnd78vc5ekt0","url":"https://5173-ihaob33tbhnd78vc5ekt0.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T10:12:11.007Z | LOG | http://localhost:3000/ | [createSandbox] SUCCESS sandboxId= | ihaob33tbhnd78vc5ekt0 | url= | https://5173-ihaob33tbhnd78vc5ekt0.e2b.app
+2025-10-11T10:12:11.007Z | LOG | http://localhost:3000/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T10:12:13.008Z | LOG | http://localhost:3000/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T10:12:13.114Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:12:13.178Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 165ms
+2025-10-11T10:12:25.452Z | LOG | http://localhost:3000/ | [createSandbox] Vite server started successfully
+2025-10-11T10:14:50.354Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:14:51.504Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 1250ms
+2025-10-11T10:15:49.313Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:15:50.486Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 1274ms
+2025-10-11T10:16:21.019Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:16:22.260Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 1341ms
+2025-10-11T10:18:09.361Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:18:10.212Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 912ms
+2025-10-11T10:19:37.982Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:19:38.288Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 349ms
+2025-10-11T10:21:11.356Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:21:11.908Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 452ms
+2025-10-11T10:21:12.027Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:21:12.057Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 130ms
+2025-10-11T10:21:13.321Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-10-11T10:21:13.323Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T10:21:13.322Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T10:21:13.387Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:21:13.402Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 116ms
+2025-10-11T10:21:50.137Z | LOG | http://localhost:3000/ | [createSandbox] SUCCESS sandboxId= | ivctmgaz6va6ua6819jkv | url= | https://5173-ivctmgaz6va6ua6819jkv.e2b.app
+2025-10-11T10:21:50.137Z | LOG | http://localhost:3000/ | [createSandbox] Response data: | {"success":true,"sandboxId":"ivctmgaz6va6ua6819jkv","url":"https://5173-ivctmgaz6va6ua6819jkv.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T10:21:50.138Z | LOG | http://localhost:3000/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T10:21:52.139Z | LOG | http://localhost:3000/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T10:21:52.438Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:21:52.711Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 373ms
+2025-10-11T10:22:04.902Z | LOG | http://localhost:3000/ | [createSandbox] Vite server started successfully
+2025-10-11T10:22:13.316Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:22:13.583Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 339ms
+2025-10-11T10:22:35.085Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:22:35.435Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 410ms
+2025-10-11T10:23:56.691Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:23:56.932Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 324ms
+2025-10-11T10:24:17.927Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:24:18.136Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 282ms
+2025-10-11T10:24:35.931Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:24:36.069Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 239ms
+2025-10-11T10:24:52.243Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:24:52.395Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 251ms
+2025-10-11T10:25:12.446Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:25:12.555Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 210ms
+2025-10-11T10:25:22.061Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-11T10:25:22.371Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 410ms
+2025-10-11T10:48:21.252Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T10:48:21.617Z | LOG | http://localhost:3001/ | [home] Cleared old conversation data on mount
+2025-10-11T10:48:21.617Z | LOG | http://localhost:3001/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T10:48:21.618Z | LOG | http://localhost:3001/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T10:48:21.656Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 507ms
+2025-10-11T10:48:21.759Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T10:48:21.896Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 238ms
+2025-10-11T10:48:54.790Z | LOG | http://localhost:3001/ | [createSandbox] Response data: | {"success":true,"sandboxId":"ipg9xadbqusp2y983w2uj","url":"https://5173-ipg9xadbqusp2y983w2uj.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T10:48:54.794Z | LOG | http://localhost:3001/ | [createSandbox] SUCCESS sandboxId= | ipg9xadbqusp2y983w2uj | url= | https://5173-ipg9xadbqusp2y983w2uj.e2b.app
+2025-10-11T10:48:54.794Z | LOG | http://localhost:3001/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T10:48:56.795Z | LOG | http://localhost:3001/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T10:48:56.903Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T10:48:57.007Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 203ms
+2025-10-11T10:49:09.270Z | LOG | http://localhost:3001/ | [createSandbox] Vite server started successfully
+2025-10-11T11:02:21.377Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:02:21.650Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 334ms
+2025-10-11T11:02:39.706Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:02:39.964Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 332ms
+2025-10-11T11:03:14.544Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:03:14.828Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 354ms
+2025-10-11T11:03:46.454Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:03:46.697Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 317ms
+2025-10-11T11:03:59.921Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:04:00.173Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 321ms
+2025-10-11T11:04:27.882Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:04:28.194Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 369ms
+2025-10-11T11:04:46.430Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:04:46.696Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 335ms
+2025-10-11T11:05:12.261Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:05:12.476Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 290ms
+2025-10-11T11:05:57.317Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:05:57.566Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 323ms
+2025-10-11T11:06:16.467Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:06:16.783Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 392ms
+2025-10-11T11:06:31.263Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:06:31.512Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 323ms
+2025-10-11T11:07:14.263Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:07:14.544Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 354ms
+2025-10-11T11:07:34.345Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:07:34.562Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 295ms
+2025-10-11T11:07:54.211Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:07:54.456Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 316ms
+2025-10-11T11:08:13.101Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:08:13.368Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 338ms
+2025-10-11T11:08:36.459Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:08:36.754Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 359ms
+2025-10-11T11:08:57.630Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:08:57.894Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 333ms
+2025-10-11T11:09:37.979Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:09:38.264Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 356ms
+2025-10-11T11:10:06.263Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:10:06.555Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 362ms
+2025-10-11T11:10:20.239Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:10:20.399Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 234ms
+2025-10-11T11:10:33.919Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:10:34.036Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 217ms
+2025-10-11T11:10:44.477Z | LOG | http://localhost:3001/ | [Fast Refresh] rebuilding
+2025-10-11T11:10:44.617Z | LOG | http://localhost:3001/ | [Fast Refresh] done in 213ms
+2025-10-11T11:11:22.217Z | LOG | http://localhost:3003/ | [Fast Refresh] rebuilding
+2025-10-11T11:11:22.601Z | LOG | http://localhost:3003/ | [home] Cleared old conversation data on mount
+2025-10-11T11:11:22.604Z | LOG | http://localhost:3003/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T11:11:22.605Z | LOG | http://localhost:3003/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T11:11:22.886Z | LOG | http://localhost:3003/ | [Fast Refresh] done in 772ms
+2025-10-11T11:11:55.944Z | LOG | http://localhost:3003/ | [createSandbox] Response data: | {"success":true,"sandboxId":"il1hhak73mcslphg5zzy0","url":"https://5173-il1hhak73mcslphg5zzy0.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T11:11:55.944Z | LOG | http://localhost:3003/ | [createSandbox] SUCCESS sandboxId= | il1hhak73mcslphg5zzy0 | url= | https://5173-il1hhak73mcslphg5zzy0.e2b.app
+2025-10-11T11:11:55.945Z | LOG | http://localhost:3003/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T11:11:57.945Z | LOG | http://localhost:3003/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T11:11:58.088Z | LOG | http://localhost:3003/ | [Fast Refresh] rebuilding
+2025-10-11T11:11:58.156Z | LOG | http://localhost:3003/ | [Fast Refresh] done in 169ms
+2025-10-11T11:12:10.875Z | LOG | http://localhost:3003/ | [createSandbox] Vite server started successfully
+2025-10-11T11:12:28.621Z | LOG | http://localhost:3003/ | [chat] Using backend file cache for context
+2025-10-11T11:12:28.622Z | LOG | http://localhost:3003/ | [chat] - sandboxId: | il1hhak73mcslphg5zzy0
+2025-10-11T11:12:28.622Z | LOG | http://localhost:3003/ | [chat] - isEdit: | false
+2025-10-11T11:12:28.622Z | LOG | http://localhost:3003/ | [chat] Sending context to AI:
+2025-10-11T11:12:28.766Z | LOG | http://localhost:3003/ | [Fast Refresh] rebuilding
+2025-10-11T11:12:29.332Z | LOG | http://localhost:3003/ | [Fast Refresh] done in 667ms
+2025-10-11T11:13:01.589Z | LOG | http://localhost:3003/ | [chat] Applying generated code. sandboxId= | il1hhak73mcslphg5zzy0 | url= | https://5173-il1hhak73mcslphg5zzy0.e2b.app
+2025-10-11T11:13:01.591Z | LOG | http://localhost:3003/ | [applyGeneratedCode] Calling /api/apply-ai-code-stream with sandboxId= | il1hhak73mcslphg5zzy0
+2025-10-11T11:13:01.907Z | LOG | http://localhost:3003/ | [applyGeneratedCode] SSE event: | start | Starting code application...
+2025-10-11T11:13:01.908Z | LOG | http://localhost:3003/ | [applyGeneratedCode] SSE event: | step | No additional packages to install, skipping...
+2025-10-11T11:13:01.908Z | LOG | http://localhost:3003/ | [applyGeneratedCode] SSE event: | step | Creating 2 files...
+2025-10-11T11:13:01.908Z | LOG | http://localhost:3003/ | [applyGeneratedCode] SSE event: | file-progress | src/index.css
+2025-10-11T11:13:02.643Z | LOG | http://localhost:3003/ | [applyGeneratedCode] SSE event: | file-complete | src/index.css
+2025-10-11T11:13:02.643Z | LOG | http://localhost:3003/ | [applyGeneratedCode] SSE event: | file-progress | src/App.jsx
+2025-10-11T11:13:03.490Z | LOG | http://localhost:3003/ | [applyGeneratedCode] SSE event: | file-complete | src/App.jsx
+2025-10-11T11:13:03.490Z | LOG | http://localhost:3003/ | [applyGeneratedCode] SSE event: | complete | Successfully applied 2 files
+2025-10-11T11:13:03.492Z | LOG | http://localhost:3003/ | [applyGeneratedCode] Requesting /api/restart-vite
+2025-10-11T11:13:03.491Z | LOG | http://localhost:3003/ | [applyGeneratedCode] Final data received: | Successfully applied 2 files | {"filesCreated":["src/index.css","src/App.jsx"],"filesUpdated":[],"packagesInstalled":[],"packagesAlreadyInstalled":[],"packagesFailed":[],"commandsExecuted":[],"errors":[]}
+2025-10-11T11:13:03.696Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:04.004Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:04.309Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:04.616Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:04.921Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:05.227Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:05.533Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:05.869Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:06.178Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:06.484Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:06.792Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:07.099Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:07.405Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:07.710Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:08.016Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:08.322Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:08.628Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:08.937Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:09.243Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:09.549Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:09.854Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:10.161Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:10.467Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:10.773Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:11.079Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:11.385Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:11.692Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:11.998Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:12.304Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:12.610Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:12.917Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:13.223Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:13.529Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:13.842Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:14.150Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:14.457Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:14.763Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:15.075Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:15.381Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:15.687Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:15.791Z | LOG | http://localhost:3003/ | [applyGeneratedCode] Response data: | {"success":true,"results":{"filesCreated":["src/index.css","src/App.jsx"],"filesUpdated":[],"packagesInstalled":[],"packagesAlreadyInstalled":[],"packagesFailed":[],"commandsExecuted":[],"errors":[]},"explanation":"","structure":null,"message":"Successfully applied 2 files"}
+2025-10-11T11:13:15.792Z | LOG | http://localhost:3003/ | [applyGeneratedCode] Current iframe element: | null
+2025-10-11T11:13:15.791Z | LOG | http://localhost:3003/ | [applyGeneratedCode] Current sandboxData: | {"success":true,"sandboxId":"il1hhak73mcslphg5zzy0","url":"https://5173-il1hhak73mcslphg5zzy0.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T11:13:15.792Z | LOG | http://localhost:3003/ | [applyGeneratedCode] Current iframe src:
+2025-10-11T11:13:15.948Z | LOG | http://localhost:3003/ | [Fast Refresh] rebuilding
+2025-10-11T11:13:15.995Z | WARN | http://localhost:3003/ | [refresh] No iframe yet; waiting for render...
+2025-10-11T11:13:16.026Z | LOG | http://localhost:3003/ | [build-test] Skipping build test - would need API endpoint
+2025-10-11T11:13:16.027Z | LOG | http://localhost:3003/ | [chat] applyGeneratedCode finished
+2025-10-11T11:13:16.026Z | LOG | http://localhost:3003/ | [applyGeneratedCode] Packages installed: false, refresh delay: 2000ms
+2025-10-11T11:13:16.092Z | LOG | http://localhost:3003/ | [Fast Refresh] done in 244ms
+2025-10-11T11:13:16.302Z | LOG | http://localhost:3003/ | [refresh] Starting refresh sequence. reason= | applied | url= | https://5173-il1hhak73mcslphg5zzy0.e2b.app
+2025-10-11T11:13:16.614Z | LOG | http://localhost:3003/ | [refresh] Health check 1/12 active=true reachable=true
+2025-10-11T11:13:18.035Z | LOG | http://localhost:3003/ | [refresh] Starting refresh sequence. reason= | default | url= | https://5173-il1hhak73mcslphg5zzy0.e2b.app
+2025-10-11T11:13:18.717Z | LOG | http://localhost:3003/ | [refresh] Health check 1/12 active=true reachable=true

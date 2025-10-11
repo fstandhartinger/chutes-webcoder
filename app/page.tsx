@@ -1332,7 +1332,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">{generationProgress.currentFile.path}</span>
-                            <span className={`px-2 py-0.5 text-xs rounded-md ${
+                            <span className={`px-2 py-0.5 text-xs rounded ${
                               generationProgress.currentFile.type === 'css' ? 'bg-moss-400/20 text-moss-400' :
                               generationProgress.currentFile.type === 'javascript' ? 'bg-heat-100/20 text-heat-100' :
                               generationProgress.currentFile.type === 'json' ? 'bg-moss-500/20 text-moss-500' :
@@ -2975,7 +2975,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-0 rounded-2xl bg-moss-100/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                   <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
-                  <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-[20px]" />
+                  <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
                   <textarea
                     value={homePromptInput}
                     onChange={(e) => {
@@ -3026,7 +3026,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-0 rounded-2xl bg-moss-100/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                   <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-surface-ink-600/80 group-hover:border-surface-ink-500 group-focus-within:border-moss-400 transition-colors duration-300" />
-                  <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-[20px]" />
+                  <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
                   <input
                     type="text"
                     onChange={(e) => {
@@ -3193,7 +3193,7 @@ Focus on the key sections and content, making it clean and modern.`;
       <div className="md:hidden bg-surface-ink-850/80 backdrop-blur border-b border-surface-ink-600/70 px-2 py-2">
         <div className="flex bg-surface-ink-800/80 rounded-lg p-1 w-full max-w-sm mx-auto justify-between">
           <button
-            className={`${mobileTab === 'chat' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            className={`${mobileTab === 'chat' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('chat'); }}
             title="Chat"
           >
@@ -3201,7 +3201,7 @@ Focus on the key sections and content, making it clean and modern.`;
             <span className="hidden min-[380px]:inline">Chat</span>
           </button>
           <button
-            className={`${mobileTab === 'code' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            className={`${mobileTab === 'code' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('code'); }}
             title="Code"
           >
@@ -3209,7 +3209,7 @@ Focus on the key sections and content, making it clean and modern.`;
             <span className="hidden min-[380px]:inline">Code</span>
           </button>
           <button
-            className={`${mobileTab === 'preview' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-all`}
+            className={`${mobileTab === 'preview' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('preview'); }}
             title="Preview"
           >
@@ -3271,7 +3271,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div key={idx} className="block">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-1`}>
                     <div className="block">
-                      <div className={`block rounded-[18px] px-5 py-3 text-sm leading-relaxed ${
+                      <div className={`block rounded-xl px-5 py-3 text-sm leading-relaxed ${
                         msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-moss-400/60 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
                         msg.type === 'ai' ? 'bg-surface-ink-850/95 border border-surface-ink-600/70 text-ink-200 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
                         msg.type === 'system' ? 'bg-transparent text-ink-400 font-medium text-xs tracking-wide uppercase' :
