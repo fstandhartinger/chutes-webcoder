@@ -1194,3 +1194,24 @@ Fast Refresh requires at least one parent function component in your React tree.
 2025-10-11T17:10:06.045Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
 2025-10-11T17:10:06.044Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
 2025-10-11T17:10:06.309Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 605ms
+2025-10-11T17:10:41.373Z | LOG | http://localhost:3002/ | [createSandbox] Response data: | {"success":true,"sandboxId":"idbvsbqi5ncxndjf7r3us","url":"https://5173-idbvsbqi5ncxndjf7r3us.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-11T17:10:41.374Z | LOG | http://localhost:3002/ | [createSandbox] SUCCESS sandboxId= | idbvsbqi5ncxndjf7r3us | url= | https://5173-idbvsbqi5ncxndjf7r3us.e2b.app
+2025-10-11T17:10:41.374Z | LOG | http://localhost:3002/ | [createSandbox] Suppressing URL push during active generation
+2025-10-11T17:10:43.375Z | LOG | http://localhost:3002/ | [createSandbox] Ensuring Vite server is running...
+2025-10-11T17:10:43.483Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:10:43.615Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 232ms
+2025-10-11T17:10:55.903Z | LOG | http://localhost:3002/ | [createSandbox] Vite server started successfully
+2025-10-11T17:15:54.709Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:15:55.123Z | LOG | http://localhost:3002/ | [home] Cleared old conversation data on mount
+2025-10-11T17:15:55.124Z | LOG | http://localhost:3002/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-11T17:15:55.123Z | LOG | http://localhost:3002/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-11T17:15:55.191Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 582ms
+2025-10-11T17:15:55.294Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:15:55.433Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 240ms
+2025-10-11T17:16:04.806Z | LOG | http://localhost:3002/ | [chat] Using backend file cache for context
+2025-10-11T17:16:04.806Z | LOG | http://localhost:3002/ | [createSandbox] Reusing in-flight creation promise
+2025-10-11T17:16:04.807Z | LOG | http://localhost:3002/ | [chat] - sandboxId: | pending
+2025-10-11T17:16:04.807Z | LOG | http://localhost:3002/ | [chat] Sending context to AI:
+2025-10-11T17:16:04.808Z | LOG | http://localhost:3002/ | [chat] - isEdit: | false
+2025-10-11T17:16:05.028Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
+2025-10-11T17:16:05.661Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 732ms

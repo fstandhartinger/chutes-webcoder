@@ -292,7 +292,10 @@ const themeConfig: Config = {
       maxWidth: sizes,
       height: sizes,
       inset: sizes,
-      borderWidth: sizes,
+      borderWidth: {
+        ...sizes,
+        '3': '3px'
+      },
       backdropBlur: Array.from({ length: 20 }, (_, i) => i).reduce(
         (acc, curr) => {
           acc[curr] = curr + "px";
