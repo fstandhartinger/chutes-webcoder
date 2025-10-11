@@ -3426,7 +3426,7 @@ Focus on the key sections and content, making it clean and modern.`;
             )}
           </div>
 
-          <div className="p-4 border-t border-surface-ink-600/70 bg-surface-ink-900/85">
+          <div className="p-4 border-t border-neutral-800/70 bg-surface-ink-900/85">
             <HeroInput
               value={aiChatInput}
               onChange={setAiChatInput}
@@ -3439,10 +3439,10 @@ Focus on the key sections and content, making it clean and modern.`;
 
         {/* Right Panel - Preview or Generation (2/3 of remaining width) */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-3 pt-4 pb-4 bg-surface-ink-850/90 border-b border-surface-ink-600/70 flex justify-between items-center">
+          <div className="px-3 pt-4 pb-4 bg-surface-ink-850/90 border-b border-neutral-800/70 flex justify-between items-center">
             <div className="flex items-center gap-2">
               {/* Toggle-style Code/View switcher */}
-              <div className="inline-flex bg-surface-ink-800 border border-surface-ink-600/70 rounded-lg p-1 opacity-90">
+              <div className="inline-flex bg-surface-ink-800 border border-neutral-800/70 rounded-lg p-1 opacity-90">
                 <button
                   onClick={() => setActiveTab('generation')}
                   className={`px-4 py-2 rounded-lg transition-all text-sm font-medium ${
@@ -3486,7 +3486,7 @@ Focus on the key sections and content, making it clean and modern.`;
               
               {/* Live Code Generation Status */}
               {activeTab === 'generation' && generationProgress.isGenerating && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-surface-ink-600/70 rounded-lg text-xs font-medium text-ink-100">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-neutral-800/70 rounded-lg text-xs font-medium text-ink-100">
                   <div className="w-2 h-2 bg-moss-500 rounded-full animate-pulse" />
                   {generationProgress.isEdit ? 'Editing code' : 'Live generation'}
                 </div>
@@ -3494,7 +3494,7 @@ Focus on the key sections and content, making it clean and modern.`;
               
               {/* Sandbox Status Indicator */}
               {sandboxData && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-surface-ink-600/70 rounded-lg text-xs font-medium text-ink-100">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-neutral-800/70 rounded-lg text-xs font-medium text-ink-100">
                   <div className="w-2.5 h-2.5 bg-moss-500 rounded-full" />
                   Sandbox active
                 </div>
@@ -3507,7 +3507,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   target="_blank" 
                   rel="noopener noreferrer"
                   title="Open in new tab"
-                  className="p-2 rounded-lg border border-surface-ink-600/70 text-ink-200 hover:text-ink-50 hover:bg-surface-ink-750 transition-all"
+                  className="p-2 rounded-lg border border-neutral-800/70 text-ink-200 hover:text-ink-50 hover:bg-surface-ink-750 transition-all"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

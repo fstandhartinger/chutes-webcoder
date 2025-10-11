@@ -54,10 +54,10 @@ export default function SidebarInput({ onSubmit, disabled = false }: SidebarInpu
   return (
     <div className="w-full">
       <div >
-        <div className="p-4 border-b border-surface-ink-600/70">
+        <div className="p-4 border-b border-neutral-800">
          {/* link to home page with button */}
          <Link href="/">
-          <button className="w-full px-4 py-2 text-xs font-medium text-ink-100 bg-surface-ink-850/90 rounded-lg border border-surface-ink-600/70 transition-all focus:outline-none focus:ring-2 focus:ring-moss-400/60 focus:border-moss-400 hover:border-moss-400 hover:text-ink-50">
+          <button className="w-full px-4 py-2 text-xs font-medium text-ink-100 bg-surface-ink-850/90 rounded-lg border border-neutral-800 transition-all focus:outline-none focus:ring-2 focus:ring-moss-400/60 focus:border-moss-400 hover:border-moss-400 hover:text-ink-50">
             Generate a new website
           </button>
          </Link>
@@ -97,7 +97,7 @@ export default function SidebarInput({ onSubmit, disabled = false }: SidebarInpu
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
                 disabled={disabled}
-                className="w-full px-3 py-2 text-xs font-medium text-ink-100 bg-surface-ink-850/90 rounded-lg border border-surface-ink-600/70 focus:outline-none focus:ring-2 focus:ring-moss-400/60 focus:border-moss-400 transition-all disabled:opacity-40"
+                className="w-full px-3 py-2 text-xs font-medium text-ink-100 bg-surface-ink-850/90 rounded-lg border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-moss-400/60 focus:border-moss-400 transition-all disabled:opacity-40"
               >
                 {models.map((model) => (
                   <option key={model.id} value={model.id}>
@@ -115,7 +115,7 @@ export default function SidebarInput({ onSubmit, disabled = false }: SidebarInpu
                 value={additionalInstructions}
                 onChange={(e) => setAdditionalInstructions(e.target.value)}
                 disabled={disabled}
-                className="w-full px-3 py-2 text-xs text-ink-100 bg-surface-ink-850/90 rounded-lg border border-surface-ink-600/70 focus:outline-none focus:ring-2 focus:ring-moss-400/60 focus:border-moss-400 placeholder:text-ink-500 transition-all disabled:opacity-40"
+                className="w-full px-3 py-2 text-xs text-ink-100 bg-surface-ink-850/90 rounded-lg border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-moss-400/60 focus:border-moss-400 placeholder:text-ink-500 transition-all disabled:opacity-40"
                 placeholder="e.g., make it more colorful, add animations..."
               />
             </div>

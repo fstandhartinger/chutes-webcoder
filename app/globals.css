@@ -90,6 +90,8 @@
 
   /* Neutral colors */
   --neutral-800: #1f2937ff;
+  --border: #1f2937ff;
+  --card: #111726ff;
 
   /* Purple colors */
   --purple-300: #c084fcff;
