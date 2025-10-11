@@ -2954,9 +2954,8 @@ Focus on the key sections and content, making it clean and modern.`;
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, ease: 'easeOut' }}
-                  className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-moss-400/10 to-moss-500/10 backdrop-blur-sm border border-moss-400/20 text-moss-400 px-6 py-2.5 text-label-medium uppercase tracking-[0.2em] font-medium"
+                  className="inline-flex items-center rounded-full bg-gradient-to-r from-moss-400/10 to-moss-500/10 backdrop-blur-sm text-moss-400 px-6 py-2.5 text-label-medium uppercase tracking-[0.2em] font-medium"
                 >
-                  <div className="w-2 h-2 bg-moss-400 rounded-full animate-pulse" />
                   Chutes AI
                 </motion.div>
                 <motion.h1 
@@ -3034,10 +3033,8 @@ Focus on the key sections and content, making it clean and modern.`;
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
               >
                 <div className="h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-surface-ink-600/60 to-transparent" />
-                <span className="absolute inline-flex items-center justify-center gap-3 rounded-full bg-surface-ink-850/90 backdrop-blur-sm px-10 py-4 text-label-medium uppercase tracking-[0.2em] text-ink-300 border border-surface-ink-600/50 font-medium shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
-                  <div className="w-1 h-1 bg-ink-400 rounded-full" />
+                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-850/90 backdrop-blur-sm px-10 py-4 text-label-medium uppercase tracking-[0.2em] text-ink-300 font-medium shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
                   OR
-                  <div className="w-1 h-1 bg-ink-400 rounded-full" />
                 </span>
               </motion.div>
 
