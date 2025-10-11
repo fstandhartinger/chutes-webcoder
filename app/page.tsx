@@ -2910,12 +2910,12 @@ Focus on the key sections and content, making it clean and modern.`;
 
   return (
     <div className="relative font-sans bg-background text-foreground min-h-[100svh] md:min-h-screen flex flex-col">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-[#030712] via-[#040015] to-[#0c1028] opacity-95" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-[#050505] via-[#0b0b10] to-[#111216] opacity-95" />
       {/* Home Screen Overlay */}
       {showHomeScreen && (
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
           {/* Background */}
-          <div className="absolute inset-0 overflow-hidden bg-gradient-to-br from-[#030712] via-[#040015] to-[#0c1028]">
+          <div className="absolute inset-0 overflow-hidden bg-[#0b0c10]">
             {/* Subtle, performant particle wave covering lower portion, shifted down 10% */}
             <div className="absolute left-0 right-0 h-3/5" style={{ bottom: '-10%' }}>
               <ParticleWave className="absolute inset-0" />
@@ -2943,19 +2943,19 @@ Focus on the key sections and content, making it clean and modern.`;
           </button>
           
           {/* Header */}
-            <div className="absolute top-0 left-0 right-0 z-20 px-8 py-6 flex items-center justify-between animate-[fadeIn_0.8s_ease-out]">
-            <Link href="/" className="w-20 h-20 text-white cursor-pointer flex items-center justify-center">
+            <div className="absolute top-0 left-0 right-0 z-20 px-14 py-9 flex items-center justify-between animate-[fadeIn_0.8s_ease-out]">
+            <Link href="/" className="w-32 h-32 text-white cursor-pointer flex items-center justify-center">
             <svg className="w-full h-full" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
             </Link>
             <div />
           </div>
           
           {/* Main content */}
-          <div className="relative z-10 h-full flex justify-center items-start pt-32 md:pt-40 px-4">
+          <div className="relative z-10 h-full flex justify-center items-start pt-40 md:pt-48 px-4">
             <div className="text-center w-full max-w-5xl mx-auto px-4">
               {/* Firecrawl-style Header */}
               <div className="text-center mb-10">
-                <h1 className="text-5xl lg:text-6xl text-center text-white font-bold tracking-tight leading-tight mb-4 animate-[fadeIn_0.8s_ease-out]">
+                <h1 className="text-5xl lg:text-[3.75rem] text-center text-white font-bold tracking-tight leading-tight mb-6 animate-[fadeIn_0.8s_ease-out]">
                   Chutes Webcoder
                 </h1>
                 <motion.p 
@@ -2970,7 +2970,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </div>
               
               {/* Prompt form */}
-              <form onSubmit={handleHomePromptSubmit} className="mt-8 w-full max-w-4xl mx-auto">
+              <form onSubmit={handleHomePromptSubmit} className="mt-24 w-full max-w-4xl mx-auto">
                 <div className="w-full relative group">
                   <textarea
                     value={homePromptInput}
@@ -2983,9 +2983,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="min-h-[200px] w-full resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg leading-[1.6] text-white placeholder-gray-400 px-7 pr-16 py-6 pb-16 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
+                    className="min-h-[220px] w-full resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/80 rounded-[24px] text-lg leading-[1.65] text-white/95 placeholder-gray-400 px-9 pr-24 py-8 pb-20 border border-white/12 bg-[rgba(16,18,24,0.92)] hover:border-white/18 transition-all duration-200"
                     style={{
-                      boxShadow: '0 0 0 1px rgba(139,92,246,0.15), 0 10px 24px rgba(0,0,0,0.45)',
+                      boxShadow: '0 18px 48px rgba(0,0,0,0.55)',
                     }}
                     autoFocus
                     onKeyDown={(e) => {
@@ -2996,13 +2996,13 @@ Focus on the key sections and content, making it clean and modern.`;
                       }
                     }}
                   />
-                  <span className="absolute bottom-4 left-5 text-xs text-gray-400 select-none pointer-events-none">
+                  <span className="absolute bottom-7 left-6 text-xs text-gray-400 select-none pointer-events-none">
                     Press Enter to send, Shift+Enter for linebreaks
                   </span>
                   <button
                     type="submit"
                     disabled={!homePromptInput.trim()}
-                    className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-lg"
+                    className="absolute bottom-6 right-6 flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:from-purple-500 hover:to-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-lg"
                     title="Send"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -3015,15 +3015,15 @@ Focus on the key sections and content, making it clean and modern.`;
               </form>
 
               {/* Separator */}
-                <div className="relative my-10">
-                <div className="border-t border-gray-600/50" />
+                <div className="relative my-16">
+                <div className="border-t border-white/12" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-[hsl(240_10%_8%)] px-5 py-1 text-base text-gray-300 font-semibold rounded-lg">OR</span>
+                  <span className="bg-[rgba(16,18,24,0.98)] px-6 py-1.5 text-sm tracking-[0.2em] text-gray-200 font-semibold rounded-full uppercase">OR</span>
                 </div>
               </div>
 
               {/* URL clone form */}
-              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-4xl mx-auto">
+              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-4xl mx-auto mt-16">
                   <div className="w-full relative group">
                   <input
                     type="text"
@@ -3039,9 +3039,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="min-h-[64px] h-auto w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl text-lg leading-[1.7] text-white placeholder-gray-300 px-7 pr-16 py-4 border-2 border-gray-600/40 bg-[hsl(240_10%_12%)] hover:border-gray-500/50 transition-all"
+                    className="min-h-[74px] h-auto w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/80 rounded-[24px] text-lg leading-[1.7] text-white/95 placeholder-gray-300 px-9 pr-24 py-5 border border-white/12 bg-[rgba(16,18,24,0.92)] hover:border-white/18 transition-all duration-200"
                     style={{
-                      boxShadow: '0 0 0 1px rgba(139,92,246,0.18), 0 12px 28px rgba(0,0,0,0.5)',
+                      boxShadow: '0 18px 48px rgba(0,0,0,0.55)',
                     }}
                   />
                   <button
@@ -3061,10 +3061,10 @@ Focus on the key sections and content, making it clean and modern.`;
               {/* Style Selector - Slides out when valid domain is entered */}
               {showStyleSelector && (
                 <>
-                <div className="overflow-hidden mt-10 max-w-4xl mx-auto w-full">
+                <div className="overflow-hidden mt-18 max-w-4xl mx-auto w-full">
                 <div className={`transition-all duration-500 ease-out transform ${showStyleSelector ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
-                <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 shadow-sm">
-                  <p className="text-sm text-muted-foreground mb-3 font-medium">How do you want your site to look?</p>
+                <div className="bg-[rgba(20,22,28,0.92)] backdrop-blur-sm border border-white/8 rounded-2xl p-5 shadow-[0_20px_60px_rgba(5,5,10,0.55)]">
+                  <p className="text-sm text-gray-300 mb-4 font-medium tracking-wide uppercase">Choose a style preset</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {[
                       { name: 'Neobrutalist', description: 'Bold colors, thick borders' },
@@ -3105,14 +3105,14 @@ Focus on the key sections and content, making it clean and modern.`;
                             setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
                           }
                         }}
-                        className={`p-3 rounded-lg border transition-all ${
+                        className={`p-3 rounded-xl border transition-all duration-200 text-left ${
                           selectedStyle === style.name
-                            ? 'border-ring bg-[hsl(240_8%_10%)] text-foreground shadow-sm'
-                            : 'border-border bg-[hsl(240_8%_7%)] hover:border-ring hover:bg-[hsl(240_8%_10%)] text-[hsl(0_0%_90%)]'
+                            ? 'border-white/18 bg-[rgba(34,37,48,0.95)] text-white shadow-[0_12px_30px_rgba(0,0,0,0.45)]'
+                            : 'border-white/10 bg-[rgba(20,22,30,0.88)] hover:border-white/18 hover:bg-[rgba(28,30,40,0.9)] text-gray-200'
                         }`}
                       >
-                        <div className="text-sm font-medium">{style.name}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{style.description}</div>
+                        <div className="text-sm font-semibold tracking-wide">{style.name}</div>
+                        <div className="text-xs text-gray-400 mt-1 leading-relaxed">{style.description}</div>
                       </button>
                     ))}
                   </div>
@@ -3145,7 +3145,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         }
                       }}
                       placeholder="Add more details: specific features, color preferences..."
-                      className="w-full px-4 py-2 text-sm bg-[hsl(240_8%_7%)] border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 transition-all duration-200"
+                    className="w-full px-4 py-2.5 text-sm bg-[rgba(20,22,30,0.88)] border border-white/10 rounded-xl text-white/90 placeholder-gray-400 focus:outline-none focus:border-white/25 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 shadow-[0_16px_32px_rgba(0,0,0,0.45)]"
                     />
                   </div>
                 </div>
@@ -3169,10 +3169,10 @@ Focus on the key sections and content, making it clean and modern.`;
               )}
               
               {/* Advanced - Model Selector (collapsed by default) */}
-              <details className="mt-6 animate-[fadeIn_1s_ease-out]">
-                <summary className="cursor-pointer text-sm text-gray-300 text-center hover:text-white transition-colors">Advanced</summary>
-                <div className="mt-3 text-left w-full max-w-4xl mx-auto flex flex-col items-center">
-                  <label className="block text-xs text-muted-foreground mb-1">AI Model:</label>
+              <details className="mt-12 animate-[fadeIn_1s_ease-out]">
+                <summary className="cursor-pointer text-sm text-gray-300 text-center hover:text-white transition-colors tracking-wide uppercase">Advanced</summary>
+                <div className="mt-4 text-left w-full max-w-4xl mx-auto flex flex-col items-center gap-2">
+                  <label className="block text-xs text-gray-400 tracking-wide">AI Model</label>
                   <select
                     value={aiModel}
                     onChange={(e) => {
@@ -3206,10 +3206,10 @@ Focus on the key sections and content, making it clean and modern.`;
       
       {!showHomeScreen && (
       <>
-      <div className="bg-card/80 backdrop-blur px-4 py-4 border-b border-border flex items-center justify-between">
+      <div className="bg-[rgba(15,18,24,0.94)] backdrop-blur-lg px-6 py-4 border-b border-white/12 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/" className="h-8 w-auto text-[hsl(0_0%_92%)] cursor-pointer">
-            <svg className="h-8 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+          <Link href="/" className="h-10 w-auto text-white/95 cursor-pointer">
+            <svg className="h-10 w-auto" width="62" height="41" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
           </Link>
         </div>
         <div className="flex items-center gap-2">
@@ -3229,7 +3229,7 @@ Focus on the key sections and content, making it clean and modern.`;
                     }
                     router.push(`/?${params.toString()}`);
                   }}
-                  className="px-3 py-1.5 text-sm bg-[hsl(240_8%_7%)] text-foreground border border-border rounded-[12px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                  className="px-3 py-1.5 text-sm bg-[rgba(20,22,30,0.88)] text-white/90 border border-white/10 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-purple-500/70 focus:border-white/20 hover:border-white/18 transition-colors"
                 >
                   {appConfig.ai.availableModels.map(model => (
                     <option key={model} value={model}>
@@ -3321,7 +3321,7 @@ Focus on the key sections and content, making it clean and modern.`;
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
         {/* Center Panel - AI Chat (1/3 of remaining width) */}
-        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[400px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-[rgba(9,12,25,0.9)] backdrop-blur min-h-0`}>
+        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[420px] flex flex-col border-b md:border-b-0 md:border-r border-white/10 bg-[rgba(12,14,20,0.92)] backdrop-blur-lg min-h-0`}>
           {conversationContext.scrapedWebsites.length > 0 && (
             <div className="p-4 bg-card">
               <div className="flex flex-col gap-2">
@@ -3358,7 +3358,7 @@ Focus on the key sections and content, making it clean and modern.`;
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-1 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-4 flex flex-col gap-3 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
             {chatMessages.map((msg, idx) => {
               // Check if this message is from a successful generation
               const isGenerationComplete = msg.content.includes('Successfully recreated') || 
@@ -3372,13 +3372,13 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div key={idx} className="block">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-1`}>
                     <div className="block">
-                      <div className={`block rounded-[10px] px-4 py-2 ${
-                        msg.type === 'user' ? 'bg-gradient-to-r from-purple-600/25 to-blue-600/25 border border-purple-500/30 text-white ml-auto max-w-[80%] shadow-[0_6px_20px_rgba(64,64,255,0.12)]' :
-                        msg.type === 'ai' ? 'bg-[hsl(240_8%_14%)] border border-gray-600/30 text-gray-100 mr-auto max-w-[80%] shadow-[0_6px_20px_rgba(0,0,0,0.35)]' :
-                        msg.type === 'system' ? 'bg-transparent text-gray-400 font-medium text-sm' :
-                        msg.type === 'command' ? 'bg-gray-800 border border-gray-700 text-gray-100 font-mono text-sm' :
+                      <div className={`block rounded-[18px] px-5 py-3 text-sm leading-relaxed ${
+                        msg.type === 'user' ? 'bg-gradient-to-r from-purple-600/35 to-blue-600/35 border border-purple-500/35 text-white ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(64,64,255,0.2)]' :
+                        msg.type === 'ai' ? 'bg-[rgba(22,24,32,0.95)] border border-white/10 text-gray-200 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(0,0,0,0.45)]' :
+                        msg.type === 'system' ? 'bg-transparent text-gray-400 font-medium text-xs tracking-wide uppercase' :
+                        msg.type === 'command' ? 'bg-[rgba(18,20,28,0.95)] border border-white/12 text-gray-100 font-mono text-xs' :
                         msg.type === 'error' ? 'bg-red-900/30 border border-red-600 text-red-100 text-sm' :
-                        'bg-gray-800 border border-gray-700 text-gray-100 text-sm'
+                        'bg-[rgba(18,20,28,0.95)] border border-white/10 text-gray-100 text-sm'
                       }`}>
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
@@ -3573,8 +3573,8 @@ Focus on the key sections and content, making it clean and modern.`;
           <div className="p-4 border-t border-border bg-card">
             <div className="relative">
               <Textarea
-                className="min-h-[60px] pr-12 resize-y border-2 border-black focus:outline-none"
-                placeholder=""
+                    className="min-h-[70px] pr-14 pl-5 resize-y rounded-2xl border border-white/10 bg-[rgba(20,22,30,0.9)] text-white/90 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/60 focus:border-white/20 shadow-[0_12px_28px_rgba(0,0,0,0.45)]"
+                placeholder="Continue the conversation..."
                 value={aiChatInput}
                 onChange={(e) => setAiChatInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -3587,7 +3587,7 @@ Focus on the key sections and content, making it clean and modern.`;
               />
               <button
                 onClick={() => void sendChatMessage()}
-                className="absolute right-2 bottom-2 p-2 bg-transparent text-white hover:text-zinc-300 transition-colors cursor-pointer"
+                className="absolute right-3 bottom-3 p-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 rounded-xl shadow-[0_14px_28px_rgba(64,64,255,0.35)] transition-all cursor-pointer"
                 title="Send message (Enter)"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -3600,16 +3600,16 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
 
         {/* Right Panel - Preview or Generation (2/3 of remaining width) */}
-        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[rgba(6,9,20,0.92)] backdrop-blur-sm`}>
-            <div className="px-2 sm:px-4 py-2 bg-card/80 backdrop-blur border-b border-border flex justify-between items-center">
+        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[rgba(8,10,18,0.94)] backdrop-blur-lg`}>
+            <div className="px-3 sm:px-5 py-3 bg-[rgba(14,17,26,0.95)] backdrop-blur border-b border-white/12 flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <div className="hidden md:flex bg-[#36322F] rounded-lg p-1">
+              <div className="hidden md:flex bg-[rgba(26,29,40,0.95)] border border-white/10 rounded-xl p-1">
                 <button
                   onClick={() => setActiveTab('generation')}
-                  className={`p-2 rounded-md transition-all ${
+                  className={`px-3 py-2 rounded-lg transition-all text-sm font-medium ${
                     activeTab === 'generation' 
-                      ? 'bg-black text-white' 
-                      : 'text-[hsl(0_0%_85%)] hover:text-white hover:bg-[hsl(240_8%_12%)]'
+                      ? 'bg-white/90 text-black shadow-[0_12px_24px_rgba(255,255,255,0.12)]' 
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
                   }`}
                   title="Code"
                 >
@@ -3619,10 +3619,10 @@ Focus on the key sections and content, making it clean and modern.`;
                 </button>
                 <button
                   onClick={() => setActiveTab('preview')}
-                  className={`p-2 rounded-md transition-all ${
+                  className={`px-3 py-2 rounded-lg transition-all text-sm font-medium ${
                     activeTab === 'preview' 
-                      ? 'bg-black text-white' 
-                      : 'text-[hsl(0_0%_85%)] hover:text-white hover:bg-[hsl(240_8%_12%)]'
+                      ? 'bg-white/90 text-black shadow-[0_12px_24px_rgba(255,255,255,0.12)]' 
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
                   }`}
                   title="Preview"
                 >
@@ -3633,7 +3633,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 </button>
               </div>
             </div>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-3 items-center">
               {/* Live Code Generation Status - Moved to far right */}
               {activeTab === 'generation' && (generationProgress.isGenerating || generationProgress.files.length > 0) && (
                 <div className="flex items-center gap-3">
@@ -3642,7 +3642,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       {generationProgress.files.length} files generated
                     </div>
                   )}
-                  <div className={`inline-flex items-center justify-center whitespace-nowrap rounded-[10px] font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-[#36322F] text-white hover:bg-[#36322F] [box-shadow:inset_0px_-2px_0px_0px_#171310,_0px_1px_6px_0px_rgba(58,_33,_8,_58%)] hover:translate-y-[1px] hover:scale-[0.98] hover:[box-shadow:inset_0px_-1px_0px_0px_#171310,_0px_1px_3px_0px_rgba(58,_33,_8,_40%)] active:translate-y-[2px] active:scale-[0.97] active:[box-shadow:inset_0px_1px_1px_0px_#171310,_0px_1px_2px_0px_rgba(58,_33,_8,_30%)] disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:scale-100 h-8 px-3 py-1 text-sm gap-2`}>
+                  <div className={`inline-flex items-center justify-center whitespace-nowrap rounded-[12px] font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-[rgba(26,29,40,0.95)] text-white/85 hover:text-white hover:bg-[rgba(32,35,48,0.95)] shadow-[0_12px_24px_rgba(0,0,0,0.4)] h-9 px-4 gap-2`}>
                     {generationProgress.isGenerating ? (
                       <>
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
@@ -3696,7 +3696,7 @@ Focus on the key sections and content, making it clean and modern.`;
 
 export default function AISandboxPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen w-full bg-gradient-to-br from-[#030712] via-[#040015] to-[#0c1028]" />}>
+    <Suspense fallback={<div className="min-h-screen w-full bg-gradient-to-br from-[#050505] via-[#0b0b10] to-[#111216]" />}>
       <AISandboxPageContent />
     </Suspense>
   );
