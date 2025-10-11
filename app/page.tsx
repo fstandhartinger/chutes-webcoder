@@ -3293,11 +3293,11 @@ Focus on the key sections and content, making it clean and modern.`;
                     <div className="block">
                       <div className={`block rounded-2xl px-6 py-4 text-sm leading-relaxed ${
                         msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-moss-400/60 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
-                        msg.type === 'ai' ? 'bg-surface-ink-850 border border-surface-ink-600/70 text-ink-200 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)] opacity-95' :
+                        msg.type === 'ai' ? 'bg-neutral-800/90 backdrop-blur-xl border border-neutral-800 text-ink-100 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
                         msg.type === 'system' ? 'bg-transparent text-ink-400 font-medium text-xs tracking-wide uppercase' :
-                        msg.type === 'command' ? 'bg-surface-ink-850 border border-surface-ink-600/70 text-ink-100 font-mono text-xs opacity-95' :
+                        msg.type === 'command' ? 'bg-neutral-800/90 backdrop-blur-xl border border-neutral-800 text-ink-100 font-mono text-xs' :
                         msg.type === 'error' ? 'bg-heat-12 border border-heat-40 text-heat-100 text-sm' :
-                        'bg-surface-ink-850 border border-surface-ink-600/70 text-ink-100 text-sm opacity-95'
+                        'bg-neutral-800/90 backdrop-blur-xl border border-neutral-800 text-ink-100 text-sm'
                       }`}>
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
@@ -3491,7 +3491,7 @@ Focus on the key sections and content, making it clean and modern.`;
           <div className="p-6 border-t border-border bg-card">
             <div className="relative">
               <Textarea
-                    className="min-h-[80px] pr-16 pl-6 resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-850 text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)] opacity-95"
+                    className="min-h-[80px] pr-16 pl-6 resize-y rounded-2xl border border-neutral-800 bg-neutral-800/90 backdrop-blur-xl text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)]"
                 placeholder="Continue the conversation..."
                 value={aiChatInput}
                 onChange={(e) => setAiChatInput(e.target.value)}
@@ -3532,7 +3532,7 @@ Focus on the key sections and content, making it clean and modern.`;
         <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-surface-ink-900/95 backdrop-blur-lg`}>
           <div className="px-4 sm:px-6 py-4 bg-surface-ink-850/90 backdrop-blur border-b border-surface-ink-600/70 flex justify-between items-center">
             <div className="flex items-center gap-3 text-ink-200">
-              <div className="hidden md:flex bg-surface-ink-800 border border-surface-ink-600/70 rounded-xl p-1.5 opacity-90">
+              <div className="hidden md:flex bg-neutral-800/90 backdrop-blur-xl border border-neutral-800 rounded-xl p-1.5">
                 <button
                   onClick={() => setActiveTab('generation')}
                   className={`px-5 py-3 rounded-lg transition-all text-sm font-medium ${
