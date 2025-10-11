@@ -3372,7 +3372,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show applied files if this is an apply success message */}
                       {msg.metadata?.appliedFiles && msg.metadata.appliedFiles.length > 0 && (
-                        <div className="mt-2 inline-block bg-surface-ink-850 rounded-lg p-4 border border-surface-ink-600/70">
+                        <div className="mt-2 inline-block">
                           <div className="text-xs font-medium mb-2 text-ink-200">
                             {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
                           </div>
@@ -3405,7 +3405,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       )}
 
                       {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
-                        <div className="mt-2 inline-block bg-surface-ink-850 rounded-lg p-4 border border-surface-ink-600/70">
+                        <div className="mt-2 inline-block">
                           <div className="text-xs font-medium mb-2 text-ink-200">Generated Files:</div>
                           <div className="flex flex-wrap items-start gap-2">
                             {generationProgress.files.map((file, fileIdx) => (
