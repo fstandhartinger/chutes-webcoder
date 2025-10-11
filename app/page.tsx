@@ -3563,36 +3563,42 @@ Focus on the key sections and content, making it clean and modern.`;
 
         <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-surface-ink-900/95 backdrop-blur-lg`}>
           <div className="px-4 sm:px-6 py-4 bg-surface-ink-850/90 backdrop-blur border-b border-surface-ink-600/70 flex justify-between items-center">
-            <div className="flex items-center gap-3 text-ink-200">
-              <div className="hidden md:flex bg-neutral-800/90 backdrop-blur-xl border border-neutral-800 rounded-xl p-1.5">
+            <div className="flex items-center gap-4 text-ink-200">
+              <div className="hidden md:flex relative bg-surface-ink-800/80 backdrop-blur-xl border border-surface-ink-600/50 rounded-2xl p-1 shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
+                {/* Animated background indicator */}
+                <div 
+                  className={`absolute top-1 bottom-1 w-[calc(50%-2px)] bg-gradient-to-r from-moss-400/20 to-moss-500/20 backdrop-blur-sm rounded-xl transition-all duration-300 ease-out ${
+                    activeTab === 'generation' ? 'left-1' : 'left-[calc(50%+1px)]'
+                  }`}
+                />
                 <button
                   onClick={() => setActiveTab('generation')}
-                  className={`px-5 py-3 rounded-lg transition-all text-sm font-medium ${
+                  className={`relative z-10 flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 text-base font-medium ${
                     activeTab === 'generation'
-                      ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]'
-                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700'
+                      ? 'text-moss-400 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
+                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700/50'
                   }`}
-                  title="Code"
+                  title="Code Editor"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
-                  <span className="ml-2">Code</span>
+                  <span>Code</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('preview')}
-                  className={`px-5 py-3 rounded-lg transition-all text-sm font-medium ${
+                  className={`relative z-10 flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 text-base font-medium ${
                     activeTab === 'preview'
-                      ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]'
-                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700'
+                      ? 'text-moss-400 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
+                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700/50'
                   }`}
-                  title="Preview"
+                  title="Live Preview"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  <span className="ml-2">Preview</span>
+                  <span>Preview</span>
                 </button>
               </div>
             </div>
