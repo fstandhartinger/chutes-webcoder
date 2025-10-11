@@ -3183,9 +3183,9 @@ Focus on the key sections and content, making it clean and modern.`;
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
-          <div className="inline-flex items-center gap-2 bg-surface-ink-700 text-ink-100 px-3 py-1.5 rounded-[10px] text-sm font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-surface-ink-600/70">
+          <div className="inline-flex items-center gap-3 bg-surface-ink-700 text-ink-100 px-4 py-2 rounded-lg text-sm font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-surface-ink-600/70">
             <span id="status-text">{status.text}</span>
-            <div className={`w-2 h-2 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
+            <div className={`w-3 h-3 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
           </div>
         </div>
       </div>
@@ -3320,11 +3320,11 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show applied files if this is an apply success message */}
                       {msg.metadata?.appliedFiles && msg.metadata.appliedFiles.length > 0 && (
-                        <div className="mt-2 inline-block bg-surface-ink-850 rounded-[10px] p-3 border border-surface-ink-600/70">
-                          <div className="text-xs font-medium mb-1 text-ink-300">
+                        <div className="mt-2 inline-block bg-surface-ink-850 rounded-lg p-4 border border-surface-ink-600/70">
+                          <div className="text-xs font-medium mb-2 text-ink-200">
                             {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
                           </div>
-                          <div className="flex flex-wrap items-start gap-1">
+                          <div className="flex flex-wrap items-start gap-2">
                             {msg.metadata.appliedFiles.map((filePath, fileIdx) => {
                               const fileName = filePath.split('/').pop() || filePath;
                               const fileExt = fileName.split('.').pop() || '';
@@ -3335,10 +3335,10 @@ Focus on the key sections and content, making it clean and modern.`;
                               return (
                                 <div
                                   key={`applied-${fileIdx}`}
-                                  className="inline-flex items-center gap-1 px-2 py-1 bg-surface-ink-750 text-ink-100 rounded-[10px] text-xs animate-fade-in-up"
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-lg text-xs animate-fade-in-up"
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
-                                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                                  <span className={`inline-block w-2 h-2 rounded-full ${
                                     fileType === 'css' ? 'bg-moss-400' :
                                     fileType === 'javascript' ? 'bg-heat-100' :
                                     fileType === 'json' ? 'bg-moss-500' :
@@ -3353,13 +3353,13 @@ Focus on the key sections and content, making it clean and modern.`;
                       )}
 
                       {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
-                        <div className="mt-2 inline-block bg-surface-ink-850 rounded-[10px] p-3 border border-surface-ink-600/70">
-                          <div className="text-xs font-medium mb-1 text-ink-300">Generated Files:</div>
-                          <div className="flex flex-wrap items-start gap-1">
+                        <div className="mt-2 inline-block bg-surface-ink-850 rounded-lg p-4 border border-surface-ink-600/70">
+                          <div className="text-xs font-medium mb-2 text-ink-200">Generated Files:</div>
+                          <div className="flex flex-wrap items-start gap-2">
                             {generationProgress.files.map((file, fileIdx) => (
                               <div
                                 key={`complete-${fileIdx}`}
-                                className="inline-flex items-center gap-1 px-2 py-1 bg-surface-ink-750 text-ink-100 rounded-[10px] text-xs animate-fade-in-up"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-750 text-ink-100 rounded-lg text-xs animate-fade-in-up"
                                 style={{ animationDelay: `${fileIdx * 30}ms` }}
                               >
                                 <span className={`inline-block w-1.5 h-1.5 rounded-full ${
@@ -3499,34 +3499,36 @@ Focus on the key sections and content, making it clean and modern.`;
 
         <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-surface-ink-900/95 backdrop-blur-lg`}>
           <div className="px-3 sm:px-5 py-3 bg-surface-ink-850/90 backdrop-blur border-b border-surface-ink-600/70 flex justify-between items-center">
-            <div className="flex items-center gap-2 text-ink-200">
-              <div className="hidden md:flex bg-surface-ink-800/90 border border-surface-ink-600/70 rounded-xl p-1">
+            <div className="flex items-center gap-3 text-ink-200">
+              <div className="hidden md:flex bg-surface-ink-800/90 border border-surface-ink-600/70 rounded-xl p-1.5">
                 <button
                   onClick={() => setActiveTab('generation')}
-                  className={`px-3 py-2 rounded-lg transition-all text-sm font-medium ${
-                    activeTab === 'generation' 
-                      ? 'bg-white/90 text-black shadow-[0_12px_24px_rgba(255,255,255,0.12)]' 
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  className={`px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
+                    activeTab === 'generation'
+                      ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]'
+                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700'
                   }`}
                   title="Code"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
+                  <span className="ml-2">Code</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('preview')}
-                  className={`px-3 py-2 rounded-lg transition-all text-sm font-medium ${
-                    activeTab === 'preview' 
-                      ? 'bg-white/90 text-black shadow-[0_12px_24px_rgba(255,255,255,0.12)]' 
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  className={`px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
+                    activeTab === 'preview'
+                      ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]'
+                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700'
                   }`}
                   title="Preview"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
+                  <span className="ml-2">Preview</span>
                 </button>
               </div>
             </div>
