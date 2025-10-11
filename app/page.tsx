@@ -2964,9 +2964,9 @@ Focus on the key sections and content, making it clean and modern.`;
             <div />
           </div>
 
-          <div className="relative z-10 h-full flex justify-center items-start pt-36 md:pt-44 px-4">
-            <div className="text-center w-full max-w-4xl mx-auto px-3 sm:px-6">
-              <div className="mb-12 space-y-4">
+          <div className="relative z-10 h-full flex justify-center items-start pt-32 md:pt-40 px-4">
+            <div className="text-center w-full max-w-5xl mx-auto px-4 sm:px-8">
+              <div className="mb-16 space-y-6">
                 <span className="inline-flex items-center gap-2 rounded-full bg-moss-200/20 text-moss-400 px-4 py-1.5 text-label-small uppercase tracking-[0.18em]">
                   Chutes AI
                 </span>
@@ -2982,7 +2982,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 </motion.p>
               </div>
 
-              <form onSubmit={handleHomePromptSubmit} className="mt-16 w-full max-w-3xl mx-auto">
+              <form onSubmit={handleHomePromptSubmit} className="mt-20 w-full max-w-4xl mx-auto">
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-0 rounded-xl bg-moss-200/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                   <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
@@ -2997,7 +2997,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="min-h-[200px] w-full resize-y rounded-xl border border-surface-ink-600/70 bg-surface-ink-900 px-7 pr-18 py-6 pb-[60px] text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all opacity-85"
+                    className="min-h-[240px] w-full resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-900 px-8 pr-20 py-8 pb-[70px] text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all opacity-85"
                     style={{ backdropFilter: 'blur(24px)' }}
                     autoFocus
                     onKeyDown={(e) => {
@@ -3008,13 +3008,13 @@ Focus on the key sections and content, making it clean and modern.`;
                       }
                     }}
                   />
-                  <span className="absolute bottom-7 left-7 text-label-small text-ink-400 select-none">
+                  <span className="absolute bottom-8 left-8 text-label-small text-ink-400 select-none">
                     Press Enter to send, Shift+Enter for linebreaks
                   </span>
                   <button
                     type="submit"
                     disabled={!homePromptInput.trim()}
-                    className="absolute bottom-6 right-6 flex h-10 w-10 items-center justify-center rounded-lg text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="absolute bottom-7 right-7 flex h-12 w-12 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     title="Send"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -3025,14 +3025,14 @@ Focus on the key sections and content, making it clean and modern.`;
                 </div>
               </form>
 
-              <div className="relative my-12 flex items-center justify-center">
-                <div className="h-px w-full max-w-3xl bg-surface-ink-600/80" />
-                <span className="absolute inline-flex items-center justify-center gap-3 rounded-full bg-surface-ink-850 px-6 py-2 text-label-small uppercase tracking-[0.18em] text-ink-300 border border-surface-ink-600/80">
+              <div className="relative my-16 flex items-center justify-center">
+                <div className="h-px w-full max-w-4xl bg-surface-ink-600/80" />
+                <span className="absolute inline-flex items-center justify-center gap-3 rounded-full bg-surface-ink-850 px-8 py-3 text-label-small uppercase tracking-[0.18em] text-ink-300 border border-surface-ink-600/80">
                   OR
                 </span>
               </div>
 
-              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-3xl mx-auto mt-12">
+              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-4xl mx-auto mt-16">
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-0 rounded-xl bg-moss-200/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                   <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
@@ -3050,13 +3050,13 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="h-[48px] w-full rounded-xl border border-surface-ink-600/70 bg-surface-ink-900 px-7 pr-14 py-3.5 text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all opacity-85"
+                    className="h-[56px] w-full rounded-2xl border border-surface-ink-600/70 bg-surface-ink-900 px-8 pr-16 py-4 text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all opacity-85"
                     style={{ backdropFilter: 'blur(24px)' }}
                   />
                   <button
                     type="submit"
                     disabled={!homeUrlInput.trim()}
-                    className="absolute top-1/2 right-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="absolute top-1/2 right-5 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     title="Clone Website"
                   >
                   <svg
@@ -3079,12 +3079,12 @@ Focus on the key sections and content, making it clean and modern.`;
               </form>
 
               {showStyleSelector && (
-                <div className="mt-12 w-full max-w-3xl mx-auto">
-                  <div className="rounded-2xl border border-neutral-800 bg-ink-800/50 px-6 py-6 backdrop-blur-xl shadow-[var(--shadow-elevated)] transition-all">
-                    <p className="text-label-medium uppercase tracking-[0.15em] text-ink-300 mb-5">
+                <div className="mt-20 w-full max-w-4xl mx-auto">
+                  <div className="rounded-3xl border border-neutral-800 bg-ink-800/50 px-8 py-8 backdrop-blur-xl shadow-[var(--shadow-elevated)] transition-all">
+                    <p className="text-label-medium uppercase tracking-[0.15em] text-ink-300 mb-8 text-center">
                       Choose a style preset
                     </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[{ name: 'Moss Glass', description: 'Frosted glass with moss accents' },
                         { name: 'Ink Minimal', description: 'Pure dark minimal layout' },
                         { name: 'Gradient Glow', description: 'Soft gradients and lighting' },
@@ -3115,7 +3115,7 @@ Focus on the key sections and content, making it clean and modern.`;
                                 setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
                               }
                             }}
-                            className={`flex flex-col items-start gap-1.5 rounded-xl border px-4 py-3.5 transition-all duration-200 text-left ${
+                            className={`flex flex-col items-start gap-2 rounded-2xl border px-5 py-4 transition-all duration-200 text-left ${
                               selectedStyle === style.name
                                 ? 'border-moss-400/80 bg-ink-800/70 text-ink-100 shadow-[var(--shadow-floating)]'
                                 : 'border-neutral-800 bg-ink-800/30 text-ink-200 hover:border-moss-400/60 hover:bg-ink-800/50 hover:text-ink-100'
@@ -3136,7 +3136,7 @@ Focus on the key sections and content, making it clean and modern.`;
       
       {!showHomeScreen && (
       <>
-      <div className="bg-surface-ink-850/90 backdrop-blur-lg px-6 py-4 border-b border-surface-ink-600/80 flex items-center justify-between">
+      <div className="bg-surface-ink-850/90 backdrop-blur-lg px-8 py-6 border-b border-surface-ink-600/80 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="h-16 w-16 text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
             <svg className="h-16 w-16" width="64" height="64" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
@@ -3210,10 +3210,10 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
       </div>
 
-      <div className="md:hidden bg-surface-ink-850/80 backdrop-blur border-b border-surface-ink-600/70 px-3 py-2">
-        <div className="flex bg-surface-ink-800/80 rounded-lg p-1 w-full max-w-sm mx-auto justify-between">
+      <div className="md:hidden bg-surface-ink-850/80 backdrop-blur border-b border-surface-ink-600/70 px-4 py-3">
+        <div className="flex bg-surface-ink-800/80 rounded-xl p-1.5 w-full max-w-sm mx-auto justify-between">
           <button
-            className={`${mobileTab === 'chat' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-all`}
+            className={`${mobileTab === 'chat' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('chat'); }}
             title="Chat"
           >
@@ -3221,7 +3221,7 @@ Focus on the key sections and content, making it clean and modern.`;
             <span className="hidden min-[380px]:inline">Chat</span>
           </button>
           <button
-            className={`${mobileTab === 'code' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-all`}
+            className={`${mobileTab === 'code' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('code'); }}
             title="Code"
           >
@@ -3229,7 +3229,7 @@ Focus on the key sections and content, making it clean and modern.`;
             <span className="hidden min-[380px]:inline">Code</span>
           </button>
           <button
-            className={`${mobileTab === 'preview' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-all`}
+            className={`${mobileTab === 'preview' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('preview'); }}
             title="Preview"
           >
@@ -3240,7 +3240,7 @@ Focus on the key sections and content, making it clean and modern.`;
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
-        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[420px] flex flex-col border-b md:border-b-0 md:border-r border-surface-ink-600/70 bg-surface-ink-850/90 backdrop-blur-lg min-h-0`}>
+        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[460px] flex flex-col border-b md:border-b-0 md:border-r border-surface-ink-600/70 bg-surface-ink-850/90 backdrop-blur-lg min-h-0`}>
           {conversationContext.scrapedWebsites.length > 0 && (
             <div className="p-4 bg-card">
               <div className="flex flex-col gap-2">
@@ -3277,7 +3277,7 @@ Focus on the key sections and content, making it clean and modern.`;
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-4 flex flex-col gap-3 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-6 pb-5 flex flex-col gap-4 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
             {chatMessages.map((msg, idx) => {
               // Check if this message is from a successful generation
               const isGenerationComplete = msg.content.includes('Successfully recreated') || 
@@ -3291,7 +3291,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div key={idx} className="block">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
-                      <div className={`block rounded-xl px-5 py-3 text-sm leading-relaxed ${
+                      <div className={`block rounded-2xl px-6 py-4 text-sm leading-relaxed ${
                         msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-moss-400/60 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
                         msg.type === 'ai' ? 'bg-surface-ink-850 border border-surface-ink-600/70 text-ink-200 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)] opacity-95' :
                         msg.type === 'system' ? 'bg-transparent text-ink-400 font-medium text-xs tracking-wide uppercase' :
@@ -3488,10 +3488,10 @@ Focus on the key sections and content, making it clean and modern.`;
             )}
           </div>
 
-          <div className="p-4 border-t border-border bg-card">
+          <div className="p-6 border-t border-border bg-card">
             <div className="relative">
               <Textarea
-                    className="min-h-[70px] pr-14 pl-5 resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-850 text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)] opacity-95"
+                    className="min-h-[80px] pr-16 pl-6 resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-850 text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)] opacity-95"
                 placeholder="Continue the conversation..."
                 value={aiChatInput}
                 onChange={(e) => setAiChatInput(e.target.value)}
@@ -3505,7 +3505,7 @@ Focus on the key sections and content, making it clean and modern.`;
               />
               <button
                 onClick={() => void sendChatMessage()}
-                className="absolute right-3 bottom-3 p-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 rounded-xl shadow-[0_14px_28px_rgba(64,64,255,0.35)] transition-all cursor-pointer"
+                className="absolute right-4 bottom-4 p-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 rounded-xl shadow-[0_14px_28px_rgba(64,64,255,0.35)] transition-all cursor-pointer"
                 title="Send message (Enter)"
               >
                     <svg
@@ -3530,12 +3530,12 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
 
         <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-surface-ink-900/95 backdrop-blur-lg`}>
-          <div className="px-3 sm:px-5 py-3 bg-surface-ink-850/90 backdrop-blur border-b border-surface-ink-600/70 flex justify-between items-center">
+          <div className="px-4 sm:px-6 py-4 bg-surface-ink-850/90 backdrop-blur border-b border-surface-ink-600/70 flex justify-between items-center">
             <div className="flex items-center gap-3 text-ink-200">
               <div className="hidden md:flex bg-surface-ink-800 border border-surface-ink-600/70 rounded-xl p-1.5 opacity-90">
                 <button
                   onClick={() => setActiveTab('generation')}
-                  className={`px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
+                  className={`px-5 py-3 rounded-lg transition-all text-sm font-medium ${
                     activeTab === 'generation'
                       ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]'
                       : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700'
@@ -3549,7 +3549,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 </button>
                 <button
                   onClick={() => setActiveTab('preview')}
-                  className={`px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
+                  className={`px-5 py-3 rounded-lg transition-all text-sm font-medium ${
                     activeTab === 'preview'
                       ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]'
                       : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700'
