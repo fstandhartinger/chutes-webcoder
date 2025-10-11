@@ -3204,9 +3204,9 @@ Focus on the key sections and content, making it clean and modern.`;
             onClick={() => createSandbox()}
             size="lg"
             title="Create new sandbox"
-            className="cursor-pointer h-12 w-12"
+            className="cursor-pointer h-16 w-16"
           >
-            <svg className="w-12 h-12" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}>
+            <svg className="w-16 h-16" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
@@ -3216,9 +3216,9 @@ Focus on the key sections and content, making it clean and modern.`;
             size="lg"
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
-            className="cursor-pointer h-12 w-12"
+            className="cursor-pointer h-16 w-16"
           >
-            <Clipboard className="w-12 h-12" style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }} />
+            <Clipboard className="w-16 h-16" style={{ width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }} />
           </Button>
           <Button
             variant="code"
@@ -3226,9 +3226,9 @@ Focus on the key sections and content, making it clean and modern.`;
             disabled={!sandboxData}
             size="lg"
             title="Download your Vite app as ZIP"
-            className="cursor-pointer h-12 w-12"
+            className="cursor-pointer h-16 w-16"
           >
-            <svg className="w-12 h-12" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}>
+            <svg className="w-16 h-16" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
