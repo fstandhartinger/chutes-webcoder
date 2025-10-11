@@ -3505,7 +3505,7 @@ Focus on the key sections and content, making it clean and modern.`;
               />
               <button
                 onClick={() => void sendChatMessage()}
-                className="absolute right-4 bottom-4 p-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 rounded-xl shadow-[0_14px_28px_rgba(64,64,255,0.35)] transition-all cursor-pointer"
+                className="absolute right-4 bottom-4 flex h-12 w-12 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 title="Send message (Enter)"
               >
                     <svg
