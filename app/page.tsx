@@ -3320,7 +3320,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div key={idx} className="block">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
-                      <div className={`block rounded-2xl px-8 py-6 text-sm leading-relaxed ${
+                      <div className={`block rounded-2xl px-10 py-8 text-sm leading-relaxed ${
                         msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-neutral-800 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
                         msg.type === 'ai' ? 'bg-neutral-800/90 backdrop-blur-xl border border-neutral-800 text-ink-100 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
                         msg.type === 'system' ? 'bg-transparent text-ink-400 font-medium text-xs tracking-wide uppercase' :
