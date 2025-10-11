@@ -3017,7 +3017,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       className="absolute bottom-8 right-8 flex h-14 w-14 items-center justify-center rounded-2xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
                       title="Send"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-10 w-10">
                         <polyline points="9 10 4 15 9 20"></polyline>
                         <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                       </svg>
@@ -3539,16 +3539,16 @@ Focus on the key sections and content, making it clean and modern.`;
               >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="32"
-                      height="32"
+                      width="40"
+                      height="40"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-8 w-8"
-                      style={{ width: '32px', height: '32px' }}
+                      className="h-10 w-10"
+                      style={{ width: '40px', height: '40px' }}
                     >
                   <polyline points="9 10 4 15 9 20"></polyline>
                   <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
