@@ -3017,7 +3017,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       className="absolute bottom-8 right-8 flex h-14 w-14 items-center justify-center rounded-2xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
                       title="Send"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
                         <polyline points="9 10 4 15 9 20"></polyline>
                         <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                       </svg>
@@ -3140,7 +3140,7 @@ Focus on the key sections and content, making it clean and modern.`;
                                   setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
                                 }
                               }}
-                              className={`group relative flex flex-col items-start gap-3 rounded-2xl border px-6 py-5 transition-all duration-300 text-left ${
+                              className={`group relative flex flex-col items-start gap-3 rounded-2xl border px-8 py-6 transition-all duration-300 text-left ${
                                 selectedStyle === style.name
                                   ? 'border-moss-400/80 bg-gradient-to-br from-moss-400/10 to-moss-500/5 text-ink-100 shadow-[0_12px_40px_rgba(99,210,151,0.15)]'
                                   : 'border-neutral-800/50 bg-ink-800/20 text-ink-200 hover:border-moss-400/40 hover:bg-ink-800/30 hover:text-ink-100 hover:shadow-[0_8px_32px_rgba(7,10,16,0.2)]'
@@ -3149,7 +3149,7 @@ Focus on the key sections and content, making it clean and modern.`;
                               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                               <div className="relative">
                                 <span className="text-label-large text-ink-50 font-medium">{style.name}</span>
-                                <span className="text-label-small text-ink-400 mt-1 block">{style.description}</span>
+                                <span className="text-label-small text-ink-400 mt-2 block">{style.description}</span>
                               </div>
                             </motion.button>
                           ))}
@@ -3539,16 +3539,16 @@ Focus on the key sections and content, making it clean and modern.`;
               >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
+                      width="32"
+                      height="32"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-6 w-6"
-                      style={{ width: '24px', height: '24px' }}
+                      className="h-8 w-8"
+                      style={{ width: '32px', height: '32px' }}
                     >
                   <polyline points="9 10 4 15 9 20"></polyline>
                   <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
