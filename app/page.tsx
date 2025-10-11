@@ -2947,170 +2947,219 @@ Focus on the key sections and content, making it clean and modern.`;
             <div />
           </div>
 
-          <div className="relative z-10 h-full flex justify-center items-start pt-32 md:pt-40 px-4">
-            <div className="text-center w-full max-w-5xl mx-auto px-4 sm:px-8">
-              <div className="mb-16 space-y-6">
-                <span className="inline-flex items-center gap-2 rounded-full bg-moss-200/20 text-moss-400 px-4 py-1.5 text-label-small uppercase tracking-[0.18em]">
+          <div className="relative z-10 h-full flex justify-center items-start pt-24 md:pt-32 px-4">
+            <div className="text-center w-full max-w-6xl mx-auto px-4 sm:px-8">
+              <div className="mb-20 space-y-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                  className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-moss-400/10 to-moss-500/10 backdrop-blur-sm border border-moss-400/20 text-moss-400 px-6 py-2.5 text-label-medium uppercase tracking-[0.2em] font-medium"
+                >
+                  <div className="w-2 h-2 bg-moss-400 rounded-full animate-pulse" />
                   Chutes AI
-                </span>
-                <h1 className="text-title-h1 text-balance text-ink-50">
+                </motion.div>
+                <motion.h1 
+                  className="text-title-h1 text-balance text-ink-50 font-medium leading-tight"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
+                >
                   Chutes Webcoder
-                </h1>
+                </motion.h1>
                 <motion.p
-                  className="text-body-large text-ink-300 max-w-2xl mx-auto"
-                  animate={{ opacity: showStyleSelector ? 0.72 : 1 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="text-body-x-large text-ink-200 max-w-3xl mx-auto leading-relaxed"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: showStyleSelector ? 0.6 : 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
                 >
                   Build React apps with AI. Describe your idea or clone a URL.
                 </motion.p>
               </div>
 
-              <form onSubmit={handleHomePromptSubmit} className="mt-20 w-full max-w-4xl mx-auto">
+              <motion.form 
+                onSubmit={handleHomePromptSubmit} 
+                className="mt-24 w-full max-w-5xl mx-auto"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
+              >
                 <div className="relative group">
-                  <span className="pointer-events-none absolute inset-0 rounded-xl bg-moss-200/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-                  <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
-                  <textarea
-                    value={homePromptInput}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setHomePromptInput(value);
-                      const domainRegex = /^(https?:\/\/)?(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(\/?..*)?$/;
-                      const hasValidUrl = domainRegex.test(homeUrlInput) && homeUrlInput.length > 5;
-                      const hasPrompt = value.trim().length > 5;
-                      setShowStyleSelector(hasValidUrl || hasPrompt);
-                    }}
-                    placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                    className="min-h-[240px] w-full resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-900 px-8 pr-20 py-8 pb-[70px] text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all opacity-85"
-                    style={{ backdropFilter: 'blur(24px)' }}
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        const form = e.currentTarget.closest('form') as HTMLFormElement | null;
-                        form?.requestSubmit();
-                      }
-                    }}
-                  />
-                  <span className="absolute bottom-8 left-8 text-label-small text-ink-400 select-none">
-                    Press Enter to send, Shift+Enter for linebreaks
-                  </span>
-                  <button
-                    type="submit"
-                    disabled={!homePromptInput.trim()}
-                    className="absolute bottom-7 right-7 flex h-12 w-12 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                    title="Send"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                      <polyline points="9 10 4 15 9 20"></polyline>
-                      <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                    </svg>
-                  </button>
-                </div>
-              </form>
-
-              <div className="relative my-16 flex items-center justify-center">
-                <div className="h-px w-full max-w-4xl bg-surface-ink-600/80" />
-                <span className="absolute inline-flex items-center justify-center gap-3 rounded-full bg-surface-ink-850 px-8 py-3 text-label-small uppercase tracking-[0.18em] text-ink-300 border border-surface-ink-600/80">
-                  OR
-                </span>
-              </div>
-
-              <form onSubmit={handleHomeScreenSubmit} className="w-full max-w-4xl mx-auto mt-16">
-                <div className="relative group">
-                  <span className="pointer-events-none absolute inset-0 rounded-xl bg-moss-200/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-                  <span className="pointer-events-none absolute -inset-3 shadow-[var(--shadow-elevated)] rounded-xl" />
-                  <input
-                    type="text"
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setHomeUrlInput(value);
-                      const domainRegex = /^(https?:\/\/)?(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(\/?..*)?$/;
-                      const hasValidUrl = domainRegex.test(value) && value.length > 5;
-                      const hasPrompt = homePromptInput.trim().length > 5;
-                      setTimeout(() => {
+                  <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/20 via-moss-500/10 to-moss-400/20 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative">
+                    <span className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                    <textarea
+                      value={homePromptInput}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setHomePromptInput(value);
+                        const domainRegex = /^(https?:\/\/)?(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(\/?..*)?$/;
+                        const hasValidUrl = domainRegex.test(homeUrlInput) && homeUrlInput.length > 5;
+                        const hasPrompt = value.trim().length > 5;
                         setShowStyleSelector(hasValidUrl || hasPrompt);
-                        if (!(hasValidUrl || hasPrompt)) setSelectedStyle(null);
-                      }, 100);
-                    }}
-                    placeholder="https://example.com"
-                    className="h-[56px] w-full rounded-2xl border border-surface-ink-600/70 bg-surface-ink-900 px-8 pr-16 py-4 text-body-large text-ink-50 placeholder-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-500 transition-all opacity-85"
-                    style={{ backdropFilter: 'blur(24px)' }}
-                  />
-                  <button
-                    type="submit"
-                    disabled={!homeUrlInput.trim()}
-                    className="absolute top-1/2 right-5 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                    title="Clone Website"
-                  >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-6 w-6"
-                  >
-                      <polyline points="9 10 4 15 9 20"></polyline>
-                      <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                    </svg>
-                  </button>
-                </div>
-              </form>
-
-              {showStyleSelector && (
-                <div className="mt-20 w-full max-w-4xl mx-auto">
-                  <div className="rounded-3xl border border-neutral-800 bg-ink-800/50 px-8 py-8 backdrop-blur-xl shadow-[var(--shadow-elevated)] transition-all">
-                    <p className="text-label-medium uppercase tracking-[0.15em] text-ink-300 mb-8 text-center">
-                      Choose a style preset
-                    </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[{ name: 'Moss Glass', description: 'Frosted glass with moss accents' },
-                        { name: 'Ink Minimal', description: 'Pure dark minimal layout' },
-                        { name: 'Gradient Glow', description: 'Soft gradients and lighting' },
-                        { name: 'Neo Grid', description: 'Structured layout with grid lines' },
-                        { name: 'Aurora', description: 'Color washed aurora gradients' },
-                        { name: 'Retro', description: 'Warm highlights, retro typography' },
-                        { name: 'Modern', description: 'Contemporary card surfaces' },
-                        { name: 'Monochrome', description: 'Monochrome ink palette' }].map((style) => (
-                          <button
-                            key={style.name}
-                            type="button"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const form = e.currentTarget.closest('form') as HTMLFormElement | null;
-                                form?.requestSubmit();
-                              }
-                            }}
-                            onClick={() => {
-                              if (selectedStyle === style.name) {
-                                setSelectedStyle(null);
-                                const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
-                                setHomeContextInput(currentAdditional);
-                              } else {
-                                setSelectedStyle(style.name);
-                                const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
-                                setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
-                              }
-                            }}
-                            className={`flex flex-col items-start gap-2 rounded-2xl border px-5 py-4 transition-all duration-200 text-left ${
-                              selectedStyle === style.name
-                                ? 'border-moss-400/80 bg-ink-800/70 text-ink-100 shadow-[var(--shadow-floating)]'
-                                : 'border-neutral-800 bg-ink-800/30 text-ink-200 hover:border-moss-400/60 hover:bg-ink-800/50 hover:text-ink-100'
-                            }`}
-                          >
-                            <span className="text-label-medium text-ink-50">{style.name}</span>
-                            <span className="text-label-small text-ink-400">{style.description}</span>
-                          </button>
-                        ))}
-                    </div>
+                      }}
+                      placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
+                      className="min-h-[280px] w-full resize-y rounded-3xl border border-surface-ink-600/50 bg-surface-ink-900/80 backdrop-blur-xl px-10 pr-24 py-10 pb-[80px] text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)]"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          const form = e.currentTarget.closest('form') as HTMLFormElement | null;
+                          form?.requestSubmit();
+                        }
+                      }}
+                    />
+                    <span className="absolute bottom-10 left-10 text-label-medium text-ink-400 select-none font-medium">
+                      Press Enter to send, Shift+Enter for linebreaks
+                    </span>
+                    <button
+                      type="submit"
+                      disabled={!homePromptInput.trim()}
+                      className="absolute bottom-8 right-8 flex h-14 w-14 items-center justify-center rounded-2xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+                      title="Send"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                        <polyline points="9 10 4 15 9 20"></polyline>
+                        <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                      </svg>
+                    </button>
                   </div>
                 </div>
+              </motion.form>
+
+              <motion.div 
+                className="relative my-20 flex items-center justify-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
+              >
+                <div className="h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-surface-ink-600/60 to-transparent" />
+                <span className="absolute inline-flex items-center justify-center gap-3 rounded-full bg-surface-ink-850/90 backdrop-blur-sm px-10 py-4 text-label-medium uppercase tracking-[0.2em] text-ink-300 border border-surface-ink-600/50 font-medium shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
+                  <div className="w-1 h-1 bg-ink-400 rounded-full" />
+                  OR
+                  <div className="w-1 h-1 bg-ink-400 rounded-full" />
+                </span>
+              </motion.div>
+
+              <motion.form 
+                onSubmit={handleHomeScreenSubmit} 
+                className="w-full max-w-5xl mx-auto mt-20"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
+              >
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/20 via-moss-500/10 to-moss-400/20 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative">
+                    <span className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                    <input
+                      type="text"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setHomeUrlInput(value);
+                        const domainRegex = /^(https?:\/\/)?(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(\/?..*)?$/;
+                        const hasValidUrl = domainRegex.test(value) && value.length > 5;
+                        const hasPrompt = homePromptInput.trim().length > 5;
+                        setTimeout(() => {
+                          setShowStyleSelector(hasValidUrl || hasPrompt);
+                          if (!(hasValidUrl || hasPrompt)) setSelectedStyle(null);
+                        }, 100);
+                      }}
+                      placeholder="https://example.com"
+                      className="h-[64px] w-full rounded-3xl border border-surface-ink-600/50 bg-surface-ink-900/80 backdrop-blur-xl px-10 pr-20 py-4 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)]"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!homeUrlInput.trim()}
+                      className="absolute top-1/2 right-6 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-2xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+                      title="Clone Website"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-6 w-6"
+                      >
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </motion.form>
+
+              {showStyleSelector && (
+                <motion.div 
+                  className="mt-24 w-full max-w-5xl mx-auto"
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.6 }}
+                >
+                  <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/10 via-moss-500/5 to-moss-400/10 rounded-3xl blur-sm" />
+                    <div className="relative rounded-3xl border border-neutral-800/50 bg-ink-800/40 backdrop-blur-xl px-10 py-10 shadow-[0_20px_60px_rgba(7,10,16,0.3)]">
+                      <div className="text-center mb-12">
+                        <h3 className="text-title-h4 text-ink-50 font-medium mb-3">Choose a style preset</h3>
+                        <p className="text-body-medium text-ink-300 max-w-2xl mx-auto">
+                          Select a visual style that matches your app's personality
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {[{ name: 'Moss Glass', description: 'Frosted glass with moss accents' },
+                          { name: 'Ink Minimal', description: 'Pure dark minimal layout' },
+                          { name: 'Gradient Glow', description: 'Soft gradients and lighting' },
+                          { name: 'Neo Grid', description: 'Structured layout with grid lines' },
+                          { name: 'Aurora', description: 'Color washed aurora gradients' },
+                          { name: 'Retro', description: 'Warm highlights, retro typography' },
+                          { name: 'Modern', description: 'Contemporary card surfaces' },
+                          { name: 'Monochrome', description: 'Monochrome ink palette' }].map((style) => (
+                            <motion.button
+                              key={style.name}
+                              type="button"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const form = e.currentTarget.closest('form') as HTMLFormElement | null;
+                                  form?.requestSubmit();
+                                }
+                              }}
+                              onClick={() => {
+                                if (selectedStyle === style.name) {
+                                  setSelectedStyle(null);
+                                  const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
+                                  setHomeContextInput(currentAdditional);
+                                } else {
+                                  setSelectedStyle(style.name);
+                                  const currentAdditional = homeContextInput.replace(/^[^,]+theme\s*,?\s*/, '').trim();
+                                  setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
+                                }
+                              }}
+                              className={`group relative flex flex-col items-start gap-3 rounded-2xl border px-6 py-5 transition-all duration-300 text-left ${
+                                selectedStyle === style.name
+                                  ? 'border-moss-400/80 bg-gradient-to-br from-moss-400/10 to-moss-500/5 text-ink-100 shadow-[0_12px_40px_rgba(99,210,151,0.15)]'
+                                  : 'border-neutral-800/50 bg-ink-800/20 text-ink-200 hover:border-moss-400/40 hover:bg-ink-800/30 hover:text-ink-100 hover:shadow-[0_8px_32px_rgba(7,10,16,0.2)]'
+                              }`}
+                            >
+                              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                              <div className="relative">
+                                <span className="text-label-large text-ink-50 font-medium">{style.name}</span>
+                                <span className="text-label-small text-ink-400 mt-1 block">{style.description}</span>
+                              </div>
+                            </motion.button>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               )}
             </div>
           </div>
