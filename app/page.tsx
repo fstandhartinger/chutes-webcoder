@@ -1101,7 +1101,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               <div className="text-sm">
                 {/* Root app folder */}
                 <div 
-                  className="flex items-center gap-1 py-1 px-2 hover:bg-surface-ink-750 rounded cursor-pointer text-ink-50"
+                  className="flex items-center gap-1 py-2 px-3 hover:bg-surface-ink-750 rounded cursor-pointer text-ink-50"
                   onClick={() => toggleFolder('app')}
                 >
                   {expandedFolders.has('app') ? (
@@ -1148,7 +1148,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         <div key={dir} className="mb-1">
                           {dir && (
                             <div 
-                              className="flex items-center gap-1 py-1 px-2 hover:bg-surface-ink-750 rounded cursor-pointer text-ink-50"
+                              className="flex items-center gap-1 py-2 px-3 hover:bg-surface-ink-750 rounded cursor-pointer text-ink-50"
                               onClick={() => toggleFolder(dir)}
                             >
                               {expandedFolders.has(dir) ? (
@@ -1173,7 +1173,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                 return (
                                   <div 
                                     key={fullPath} 
-                                    className={`flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-all ${
+                                    className={`flex items-center gap-2 py-2 px-3 rounded cursor-pointer transition-all ${
                                       isSelected 
                                         ? 'bg-moss-500 text-surface-ink-950' 
                                         : 'text-ink-50 hover:bg-surface-ink-750'
@@ -1184,7 +1184,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                     <span className={`text-xs flex items-center gap-1 ${isSelected ? 'font-medium' : ''}`}>
                                       {fileInfo.name}
                                       {fileInfo.edited && (
-                                        <span className={`text-[10px] px-1 rounded ${
+                                        <span className={`text-[10px] px-1.5 rounded ${
                                         isSelected ? 'bg-blue-500' : 'bg-primary text-primary-foreground'
                                         }`}>✓</span>
                                       )}
@@ -3190,7 +3190,7 @@ Focus on the key sections and content, making it clean and modern.`;
         </div>
       </div>
 
-      <div className="md:hidden bg-surface-ink-850/80 backdrop-blur border-b border-surface-ink-600/70 px-2 py-2">
+      <div className="md:hidden bg-surface-ink-850/80 backdrop-blur border-b border-surface-ink-600/70 px-3 py-2">
         <div className="flex bg-surface-ink-800/80 rounded-lg p-1 w-full max-w-sm mx-auto justify-between">
           <button
             className={`${mobileTab === 'chat' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-all`}
