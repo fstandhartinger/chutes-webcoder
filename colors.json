@@ -210,34 +210,34 @@
     "hex": "1a274fff"
   },
   "surface-ink-950": {
-    "hex": "04070cff"
+    "hex": "0b0f14ff"
   },
   "surface-ink-900": {
-    "hex": "060a10ff"
+    "hex": "0b0f14ff"
   },
   "surface-ink-850": {
-    "hex": "090e15ff"
+    "hex": "111726ff"
   },
   "surface-ink-800": {
-    "hex": "0c121bff"
+    "hex": "111726ff"
   },
   "surface-ink-800/50": {
-    "hex": "0c121b80"
+    "hex": "11172680"
   },
   "surface-ink-750": {
-    "hex": "0f1622ff"
+    "hex": "142030ff"
   },
   "surface-ink-700": {
-    "hex": "131b2bff"
+    "hex": "142030ff"
   },
   "surface-ink-700/70": {
-    "hex": "131b2bb3"
+    "hex": "142030b3"
   },
   "surface-ink-650": {
-    "hex": "172233ff"
+    "hex": "1a274fff"
   },
   "surface-ink-600": {
-    "hex": "1d293cff"
+    "hex": "1f2937ff"
   },
   "surface-ink-500": {
     "hex": "243047ff"

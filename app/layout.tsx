@@ -6,6 +6,13 @@ import ConsoleCapture from "./components/ConsoleCapture";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// Tomato Grotesk font definitions
+const tomatoGrotesk = {
+  style: {
+    fontFamily: 'Tomato Grotesk, Inter, system-ui, sans-serif',
+  },
+};
+
 export const metadata: Metadata = {
   title: "Chutes Webcoder",
   description: "Build and iterate React apps with Chutes AI-powered Webcoder.",

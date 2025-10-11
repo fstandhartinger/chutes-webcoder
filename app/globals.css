@@ -1,3 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* Tomato Grotesk font from CDN */
+@font-face {
+  font-family: 'Tomato Grotesk';
+  src: url('https://cdn.rayonlabs.ai/fonts/Tomato/Tomato%20Grotesk%20Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tomato Grotesk';
+  src: url('https://cdn.rayonlabs.ai/fonts/Tomato/Tomato%20Grotesk%20Regular%20Slanted.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tomato Grotesk';
+  src: url('https://cdn.rayonlabs.ai/fonts/Tomato/Tomato%20Grotesk%20Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tomato Grotesk';
+  src: url('https://cdn.rayonlabs.ai/fonts/Tomato/Tomato%20Grotesk%20Light%20Slanted.woff2') format('woff2');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tomato Grotesk';
+  src: url('https://cdn.rayonlabs.ai/fonts/Tomato/Tomato%20Grotesk%20Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
