@@ -3097,18 +3097,18 @@ Focus on the key sections and content, making it clean and modern.`;
               </option>
             ))}
           </select>
-          <button 
+          <button
             onClick={() => createSandbox()}
-            className="p-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100"
+            className="h-8 w-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100"
             title="Create new sandbox"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
-          <button 
+          <button
             onClick={reapplyLastGeneration}
-            className="p-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
           >
@@ -3116,10 +3116,10 @@ Focus on the key sections and content, making it clean and modern.`;
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
-          <button 
+          <button
             onClick={downloadZip}
             disabled={!sandboxData}
-            className="p-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Download your Vite app as ZIP"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3284,7 +3284,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show applied files if this is an apply success message */}
                       {msg.metadata?.appliedFiles && msg.metadata.appliedFiles.length > 0 && (
-                    <div className="mt-3 inline-block bg-gray-100 rounded-[10px] p-5">
+                    <div className="mt-8 ml-6 inline-block bg-gray-100 rounded-[10px] p-5">
                       <div className="text-xs font-medium mb-3 text-gray-700">
                         {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
                       </div>
@@ -3299,10 +3299,10 @@ Focus on the key sections and content, making it clean and modern.`;
                           return (
                             <div
                               key={`applied-${fileIdx}`}
-                              className="inline-flex items-center gap-1.5 px-6 py-1.5 bg-[#36322F] text-white rounded-[10px] text-xs animate-fade-in-up"
+                              className="inline-flex items-center gap-3 px-6 py-4 bg-[#36322F] text-white rounded-xl text-xs animate-fade-in-up"
                               style={{ animationDelay: `${fileIdx * 30}ms` }}
                             >
-                              <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                              <span className={`inline-block w-1 h-1 rounded-full ${
                                 fileType === 'css' ? 'bg-blue-400' :
                                 fileType === 'javascript' ? 'bg-yellow-400' :
                                 fileType === 'json' ? 'bg-green-400' :
@@ -3318,16 +3318,16 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show generated files for completion messages - but only if no appliedFiles already shown */}
                       {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
-                    <div className="mt-2 inline-block bg-gray-100 rounded-[10px] p-3">
+                    <div className="mt-8 ml-6 inline-block bg-gray-100 rounded-[10px] p-3">
                       <div className="text-xs font-medium mb-1 text-gray-700">Generated Files:</div>
                       <div className="flex flex-wrap items-start gap-1">
                         {generationProgress.files.map((file, fileIdx) => (
                           <div
                             key={`complete-${fileIdx}`}
-                            className="inline-flex items-center gap-1.5 px-6 py-1.5 bg-[#36322F] text-white rounded-[10px] text-xs animate-fade-in-up"
+                            className="inline-flex items-center gap-3 px-6 py-4 bg-[#36322F] text-white rounded-xl text-xs animate-fade-in-up"
                             style={{ animationDelay: `${fileIdx * 30}ms` }}
                           >
-                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                            <span className={`inline-block w-1 h-1 rounded-full ${
                               file.type === 'css' ? 'bg-blue-400' :
                               file.type === 'javascript' ? 'bg-yellow-400' :
                               file.type === 'json' ? 'bg-green-400' :
@@ -3361,7 +3361,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   {generationProgress.files.map((file, idx) => (
                     <div
                       key={`file-${idx}`}
-                      className="inline-flex items-center gap-1.5 px-6 py-1.5 bg-[#36322F] text-white rounded-[10px] text-xs animate-fade-in-up"
+                      className="inline-flex items-center gap-3 px-6 py-4 bg-[#36322F] text-white rounded-xl text-xs animate-fade-in-up"
                       style={{ animationDelay: `${idx * 30}ms` }}
                     >
                       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">

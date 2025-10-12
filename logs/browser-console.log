@@ -1807,3 +1807,54 @@ Fast Refresh requires at least one parent function component in your React tree.
 2025-10-11T19:31:35.700Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 339ms
 2025-10-11T19:31:45.149Z | LOG | http://localhost:3002/ | [Fast Refresh] rebuilding
 2025-10-11T19:31:45.448Z | LOG | http://localhost:3002/ | [Fast Refresh] done in 364ms
+2025-10-12T19:32:34.119Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-10-12T19:32:34.119Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-10-12T19:32:34.119Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-10-12T19:32:34.000Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-12T19:32:34.411Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 666ms
+2025-10-12T19:32:49.872Z | LOG | http://localhost:3000/ | [chat] Using backend file cache for context
+2025-10-12T19:32:49.871Z | LOG | http://localhost:3000/ | [createSandbox] Reusing in-flight creation promise
+2025-10-12T19:32:49.872Z | LOG | http://localhost:3000/ | [chat] Sending context to AI:
+2025-10-12T19:32:49.872Z | LOG | http://localhost:3000/ | [chat] - sandboxId: | pending
+2025-10-12T19:32:49.873Z | LOG | http://localhost:3000/ | [chat] - isEdit: | false
+2025-10-12T19:32:50.048Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-10-12T19:32:50.581Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 634ms
+2025-10-12T19:33:08.233Z | LOG | http://localhost:3000/ | [createSandbox] Suppressing URL push during active generation
+2025-10-12T19:33:08.233Z | LOG | http://localhost:3000/ | [createSandbox] SUCCESS sandboxId= | igf5gx2g88nl8z4om8wgd | url= | https://5173-igf5gx2g88nl8z4om8wgd.e2b.app
+2025-10-12T19:33:08.232Z | LOG | http://localhost:3000/ | [createSandbox] Response data: | {"success":true,"sandboxId":"igf5gx2g88nl8z4om8wgd","url":"https://5173-igf5gx2g88nl8z4om8wgd.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-10-12T19:33:10.358Z | LOG | http://localhost:3000/ | [createSandbox] Ensuring Vite server is running...
+2025-10-12T19:33:18.221Z | LOG | http://localhost:3000/ | [chat] Awaiting sandboxPromise before apply
+2025-10-12T19:33:18.221Z | LOG | http://localhost:3000/ | [chat] SandboxPromise resolved. createdSandbox= | {"success":true,"sandboxId":"igf5gx2g88nl8z4om8wgd","url":"https://5173-igf5gx2g88nl8z4om8wgd.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"} | state.sandboxData= | null
+2025-10-12T19:33:18.222Z | LOG | http://localhost:3000/ | [applyGeneratedCode] Calling /api/apply-ai-code-stream with sandboxId=
+2025-10-12T19:33:18.221Z | LOG | http://localhost:3000/ | [chat] Applying generated code. sandboxId= | igf5gx2g88nl8z4om8wgd | url= | https://5173-igf5gx2g88nl8z4om8wgd.e2b.app
+2025-10-12T19:33:18.438Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | start | Starting code application...
+2025-10-12T19:33:18.439Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | step | Creating 5 files...
+2025-10-12T19:33:18.439Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | step | No additional packages to install, skipping...
+2025-10-12T19:33:18.439Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-progress | src/index.css
+2025-10-12T19:33:19.149Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-complete | src/index.css
+2025-10-12T19:33:19.149Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-progress | src/App.jsx
+2025-10-12T19:33:19.516Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-complete | src/App.jsx
+2025-10-12T19:33:19.517Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-progress | src/components/Header.jsx
+2025-10-12T19:33:20.040Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-complete | src/components/Header.jsx
+2025-10-12T19:33:20.040Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-progress | src/components/TodoList.jsx
+2025-10-12T19:33:20.841Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-complete | src/components/TodoList.jsx
+2025-10-12T19:33:20.842Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-progress | src/components/TodoItem.jsx
+2025-10-12T19:33:21.195Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | complete | Successfully applied 5 files
+2025-10-12T19:33:21.195Z | LOG | http://localhost:3000/ | [applyGeneratedCode] SSE event: | file-complete | src/components/TodoItem.jsx
+2025-10-12T19:33:21.196Z | LOG | http://localhost:3000/ | [applyGeneratedCode] Requesting /api/restart-vite
+2025-10-12T19:33:21.196Z | LOG | http://localhost:3000/ | [applyGeneratedCode] Final data received: | Successfully applied 5 files | {"filesCreated":["src/index.css","src/App.jsx","src/components/Header.jsx","src/components/TodoList.jsx","src/components/TodoItem.jsx"],"filesUpdated":[],"packagesInstalled":[],"packagesAlreadyInstalled":[],"packagesFailed":[],"commandsExecuted":[],"errors":[]}
+2025-10-12T19:33:21.416Z | LOG | http://localhost:3000/ | [applyGeneratedCode] Current iframe element: | null
+2025-10-12T19:33:21.416Z | LOG | http://localhost:3000/ | [applyGeneratedCode] Current sandboxData: | null
+2025-10-12T19:33:21.415Z | LOG | http://localhost:3000/ | [applyGeneratedCode] Response data: | {"success":true,"results":{"filesCreated":["src/index.css","src/App.jsx","src/components/Header.jsx","src/components/TodoList.jsx","src/components/TodoItem.jsx"],"filesUpdated":[],"packagesInstalled":[],"packagesAlreadyInstalled":[],"packagesFailed":[],"commandsExecuted":[],"errors":[]},"explanation":"","structure":null,"message":"Successfully applied 5 files"}
+2025-10-12T19:33:21.416Z | LOG | http://localhost:3000/ | [applyGeneratedCode] Current iframe src:
+2025-10-12T19:33:21.416Z | LOG | http://localhost:3000/ | [build-test] Skipping build test - would need API endpoint
+2025-10-12T19:33:21.417Z | LOG | http://localhost:3000/ | [applyGeneratedCode] Packages installed: false, refresh delay: 2000ms
+2025-10-12T19:33:21.417Z | LOG | http://localhost:3000/ | [chat] applyGeneratedCode finished
+2025-10-12T19:33:21.420Z | WARN | http://localhost:3000/ | [refresh] No iframe yet; waiting for render...
+2025-10-12T19:33:21.733Z | LOG | http://localhost:3000/ | [refresh] Starting refresh sequence. reason= | applied | url= | https://5173-igf5gx2g88nl8z4om8wgd.e2b.app
+2025-10-12T19:33:21.993Z | LOG | http://localhost:3000/ | [refresh] Health check 1/12 active=true reachable=true
+2025-10-12T19:33:22.824Z | LOG | http://localhost:3000/ | [createSandbox] Vite server started successfully
+2025-10-12T19:33:23.429Z | LOG | http://localhost:3000/ | [refresh] Starting refresh sequence. reason= | default | url= | https://5173-igf5gx2g88nl8z4om8wgd.e2b.app
+2025-10-12T19:33:24.077Z | LOG | http://localhost:3000/ | [refresh] Health check 1/12 active=true reachable=true
+2025-10-12T19:33:25.212Z | LOG | http://localhost:3000/ | [refresh] Final health active= | true | reachable= | true
+2025-10-12T19:33:27.279Z | LOG | http://localhost:3000/ | [refresh] Final health active= | true | reachable= | true
