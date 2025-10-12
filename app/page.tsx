@@ -3011,17 +3011,17 @@ Focus on the key sections and content, making it clean and modern.`;
                     <span className="absolute bottom-8 left-10 text-label-medium text-ink-400 select-none font-medium">
                       Press Enter to send, Shift+Enter for linebreaks
                     </span>
-                    <button
-                      type="submit"
-                      disabled={!homePromptInput.trim()}
-                      className="absolute bottom-6 right-8 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
-                      title="Send"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-                        <polyline points="9 10 4 15 9 20"></polyline>
-                        <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                      </svg>
-                    </button>
+<button
+  type="submit"
+  disabled={!homePromptInput.trim()}
+  className="absolute bottom-6 right-8 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+  title="Send"
+>
+  <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <polyline points="9 10 4 15 9 20"></polyline>
+    <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+  </svg>
+</button>
                   </div>
                 </div>
               </motion.form>
@@ -3039,7 +3039,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </motion.div>
 
               <motion.form 
-                onSubmit={handleHomeScreenSubmit} 
+                onSubmit={handleHomePromptSubmit} 
                 className="w-full max-w-5xl mx-auto mt-20"
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -3063,7 +3063,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         }, 100);
                       }}
                       placeholder="https://example.com"
-                      className="h-[48px] w-full rounded-xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-20 py-3 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
+                      className="h-[48px] w-full rounded-xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-20 py-3 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.45)] opacity-80"
                     />
                     <button
                       type="submit"
@@ -3089,6 +3089,36 @@ Focus on the key sections and content, making it clean and modern.`;
                     </button>
                   </div>
                 </div>
+                
+                {/* Add model selector to home screen */}
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-ink-300 mb-2">AI Model</label>
+                  <select
+                    value={aiModel}
+                    onChange={(e) => {
+                      const newModel = e.target.value;
+                      setAiModel(newModel);
+                      const params = new URLSearchParams(searchParams);
+                      params.set('model', newModel);
+                      if (sandboxData?.sandboxId) {
+                        params.set('sandbox', sandboxData.sandboxId);
+                      }
+                      router.push(`/?${params.toString()}`);
+                    }}
+                    className="w-full h-[48px] px-4 py-2 text-sm bg-surface-ink-900 text-ink-100 border border-neutral-800/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500"
+                    style={{ boxSizing: 'border-box' }}
+                  >
+                    {appConfig.ai.availableModels.map(model => {
+                      const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
+                      const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
+                      return (
+                        <option key={model} value={model}>
+                          {cleanName}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
               </motion.form>
 
               {showStyleSelector && (
@@ -3100,7 +3130,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 >
                   <div className="relative">
                     <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/10 via-moss-500/5 to-moss-400/10 rounded-3xl blur-sm" />
-                    <div className="relative rounded-3xl border border-neutral-800/50 bg-ink-800/40 backdrop-blur-xl px-10 py-10 shadow-[0_20px_60px_rgba(7,10,16,0.3)]">
+                    <div className="relative rounded-3xl border border-neutral-800/50 bg-ink-800/40 backdrop-blur-xl px-8 py-6 shadow-[0_20px_60px_rgba(7,10,16,0.3)]">
                       <div className="text-center mb-12">
                         <h3 className="text-title-h4 text-ink-50 font-medium mb-3">Choose a style preset</h3>
                         <p className="text-body-medium text-ink-300 max-w-2xl mx-auto">
@@ -3140,11 +3170,11 @@ Focus on the key sections and content, making it clean and modern.`;
                                   setHomeContextInput(style.name.toLowerCase() + ' theme' + (currentAdditional ? ', ' + currentAdditional : ''));
                                 }
                               }}
-                              className={`group relative flex flex-col items-start gap-3 rounded-2xl border px-8 py-6 transition-all duration-300 text-left ${
-                                selectedStyle === style.name
-                                  ? 'border-moss-400/80 bg-gradient-to-br from-moss-400/10 to-moss-500/5 text-ink-100 shadow-[0_12px_40px_rgba(99,210,151,0.15)]'
-                                  : 'border-neutral-800/50 bg-ink-800/20 text-ink-200 hover:border-moss-400/40 hover:bg-ink-800/30 hover:text-ink-100 hover:shadow-[0_8px_32px_rgba(7,10,16,0.2)]'
-                              }`}
+className={`group relative flex flex-col items-start gap-3 rounded-2xl border px-8 py-4 transition-all duration-300 text-left ${
+          selectedStyle === style.name
+            ? 'border-moss-400/80 bg-gradient-to-br from-moss-400/10 to-moss-500/5 text-ink-100 shadow-[0_12px_40px_rgba(99,210,151,0.15)]'
+            : 'border-neutral-800/50 bg-ink-800/20 text-ink-200 hover:border-moss-400/40 hover:bg-ink-800/30 hover:text-ink-100 hover:shadow-[0_8px_32px_rgba(7,10,16,0.2)]'
+        }`}
                             >
                               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                               <div className="relative">
@@ -3389,9 +3419,9 @@ Focus on the key sections and content, making it clean and modern.`;
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
                                   <span className={`inline-block w-1 h-1 rounded-full ${
-                                    fileType === 'css' ? 'bg-moss-400' :
-                                    fileType === 'javascript' ? 'bg-heat-100' :
-                                    fileType === 'json' ? 'bg-moss-500' :
+                                    file.type === 'css' ? 'bg-moss-400' :
+                                    file.type === 'javascript' ? 'bg-heat-100' :
+                                    file.type === 'json' ? 'bg-moss-500' :
                                     'bg-surface-ink-600'
                                   }`} />
                                   {fileName}
@@ -3412,12 +3442,12 @@ Focus on the key sections and content, making it clean and modern.`;
                                 className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                                 style={{ animationDelay: `${fileIdx * 30}ms` }}
                               >
-                                <span className={`inline-block w-2 h-2 rounded-full ${
-                                  file.type === 'css' ? 'bg-moss-400' :
-                                  file.type === 'javascript' ? 'bg-heat-100' :
-                                  file.type === 'json' ? 'bg-moss-500' :
-                                  'bg-surface-ink-600'
-                                }`} />
+<span className={`inline-block w-1 h-1 rounded-full ${
+                                    file.type === 'css' ? 'bg-moss-400' :
+                                    file.type === 'javascript' ? 'bg-heat-100' :
+                                    file.type === 'json' ? 'bg-moss-500' :
+                                    'bg-surface-ink-600'
+                                  }`} />
                                 {file.path.split('/').pop()}
                               </div>
                             ))}
