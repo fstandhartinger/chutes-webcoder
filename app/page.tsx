@@ -3369,8 +3369,8 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show applied files if this is an apply success message */}
                       {msg.metadata?.appliedFiles && msg.metadata.appliedFiles.length > 0 && (
-                        <div className="mt-2 inline-block">
-                          <div className="text-xs font-medium mb-2 text-ink-200">
+                        <div className="mt-6 ml-4 inline-block">
+                          <div className="text-xs font-medium mb-3 text-ink-200">
                             {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
                           </div>
                           <div className="flex flex-wrap items-start gap-2">
@@ -3384,10 +3384,10 @@ Focus on the key sections and content, making it clean and modern.`;
                               return (
                                 <div
                                   key={`applied-${fileIdx}`}
-                                  className="inline-flex items-center gap-3 px-4 py-2 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
+                                  className="inline-flex items-center gap-3 px-5 py-3 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
-                                  <span className={`inline-block w-3.5 h-3.5 rounded-full ${
+                                  <span className={`inline-block w-2.5 h-2.5 rounded-full ${
                                     fileType === 'css' ? 'bg-moss-400' :
                                     fileType === 'javascript' ? 'bg-heat-100' :
                                     fileType === 'json' ? 'bg-moss-500' :
@@ -3402,16 +3402,16 @@ Focus on the key sections and content, making it clean and modern.`;
                       )}
 
                       {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
-                        <div className="mt-2 inline-block">
-                          <div className="text-xs font-medium mb-2 text-ink-200">Generated Files:</div>
+                        <div className="mt-6 ml-4 inline-block">
+                          <div className="text-xs font-medium mb-3 text-ink-200">Generated Files:</div>
                           <div className="flex flex-wrap items-start gap-2">
                             {generationProgress.files.map((file, fileIdx) => (
                               <div
                                 key={`complete-${fileIdx}`}
-                                className="inline-flex items-center gap-3 px-4 py-2 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
+                                className="inline-flex items-center gap-3 px-5 py-3 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                                 style={{ animationDelay: `${fileIdx * 30}ms` }}
                               >
-                                <span className={`inline-block w-3.5 h-3.5 rounded-full ${
+                                <span className={`inline-block w-2.5 h-2.5 rounded-full ${
                                   file.type === 'css' ? 'bg-moss-400' :
                                   file.type === 'javascript' ? 'bg-heat-100' :
                                   file.type === 'json' ? 'bg-moss-500' :
