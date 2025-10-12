@@ -3186,7 +3186,8 @@ Focus on the key sections and content, making it clean and modern.`;
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="h-8 px-3 py-1 text-sm bg-surface-ink-800 text-ink-100 border border-neutral-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
+              className="px-3 py-1 text-sm bg-surface-ink-800 text-ink-100 border border-neutral-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
+              style={{ height: '32px', minHeight: '32px', maxHeight: '32px', boxSizing: 'border-box' }}
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3203,9 +3204,10 @@ Focus on the key sections and content, making it clean and modern.`;
             variant="code"
             onClick={() => createSandbox()}
             title="Create new sandbox"
-            className="cursor-pointer h-8 w-8"
+            className="cursor-pointer"
+            style={{ width: '32px', height: '32px' }}
           >
-            <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '24px', height: '24px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
@@ -3214,18 +3216,20 @@ Focus on the key sections and content, making it clean and modern.`;
             onClick={reapplyLastGeneration}
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
-            className="cursor-pointer h-8 w-8"
+            className="cursor-pointer"
+            style={{ width: '32px', height: '32px' }}
           >
-            <Clipboard className="w-6 h-6" />
+            <Clipboard className="w-6 h-6" style={{ width: '24px', height: '24px' }} />
           </Button>
           <Button
             variant="code"
             onClick={downloadZip}
             disabled={!sandboxData}
             title="Download your Vite app as ZIP"
-            className="cursor-pointer h-8 w-8"
+            className="cursor-pointer"
+            style={{ width: '32px', height: '32px' }}
           >
-            <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '24px', height: '24px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
@@ -3632,7 +3636,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       rel="noopener noreferrer"
                       title="Open in new tab"
                     >
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '24px', height: '24px' }}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </a>
