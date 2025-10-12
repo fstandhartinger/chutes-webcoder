@@ -58,7 +58,8 @@ export const appConfig = {
       'chutes/zai-org/GLM-4.6-turbo',
       'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
       'chutes/moonshotai/Kimi-K2-Instruct-0905',
-      'chutes/deepseek-ai/DeepSeek-V3.2-Exp'
+      'chutes/deepseek-ai/DeepSeek-V3.2-Exp',
+      'chutesai/Ling-1T-FP8'
     ],
     
     // Model display names
@@ -66,7 +67,8 @@ export const appConfig = {
       'chutes/zai-org/GLM-4.6-turbo': 'GLM 4.6 Turbo (Chutes)',
       'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder 480B (Chutes)',
       'chutes/moonshotai/Kimi-K2-Instruct-0905': 'Kimi-K2 (Chutes)',
-      'chutes/deepseek-ai/DeepSeek-V3.2-Exp': 'DeepSeek V3.2 (Chutes)'
+      'chutes/deepseek-ai/DeepSeek-V3.2-Exp': 'DeepSeek V3.2 (Chutes)',
+      'chutesai/Ling-1T-FP8': 'Ling 1T FP8 (ChutesAI)'
     } as Record<string, string>,
     
     // Model API configuration to help downstream helpers pick the right SDK
@@ -74,7 +76,8 @@ export const appConfig = {
       'chutes/zai-org/GLM-4.6-turbo': { provider: 'chutes' },
       'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': { provider: 'chutes' },
       'chutes/moonshotai/Kimi-K2-Instruct-0905': { provider: 'chutes' },
-      'chutes/deepseek-ai/DeepSeek-V3.2-Exp': { provider: 'chutes' }
+      'chutes/deepseek-ai/DeepSeek-V3.2-Exp': { provider: 'chutes' },
+      'chutesai/Ling-1T-FP8': { provider: 'chutesai' }
     },
     
     // Temperature settings for non-reasoning models
