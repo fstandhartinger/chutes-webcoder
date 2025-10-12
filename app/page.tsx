@@ -2984,9 +2984,9 @@ Focus on the key sections and content, making it clean and modern.`;
                 transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
               >
                 <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/20 via-moss-500/10 to-moss-400/20 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/20 via-moss-500/10 to-moss-400/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                    <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
                     <textarea
                       value={homePromptInput}
                       onChange={(e) => {
@@ -2998,7 +2998,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         setShowStyleSelector(hasValidUrl || hasPrompt);
                       }}
                       placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                      className="min-h-[280px] w-full resize-y rounded-3xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-24 py-10 pb-[80px] text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
+                      className="min-h-[200px] w-full resize-y rounded-2xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-24 py-8 pb-[70px] text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -3008,16 +3008,16 @@ Focus on the key sections and content, making it clean and modern.`;
                         }
                       }}
                     />
-                    <span className="absolute bottom-10 left-10 text-label-medium text-ink-400 select-none font-medium">
+                    <span className="absolute bottom-8 left-10 text-label-medium text-ink-400 select-none font-medium">
                       Press Enter to send, Shift+Enter for linebreaks
                     </span>
                     <button
                       type="submit"
                       disabled={!homePromptInput.trim()}
-                      className="absolute bottom-8 right-8 flex h-14 w-14 items-center justify-center rounded-2xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+                      className="absolute bottom-6 right-8 flex h-14 w-14 items-center justify-center rounded-2xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
                       title="Send"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-10 w-10">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
                         <polyline points="9 10 4 15 9 20"></polyline>
                         <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                       </svg>
@@ -3046,9 +3046,9 @@ Focus on the key sections and content, making it clean and modern.`;
                 transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
               >
                 <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/20 via-moss-500/10 to-moss-400/20 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/20 via-moss-500/10 to-moss-400/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                    <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
                     <input
                       type="text"
                       onChange={(e) => {
@@ -3063,7 +3063,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         }, 100);
                       }}
                       placeholder="https://example.com"
-                      className="h-[64px] w-full rounded-3xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-20 py-4 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
+                      className="h-[56px] w-full rounded-2xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-20 py-3 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
                     />
                     <button
                       type="submit"
@@ -3539,16 +3539,15 @@ Focus on the key sections and content, making it clean and modern.`;
               >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="40"
-                      height="40"
+                      width="24"
+                      height="24"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-10 w-10"
-                      style={{ width: '40px', height: '40px' }}
+                      className="h-6 w-6"
                     >
                   <polyline points="9 10 4 15 9 20"></polyline>
                   <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
