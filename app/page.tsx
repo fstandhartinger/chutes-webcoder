@@ -3205,7 +3205,7 @@ Focus on the key sections and content, making it clean and modern.`;
             title="Create new sandbox"
             className="cursor-pointer h-8 w-8"
           >
-            <svg className="w-8 h-8" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
@@ -3216,7 +3216,7 @@ Focus on the key sections and content, making it clean and modern.`;
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
             className="cursor-pointer h-8 w-8"
           >
-            <Clipboard className="w-8 h-8" />
+            <Clipboard className="w-6 h-6" />
           </Button>
           <Button
             variant="code"
@@ -3225,7 +3225,7 @@ Focus on the key sections and content, making it clean and modern.`;
             title="Download your Vite app as ZIP"
             className="cursor-pointer h-8 w-8"
           >
-            <svg className="w-8 h-8" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
@@ -3384,7 +3384,7 @@ Focus on the key sections and content, making it clean and modern.`;
                                   className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
-                                  <span className={`inline-block w-2 h-2 rounded-full ${
+                                  <span className={`inline-block w-1 h-1 rounded-full ${
                                     fileType === 'css' ? 'bg-moss-400' :
                                     fileType === 'javascript' ? 'bg-heat-100' :
                                     fileType === 'json' ? 'bg-moss-500' :
@@ -3536,15 +3536,15 @@ Focus on the key sections and content, making it clean and modern.`;
               >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
+                      width="16"
+                      height="16"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-6 w-6"
+                      className="h-4 w-4"
                     >
                   <polyline points="9 10 4 15 9 20"></polyline>
                   <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
