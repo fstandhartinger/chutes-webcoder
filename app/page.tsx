@@ -2974,41 +2974,6 @@ Focus on the key sections and content, making it clean and modern.`;
                 >
                   Build React apps with AI. Describe your idea or clone a URL.
                 </motion.p>
-
-                {/* Model Selector - Prominently displayed */}
-                <motion.div
-                  className="mt-8 w-full max-w-md mx-auto"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, ease: 'easeOut', delay: 0.25 }}
-                >
-                  <label className="block text-sm font-medium text-ink-300 mb-2 text-center">AI Model</label>
-                  <select
-                    value={aiModel}
-                    onChange={(e) => {
-                      const newModel = e.target.value;
-                      setAiModel(newModel);
-                      const params = new URLSearchParams(searchParams);
-                      params.set('model', newModel);
-                      if (sandboxData?.sandboxId) {
-                        params.set('sandbox', sandboxData.sandboxId);
-                      }
-                      router.push(`/?${params.toString()}`);
-                    }}
-                    className="w-full h-[48px] px-4 py-2 text-sm bg-surface-ink-900 text-ink-100 border border-neutral-800/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 hover:border-moss-400/60 transition-all shadow-[0_8px_24px_rgba(7,10,16,0.3)]"
-                    style={{ boxSizing: 'border-box' }}
-                  >
-                    {appConfig.ai.availableModels.map(model => {
-                      const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
-                      const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
-                      return (
-                        <option key={model} value={model}>
-                          {cleanName}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </motion.div>
               </div>
 
               <motion.form 
@@ -3125,6 +3090,42 @@ Focus on the key sections and content, making it clean and modern.`;
                   </div>
                 </div>
               </motion.form>
+
+              {/* Model Selector - Subtle, below URL input */}
+              <motion.div
+                className="mt-4 w-full max-w-5xl mx-auto"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.6 }}
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <label className="text-xs text-ink-500">AI Model:</label>
+                  <select
+                    value={aiModel}
+                    onChange={(e) => {
+                      const newModel = e.target.value;
+                      setAiModel(newModel);
+                      const params = new URLSearchParams(searchParams);
+                      params.set('model', newModel);
+                      if (sandboxData?.sandboxId) {
+                        params.set('sandbox', sandboxData.sandboxId);
+                      }
+                      router.push(`/?${params.toString()}`);
+                    }}
+                    className="h-[32px] px-3 py-1 text-xs bg-surface-ink-900/50 text-ink-300 border border-neutral-800/30 rounded-lg focus:outline-none focus:ring-1 focus:ring-moss-500/40 focus:border-moss-500/40 hover:border-moss-400/40 transition-all"
+                  >
+                    {appConfig.ai.availableModels.map(model => {
+                      const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
+                      const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
+                      return (
+                        <option key={model} value={model}>
+                          {cleanName}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </motion.div>
 
               {showStyleSelector && (
                 <motion.div 
