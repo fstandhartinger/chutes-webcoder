@@ -27,6 +27,13 @@ import dynamic from 'next/dynamic';
 // Lazy-load the wave to avoid impacting TTI
 const ParticleWave = dynamic(() => import('@/components/ParticleWave'), { ssr: false });
 
+const FILE_ICON_SIZE = 16;
+const CODE_PANEL_COLLAPSED_MAX_HEIGHT = '24rem';
+const CODE_PANEL_EXPANDED_MAX_HEIGHT = '70vh';
+const CODE_PANEL_MIN_HEIGHT = '12rem';
+const CHAT_STREAM_MIN_HEIGHT = '8rem';
+const CHAT_STREAM_MAX_HEIGHT = '18rem';
+
 interface SandboxData {
   sandboxId: string;
   url: string;
@@ -69,6 +76,7 @@ function AISandboxPageContent() {
   const [showHomeScreen, setShowHomeScreen] = useState(true);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['app', 'src', 'src/components']));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [isCodeExpanded, setIsCodeExpanded] = useState(false);
   const [homeScreenFading, setHomeScreenFading] = useState(false);
   const [homeUrlInput, setHomeUrlInput] = useState('');
   const [homePromptInput, setHomePromptInput] = useState('');
@@ -181,6 +189,10 @@ function AISandboxPageContent() {
     lastProcessedPosition: 0
   });
 
+  useEffect(() => {
+    setIsCodeExpanded(false);
+  }, [selectedFile, activeTab, generationProgress.currentFile?.path, generationProgress.files.length]);
+
   // After apply, request a preview refresh when iframe exists
   const [pendingRefresh, setPendingRefresh] = useState<{ reason: string } | null>(null);
   
@@ -192,6 +204,7 @@ function AISandboxPageContent() {
   const userTabbedRef = useRef(false);
   const prevIsGeneratingRef = useRef(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeRevision, setIframeRevision] = useState(0);
 
   useEffect(() => {
     const updateViewportState = () => {
@@ -373,18 +386,8 @@ function AISandboxPageContent() {
         iframeRef.current.src = `${url}?t=${Date.now()}&deferred=1`;
         await wait(1500);
         // Step 3: recreate iframe once if still needed
-        const parent = iframeRef.current.parentElement;
-        if (parent) {
-          const newIframe = document.createElement('iframe');
-          newIframe.className = iframeRef.current.className;
-          newIframe.title = iframeRef.current.title;
-          newIframe.allow = iframeRef.current.allow;
-          const sandboxValue = iframeRef.current.getAttribute('sandbox');
-          if (sandboxValue) newIframe.setAttribute('sandbox', sandboxValue);
-          iframeRef.current.remove();
-          newIframe.src = `${url}?t=${Date.now()}&deferredRecreate=1`;
-          parent.appendChild(newIframe);
-          (iframeRef as any).current = newIframe;
+        if (isMountedRef.current) {
+          setIframeRevision(prev => prev + 1);
           await wait(1500);
         }
         // Step 4: final health
@@ -1082,6 +1085,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
   };
 
   const renderMainContent = () => {
+    const hasCodePanelContent = Boolean(
+      selectedFile ||
+      generationProgress.streamedCode ||
+      generationProgress.currentFile ||
+      generationProgress.files.length > 0
+    );
+
     if (activeTab === 'generation' && (generationProgress.isGenerating || generationProgress.files.length > 0)) {
       return (
         /* Generation Tab Content */
@@ -1236,6 +1246,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             
             {/* Live Code Display */}
             <div className="flex-1 rounded-lg p-6 flex flex-col min-h-0 overflow-hidden">
+              {hasCodePanelContent && (
+                <div className="flex justify-end mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsCodeExpanded(prev => !prev)}
+                    className="inline-flex items-center gap-2 rounded-full border border-neutral-800/70 bg-surface-ink-850/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-300 hover:text-ink-50 hover:bg-surface-ink-750 hover:border-neutral-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/50"
+                  >
+                    {isCodeExpanded ? 'Collapse view' : 'Expand view'}
+                  </button>
+                </div>
+              )}
               <div className="flex-1 overflow-y-auto min-h-0 scrollbar-dark" ref={codeDisplayRef}>
                 {/* Show selected file if one is selected */}
                 {selectedFile ? (
@@ -1255,7 +1276,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           </svg>
                         </button>
                       </div>
-                      <div className="bg-surface-ink-800/80 border border-neutral-800 rounded-b-lg">
+                      <div className="relative bg-surface-ink-800/80 border border-neutral-800 rounded-b-lg">
                         <SyntaxHighlighter
                           language={(() => {
                             const ext = selectedFile.split('.').pop()?.toLowerCase();
@@ -1271,6 +1292,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             padding: '1rem',
                             fontSize: '0.875rem',
                             background: 'transparent',
+                            minHeight: CODE_PANEL_MIN_HEIGHT,
+                            maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                            overflow: 'auto'
                           }}
                           showLineNumbers={true}
                         >
@@ -1280,6 +1304,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             return file?.content || '// File content will appear here';
                           })()}
                         </SyntaxHighlighter>
+                        {!isCodeExpanded && (
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-800 via-surface-ink-800/70 to-transparent" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1304,7 +1331,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           <span className="font-mono text-sm">Streaming code...</span>
                         </div>
                       </div>
-                      <div className="p-4 bg-surface-ink-900/80 rounded-b-xl">
+                      <div className="relative p-4 bg-surface-ink-900/80 rounded-b-xl">
                         <SyntaxHighlighter
                           language="jsx"
                           style={vscDarkPlus}
@@ -1314,12 +1341,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             padding: '1rem',
                             fontSize: '0.875rem',
                             background: 'transparent',
+                            minHeight: CODE_PANEL_MIN_HEIGHT,
+                            maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                            overflow: 'auto'
                           }}
                           showLineNumbers={true}
                         >
                           {generationProgress.streamedCode || 'Starting code generation...'}
                         </SyntaxHighlighter>
                         <span className="inline-block w-2 h-4 bg-orange-400 ml-1 animate-pulse" />
+                        {!isCodeExpanded && (
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b-xl" />
+                        )}
                       </div>
                     </div>
                   )
@@ -1342,7 +1375,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             </span>
                           </div>
                         </div>
-                      <div className="bg-surface-ink-900/80 border border-neutral-800 rounded-b-xl">
+                      <div className="relative bg-surface-ink-900/80 border border-neutral-800 rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               generationProgress.currentFile.type === 'css' ? 'css' :
@@ -1357,12 +1390,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               padding: '1rem',
                               fontSize: '0.75rem',
                               background: 'transparent',
+                              minHeight: CODE_PANEL_MIN_HEIGHT,
+                              maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                              overflow: 'auto'
                             }}
                             showLineNumbers={true}
                           >
                             {generationProgress.currentFile.content}
                           </SyntaxHighlighter>
                           <span className="inline-block w-2 h-3 bg-orange-400 ml-4 mb-4 animate-pulse" />
+                          {!isCodeExpanded && (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b-xl" />
+                          )}
                         </div>
                       </div>
                     )}
@@ -1384,7 +1423,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
                           </span>
                         </div>
-                        <div className="bg-surface-ink-900/80 border border-neutral-800 min-h-[200px] max-h-[600px] overflow-y-auto scrollbar-dark rounded-b-xl">
+                        <div className="relative bg-surface-ink-900/80 border border-neutral-800 rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               file.type === 'css' ? 'css' :
@@ -1399,12 +1438,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               padding: '1rem',
                               fontSize: '0.75rem',
                               background: 'transparent',
+                              minHeight: CODE_PANEL_MIN_HEIGHT,
+                              maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                              overflow: 'auto'
                             }}
                             showLineNumbers={true}
                             wrapLongLines={true}
                           >
                             {file.content}
                           </SyntaxHighlighter>
+                          {!isCodeExpanded && (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b-xl" />
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1418,7 +1463,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             <span className="font-mono text-sm">Processing...</span>
                           </div>
                         </div>
-                        <div className="bg-surface-ink-900/80 border border-neutral-800 rounded-b-xl">
+                        <div className="relative bg-surface-ink-900/80 border border-neutral-800 rounded-b-xl">
                           <SyntaxHighlighter
                             language="jsx"
                             style={vscDarkPlus}
@@ -1428,6 +1473,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               padding: '1rem',
                               fontSize: '0.75rem',
                               background: 'transparent',
+                              minHeight: CODE_PANEL_MIN_HEIGHT,
+                              maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                              overflow: 'auto'
                             }}
                             showLineNumbers={false}
                           >
@@ -1445,6 +1493,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               return remainingContent || '';
                             })()}
                           </SyntaxHighlighter>
+                          {!isCodeExpanded && (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b-xl" />
+                          )}
                         </div>
                       </div>
                     )}
@@ -1522,6 +1573,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         return (
           <div className="absolute inset-0 w-full h-full">
             <iframe
+              key={iframeRevision}
               ref={iframeRef}
               src={sandboxData.url}
               className="w-full h-full border-none"
@@ -2119,15 +2171,15 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     const ext = fileName.split('.').pop()?.toLowerCase();
 
     if (ext === 'jsx' || ext === 'js') {
-      return <SiJavascript className="w-4 h-4 text-yellow-500" />;
+      return <SiJavascript size={FILE_ICON_SIZE} className="shrink-0 text-yellow-500" aria-hidden="true" />;
     } else if (ext === 'tsx' || ext === 'ts') {
-      return <SiReact className="w-4 h-4 text-blue-500" />;
+      return <SiReact size={FILE_ICON_SIZE} className="shrink-0 text-blue-500" aria-hidden="true" />;
     } else if (ext === 'css') {
-      return <SiCss3 className="w-4 h-4 text-blue-500" />;
+      return <SiCss3 size={FILE_ICON_SIZE} className="shrink-0 text-blue-500" aria-hidden="true" />;
     } else if (ext === 'json') {
-      return <SiJson className="w-4 h-4 text-muted-foreground" />;
+      return <SiJson size={FILE_ICON_SIZE} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
     } else {
-      return <FiFile className="w-4 h-4 text-muted-foreground" />;
+      return <FiFile size={FILE_ICON_SIZE} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
     }
   };
 
@@ -3011,17 +3063,29 @@ Focus on the key sections and content, making it clean and modern.`;
                     <span className="absolute bottom-8 left-10 text-label-medium text-ink-400 select-none font-medium">
                       Press Enter to send, Shift+Enter for linebreaks
                     </span>
-<button
-  type="submit"
-  disabled={!homePromptInput.trim()}
-  className="absolute bottom-6 right-8 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
-  title="Send"
->
-  <svg className="w-4 h-4" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <polyline points="9 10 4 15 9 20"></polyline>
-    <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-  </svg>
-</button>
+                    <button
+                      type="submit"
+                      disabled={!homePromptInput.trim()}
+                      className="absolute bottom-6 right-8 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+                      title="Send"
+                    >
+                      <svg
+                        className="h-4 w-4 shrink-0"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ width: '16px', height: '16px' }}
+                        aria-hidden="true"
+                      >
+                        <polyline points="9 10 4 15 9 20"></polyline>
+                        <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </motion.form>
@@ -3081,7 +3145,9 @@ Focus on the key sections and content, making it clean and modern.`;
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="h-4 w-4"
+                        className="h-4 w-4 shrink-0"
+                        style={{ width: '16px', height: '16px' }}
+                        aria-hidden="true"
                       >
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -3357,7 +3423,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 <div key={idx} className="block py-2">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
-                      <div className={`block rounded-2xl px-10 py-8 text-sm leading-relaxed ${
+                      <div className={`block rounded-2xl px-8 py-6 text-sm leading-relaxed ${
                         msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-neutral-800 text-ink-50 ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
                         msg.type === 'ai' ? 'bg-neutral-800/90 backdrop-blur-xl border border-neutral-800 text-ink-100 mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
                         msg.type === 'system' ? 'bg-transparent text-ink-400 font-medium text-xs tracking-wide uppercase' :
@@ -3424,12 +3490,15 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                                   className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
-                                  <span className={`inline-block w-1 h-1 rounded-full ${
+                                  <span
+                                    className={`inline-block rounded-full ${
                                     fileType === 'css' ? 'bg-moss-400' :
                                     fileType === 'javascript' ? 'bg-heat-100' :
                                     fileType === 'json' ? 'bg-moss-500' :
                                     'bg-surface-ink-600'
-                                  }`} />
+                                  }`}
+                                    style={{ width: '4px', height: '4px' }}
+                                  />
                                   {fileName}
                                 </div>
                               );
@@ -3448,12 +3517,15 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                                 className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                                 style={{ animationDelay: `${fileIdx * 30}ms` }}
                               >
-<span className={`inline-block w-1 h-1 rounded-full ${
+                              <span
+                                className={`inline-block rounded-full ${
                                     file.type === 'css' ? 'bg-moss-400' :
                                     file.type === 'javascript' ? 'bg-heat-100' :
                                     file.type === 'json' ? 'bg-moss-500' :
                                     'bg-surface-ink-600'
-                                  }`} />
+                                  }`}
+                                style={{ width: '4px', height: '4px' }}
+                              />
                                 {file.path.split('/').pop()}
                               </div>
                             ))}
@@ -3524,7 +3596,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                       </div>
                       <div className="flex-1 h-px bg-gradient-to-r from-surface-ink-600/50 to-transparent" />
                     </div>
-                   <div className="bg-surface-ink-900/80 border border-neutral-800 rounded-lg max-h-32 overflow-y-auto scrollbar-dark">
+                   <div className="relative bg-surface-ink-900/80 border border-neutral-800 rounded-lg scrollbar-dark">
                       <SyntaxHighlighter
                         language="jsx"
                         style={vscDarkPlus}
@@ -3535,8 +3607,9 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                           fontSize: '11px',
                           lineHeight: '1.5',
                           background: 'transparent',
-                          maxHeight: '8rem',
-                          overflow: 'hidden'
+                          minHeight: CHAT_STREAM_MIN_HEIGHT,
+                          maxHeight: CHAT_STREAM_MAX_HEIGHT,
+                          overflow: 'auto'
                         }}
                       >
                         {(() => {
@@ -3547,6 +3620,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                         })()}
                       </SyntaxHighlighter>
                       <span className="inline-block w-2 h-3 bg-orange-400 ml-3 mb-3 animate-pulse" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/60 to-transparent rounded-b-lg" />
                     </div>
                   </motion.div>
                 )}
@@ -3584,7 +3658,9 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-4 w-4"
+                      className="h-4 w-4 shrink-0"
+                      style={{ width: '16px', height: '16px' }}
+                      aria-hidden="true"
                     >
                   <polyline points="9 10 4 15 9 20"></polyline>
                   <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
@@ -3635,16 +3711,16 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 </button>
               </div>
             </div>
-            <div className="flex gap-6 items-center">
+            <div className="flex items-center gap-8 md:gap-10">
               {/* Live Code Generation Status - Moved to far right */}
               {activeTab === 'generation' && (generationProgress.isGenerating || generationProgress.files.length > 0) && (
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-8 md:gap-10">
                   {!generationProgress.isEdit && (
-                    <div className="text-muted-foreground text-sm font-normal">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-ink-400">
                       {generationProgress.files.length} files generated
                     </div>
                   )}
-                  <div className={`inline-flex items-center justify-center whitespace-nowrap rounded-lg font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800 text-ink-100 hover:text-ink-50 hover:bg-surface-ink-750 shadow-sm h-9 px-4 gap-2`}>
+                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-lg font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800/90 text-ink-50 hover:text-ink-100 hover:bg-surface-ink-700 shadow-sm">
                     {generationProgress.isGenerating ? (
                       <>
                         <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />

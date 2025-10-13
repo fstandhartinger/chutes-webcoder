@@ -25,6 +25,13 @@ import {
 import { motion } from 'framer-motion';
 import CodeApplicationProgress, { type CodeApplicationState } from '@/components/CodeApplicationProgress';
 
+const FILE_ICON_SIZE = 16;
+const CODE_PANEL_COLLAPSED_MAX_HEIGHT = '24rem';
+const CODE_PANEL_EXPANDED_MAX_HEIGHT = '70vh';
+const CODE_PANEL_MIN_HEIGHT = '12rem';
+const CHAT_STREAM_MIN_HEIGHT = '8rem';
+const CHAT_STREAM_MAX_HEIGHT = '18rem';
+
 interface SandboxData {
   sandboxId: string;
   url: string;
@@ -72,6 +79,7 @@ function AISandboxPage() {
   const [showHomeScreen, setShowHomeScreen] = useState(true);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['app', 'src', 'src/components']));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [isCodeExpanded, setIsCodeExpanded] = useState(false);
   const [homeScreenFading, setHomeScreenFading] = useState(false);
   const [homeUrlInput, setHomeUrlInput] = useState('');
   const [homeContextInput, setHomeContextInput] = useState('');
@@ -91,6 +99,7 @@ function AISandboxPage() {
   const [sandboxFiles, setSandboxFiles] = useState<Record<string, string>>({});
   const [hasInitialSubmission, setHasInitialSubmission] = useState<boolean>(false);
   const [fileStructure, setFileStructure] = useState<string>('');
+  const [iframeRevision, setIframeRevision] = useState(0);
   
   const [conversationContext, setConversationContext] = useState<{
     scrapedWebsites: Array<{ url: string; content: any; timestamp: Date }>;
@@ -139,6 +148,10 @@ function AISandboxPage() {
     files: [],
     lastProcessedPosition: 0
   });
+
+  useEffect(() => {
+    setIsCodeExpanded(false);
+  }, [selectedFile, activeTab, generationProgress.currentFile?.path, generationProgress.files.length]);
 
   // Store flag to trigger generation after component mounts
   const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
@@ -996,32 +1009,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 console.error('[applyGeneratedCode] Direct navigation failed:', e);
               }
               
-              // Method 2: Force complete iframe recreation if direct navigation failed
-              console.log('[applyGeneratedCode] Falling back to iframe recreation...');
-              const parent = iframeRef.current.parentElement;
-              const newIframe = document.createElement('iframe');
-              
-              // Copy attributes
-              newIframe.className = iframeRef.current.className;
-              newIframe.title = iframeRef.current.title;
-              newIframe.allow = iframeRef.current.allow;
-              // Copy sandbox attributes
-              const sandboxValue = iframeRef.current.getAttribute('sandbox');
-              if (sandboxValue) {
-                newIframe.setAttribute('sandbox', sandboxValue);
-              }
-              
-              // Remove old iframe
-              iframeRef.current.remove();
-              
-              // Add new iframe
-              newIframe.src = `${currentSandboxData.url}?t=${Date.now()}&recreated=true`;
-              parent?.appendChild(newIframe);
-              
-              // Update ref
-              (iframeRef as any).current = newIframe;
-              
-              console.log('[applyGeneratedCode] Iframe recreated with new content');
+              // Method 2: Force complete iframe recreation via React key update
+              console.log('[applyGeneratedCode] Falling back to iframe recreation (key refresh)...');
+              setIframeRevision(prev => prev + 1);
+              console.log('[applyGeneratedCode] Iframe refresh triggered');
             } else {
               console.error('[applyGeneratedCode] No iframe or sandbox URL available for refresh');
             }
@@ -1123,6 +1114,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 //   };
 
   const renderMainContent = () => {
+    const hasCodePanelContent = Boolean(
+      selectedFile ||
+      generationProgress.streamedCode ||
+      generationProgress.currentFile ||
+      generationProgress.files.length > 0
+    );
+
     if (activeTab === 'generation' && (generationProgress.isGenerating || generationProgress.files.length > 0)) {
       return (
         /* Generation Tab Content */
@@ -1276,6 +1274,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             
             {/* Live Code Display */}
             <div className="flex-1 rounded-lg p-6 flex flex-col min-h-0 overflow-hidden">
+              {hasCodePanelContent && (
+                <div className="flex justify-end mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsCodeExpanded(prev => !prev)}
+                    className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-gray-900/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-300 hover:text-white hover:bg-gray-800 hover:border-neutral-600 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500/60"
+                  >
+                    {isCodeExpanded ? 'Collapse view' : 'Expand view'}
+                  </button>
+                </div>
+              )}
               <div className="flex-1 overflow-y-auto min-h-0 scrollbar-hide" ref={codeDisplayRef}>
                 {/* Show selected file if one is selected */}
                 {selectedFile ? (
@@ -1295,7 +1304,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           </svg>
                         </button>
                       </div>
-                      <div className="bg-gray-900 border border-gray-700 rounded">
+                      <div className="relative bg-gray-900 border border-gray-700 rounded">
                         <SyntaxHighlighter
                           language={(() => {
                             const ext = selectedFile.split('.').pop()?.toLowerCase();
@@ -1310,6 +1319,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             padding: '1rem',
                             fontSize: '0.875rem',
                             background: 'transparent',
+                            minHeight: CODE_PANEL_MIN_HEIGHT,
+                            maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                            overflow: 'auto'
                           }}
                           showLineNumbers={true}
                         >
@@ -1319,6 +1331,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             return file?.content || '// File content will appear here';
                           })()}
                         </SyntaxHighlighter>
+                        {!isCodeExpanded && (
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1346,7 +1361,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           <span className="font-mono text-sm">Streaming code...</span>
                         </div>
                       </div>
-                      <div className="p-4 bg-gray-900 rounded">
+                      <div className="relative p-4 bg-gray-900 rounded">
                         <SyntaxHighlighter
                           language="jsx"
                           style={vscDarkPlus}
@@ -1355,12 +1370,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             padding: '1rem',
                             fontSize: '0.875rem',
                             background: 'transparent',
+                            minHeight: CODE_PANEL_MIN_HEIGHT,
+                            maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                            overflow: 'auto'
                           }}
                           showLineNumbers={true}
                         >
                           {generationProgress.streamedCode || 'Starting code generation...'}
                         </SyntaxHighlighter>
                         <span className="inline-block w-3 h-5 bg-orange-400 ml-1 animate-pulse" />
+                        {!isCodeExpanded && (
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded-b" />
+                        )}
                       </div>
                     </div>
                   )
@@ -1383,7 +1404,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             </span>
                           </div>
                         </div>
-                        <div className="bg-gray-900 border border-gray-700 rounded">
+                        <div className="relative bg-gray-900 border border-gray-700 rounded">
                           <SyntaxHighlighter
                             language={
                               generationProgress.currentFile.type === 'css' ? 'css' :
@@ -1397,12 +1418,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               padding: '1rem',
                               fontSize: '0.75rem',
                               background: 'transparent',
+                              minHeight: CODE_PANEL_MIN_HEIGHT,
+                              maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                              overflow: 'auto'
                             }}
                             showLineNumbers={true}
                           >
                             {generationProgress.currentFile.content}
                           </SyntaxHighlighter>
                           <span className="inline-block w-3 h-4 bg-orange-400 ml-4 mb-4 animate-pulse" />
+                          {!isCodeExpanded && (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded" />
+                          )}
                         </div>
                       </div>
                     )}
@@ -1424,7 +1451,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
                           </span>
                         </div>
-                        <div className="bg-gray-900 border border-gray-700  min-h-[200px] max-h-[600px] overflow-y-auto scrollbar-hide">
+                        <div className="relative bg-gray-900 border border-gray-700 rounded">
                           <SyntaxHighlighter
                             language={
                               file.type === 'css' ? 'css' :
@@ -1438,12 +1465,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               padding: '1rem',
                               fontSize: '0.75rem',
                               background: 'transparent',
+                              minHeight: CODE_PANEL_MIN_HEIGHT,
+                              maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                              overflow: 'auto'
                             }}
                             showLineNumbers={true}
                             wrapLongLines={true}
                           >
                             {file.content}
                           </SyntaxHighlighter>
+                          {!isCodeExpanded && (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded" />
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1457,7 +1490,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             <span className="font-mono text-sm">Processing...</span>
                           </div>
                         </div>
-                        <div className="bg-gray-900 border border-gray-700 rounded">
+                        <div className="relative bg-gray-900 border border-gray-700 rounded">
                           <SyntaxHighlighter
                             language="jsx"
                             style={vscDarkPlus}
@@ -1466,6 +1499,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               padding: '1rem',
                               fontSize: '0.75rem',
                               background: 'transparent',
+                              minHeight: CODE_PANEL_MIN_HEIGHT,
+                              maxHeight: isCodeExpanded ? CODE_PANEL_EXPANDED_MAX_HEIGHT : CODE_PANEL_COLLAPSED_MAX_HEIGHT,
+                              overflow: 'auto'
                             }}
                             showLineNumbers={false}
                           >
@@ -1483,6 +1519,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               return remainingContent || 'Waiting for next file...';
                             })()}
                           </SyntaxHighlighter>
+                          {!isCodeExpanded && (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded" />
+                          )}
                         </div>
                       </div>
                     )}
@@ -1578,7 +1617,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         return (
           <div key="preview-iframe-container" className="relative w-full h-full">
             <iframe
-              key={`preview-iframe-${sandboxData.sandboxId}`}
+              key={`preview-iframe-${sandboxData.sandboxId}-${iframeRevision}`}
               ref={iframeRef}
               src={sandboxData.url}
               className="w-full h-full border-none"
@@ -2221,17 +2260,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
-    
+
     if (ext === 'jsx' || ext === 'js') {
-      return <SiJavascript style={{ width: '16px', height: '16px' }} className="text-yellow-500" />;
+      return <SiJavascript size={FILE_ICON_SIZE} className="shrink-0 text-yellow-500" aria-hidden="true" />;
     } else if (ext === 'tsx' || ext === 'ts') {
-      return <SiReact style={{ width: '16px', height: '16px' }} className="text-blue-500" />;
+      return <SiReact size={FILE_ICON_SIZE} className="shrink-0 text-blue-500" aria-hidden="true" />;
     } else if (ext === 'css') {
-      return <SiCss3 style={{ width: '16px', height: '16px' }} className="text-blue-500" />;
+      return <SiCss3 size={FILE_ICON_SIZE} className="shrink-0 text-blue-500" aria-hidden="true" />;
     } else if (ext === 'json') {
-      return <SiJson style={{ width: '16px', height: '16px' }} className="text-gray-600" />;
+      return <SiJson size={FILE_ICON_SIZE} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
     } else {
-      return <FiFile style={{ width: '16px', height: '16px' }} className="text-gray-600" />;
+      return <FiFile size={FILE_ICON_SIZE} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
     }
   };
 
@@ -3243,7 +3282,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div key={idx} className="block py-2">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
-                      <div className={`block rounded-[10px] px-14 py-8 ${
+                      <div className={`block rounded-[10px] px-10 py-6 ${
                         msg.type === 'user' ? 'bg-[#36322F] text-white ml-auto max-w-[80%]' :
                         msg.type === 'ai' ? 'bg-gray-100 text-gray-900 mr-auto max-w-[80%]' :
                         msg.type === 'system' ? 'bg-[#36322F] text-white text-sm' :
@@ -3303,12 +3342,15 @@ Focus on the key sections and content, making it clean and modern.`;
                               className="inline-flex items-center gap-3 px-6 py-4 bg-[#36322F] text-white rounded-xl text-xs animate-fade-in-up"
                               style={{ animationDelay: `${fileIdx * 30}ms` }}
                             >
-                              <span className={`inline-block w-1 h-1 rounded-full ${
-                                fileType === 'css' ? 'bg-blue-400' :
-                                fileType === 'javascript' ? 'bg-yellow-400' :
-                                fileType === 'json' ? 'bg-green-400' :
-                                'bg-gray-400'
-                              }`} />
+                              <span
+                                className={`inline-block rounded-full ${
+                                  fileType === 'css' ? 'bg-blue-400' :
+                                  fileType === 'javascript' ? 'bg-yellow-400' :
+                                  fileType === 'json' ? 'bg-green-400' :
+                                  'bg-gray-400'
+                                }`}
+                                style={{ width: '4px', height: '4px' }}
+                              />
                               {fileName}
                             </div>
                           );
@@ -3328,12 +3370,15 @@ Focus on the key sections and content, making it clean and modern.`;
                             className="inline-flex items-center gap-3 px-6 py-4 bg-[#36322F] text-white rounded-xl text-xs animate-fade-in-up"
                             style={{ animationDelay: `${fileIdx * 30}ms` }}
                           >
-                            <span className={`inline-block w-1 h-1 rounded-full ${
-                              file.type === 'css' ? 'bg-blue-400' :
-                              file.type === 'javascript' ? 'bg-yellow-400' :
-                              file.type === 'json' ? 'bg-green-400' :
-                              'bg-gray-400'
-                            }`} />
+                            <span
+                              className={`inline-block rounded-full ${
+                                file.type === 'css' ? 'bg-blue-400' :
+                                file.type === 'javascript' ? 'bg-yellow-400' :
+                                file.type === 'json' ? 'bg-green-400' :
+                                'bg-gray-400'
+                              }`}
+                              style={{ width: '4px', height: '4px' }}
+                            />
                             {file.path.split('/').pop()}
                           </div>
                         ))}
@@ -3398,7 +3443,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       </div>
                       <div className="flex-1 h-px bg-gradient-to-r from-gray-300 to-transparent" />
                     </div>
-                    <div className="bg-gray-900 border border-gray-700 rounded max-h-128 overflow-y-auto scrollbar-hide">
+                    <div className="relative bg-gray-900 border border-gray-700 rounded scrollbar-hide">
                       <SyntaxHighlighter
                         language="jsx"
                         style={vscDarkPlus}
@@ -3408,8 +3453,9 @@ Focus on the key sections and content, making it clean and modern.`;
                           fontSize: '11px',
                           lineHeight: '1.5',
                           background: 'transparent',
-                          maxHeight: '8rem',
-                          overflow: 'hidden'
+                          minHeight: CHAT_STREAM_MIN_HEIGHT,
+                          maxHeight: CHAT_STREAM_MAX_HEIGHT,
+                          overflow: 'auto'
                         }}
                       >
                         {(() => {
@@ -3420,6 +3466,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         })()}
                       </SyntaxHighlighter>
                       <span className="inline-block w-3 h-4 bg-orange-400 ml-3 mb-3 animate-pulse" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent rounded-b" />
                     </div>
                   </motion.div>
                 )}
@@ -3477,32 +3524,38 @@ Focus on the key sections and content, making it clean and modern.`;
                 </button>
               </div>
             </div>
-            <div className="flex gap-6 items-center">
-              {/* Files generated count */}
-              {activeTab === 'generation' && !generationProgress.isEdit && generationProgress.files.length > 0 && (
-                <div className="text-ink-400 text-sm font-normal">
-                  {generationProgress.files.length} files generated
+            <div className="flex flex-wrap items-center gap-6 md:gap-8">
+              {activeTab === 'generation' && (generationProgress.isGenerating || generationProgress.files.length > 0) && (
+                <div className="flex items-center gap-8 md:gap-10">
+                  {!generationProgress.isEdit && (
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-ink-400">
+                      {generationProgress.files.length} files generated
+                    </div>
+                  )}
+                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-lg font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800/90 text-ink-50 hover:text-ink-100 hover:bg-surface-ink-700 shadow-sm">
+                    {generationProgress.isGenerating ? (
+                      <>
+                        <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
+                        {generationProgress.isEdit ? 'Editing code' : 'Live code generation'}
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-1 h-1 bg-surface-ink-600 rounded-full" />
+                        COMPLETE
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Live Code Generation Status */}
-              {activeTab === 'generation' && generationProgress.isGenerating && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-neutral-800/70 rounded-lg text-xs font-semibold text-ink-100">
-                  <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse" />
-                  {generationProgress.isEdit ? 'Editing code' : 'Live generation'}
-                </div>
-              )}
-              
-              {/* Sandbox Status Indicator */}
               {sandboxData && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-neutral-800/70 rounded-lg text-xs font-medium text-ink-100">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-800/70 bg-surface-ink-800/80 text-xs font-medium text-ink-200">
                   <div className="w-1 h-1 bg-moss-500 rounded-full" />
                   Sandbox active
                 </div>
               )}
-              
-              {/* Open in new tab button */}
-              {sandboxData && (
+
+              {sandboxData && !generationProgress.isGenerating && (
                 <a 
                   href={sandboxData.url} 
                   target="_blank" 
