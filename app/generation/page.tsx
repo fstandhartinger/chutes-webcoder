@@ -1424,7 +1424,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
                           </span>
                         </div>
-                        <div className="bg-gray-900 border border-gray-700  max-h-48 overflow-y-auto scrollbar-hide">
+                        <div className="bg-gray-900 border border-gray-700  min-h-[200px] max-h-[600px] overflow-y-auto scrollbar-hide">
                           <SyntaxHighlighter
                             language={
                               file.type === 'css' ? 'css' :
@@ -1576,8 +1576,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Show sandbox iframe - keep showing during edits, only hide during initial loading
       if (sandboxData?.url) {
         return (
-          <div className="relative w-full h-full">
+          <div key="preview-iframe-container" className="relative w-full h-full">
             <iframe
+              key={`preview-iframe-${sandboxData.sandboxId}`}
               ref={iframeRef}
               src={sandboxData.url}
               className="w-full h-full border-none"
@@ -1650,7 +1651,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             {/* Show a subtle indicator when code is being edited/generated */}
             {generationProgress.isGenerating && generationProgress.isEdit && !codeApplicationState.stage && (
               <div className="absolute top-4 right-4 inline-flex items-center gap-2 px-3 py-1.5 bg-black/80 backdrop-blur-sm rounded-lg">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse" />
                 <span className="text-white text-xs font-medium">Generating code...</span>
               </div>
             )}
@@ -3239,7 +3240,7 @@ Focus on the key sections and content, making it clean and modern.`;
               // const completedFiles = msg.metadata?.appliedFiles || [];
               
               return (
-                <div key={idx} className="block">
+                <div key={idx} className="block py-2">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
                       <div className={`block rounded-[10px] px-14 py-8 ${
@@ -3318,8 +3319,8 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show generated files for completion messages - but only if no appliedFiles already shown */}
                       {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
-                    <div className="mt-8 ml-6 inline-block bg-gray-100 rounded-[10px] p-3">
-                      <div className="text-xs font-medium mb-1 text-gray-700">Generated Files:</div>
+                    <div className="mt-8 ml-6 inline-block bg-gray-100 rounded-[10px] p-5">
+                      <div className="text-xs font-medium mb-3 text-gray-700">Generated Files:</div>
                       <div className="flex flex-wrap items-start gap-1">
                         {generationProgress.files.map((file, fileIdx) => (
                           <div
@@ -3476,18 +3477,18 @@ Focus on the key sections and content, making it clean and modern.`;
                 </button>
               </div>
             </div>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-6 items-center">
               {/* Files generated count */}
               {activeTab === 'generation' && !generationProgress.isEdit && generationProgress.files.length > 0 && (
-                <div className="text-ink-400 text-sm font-medium">
+                <div className="text-ink-400 text-sm font-normal">
                   {generationProgress.files.length} files generated
                 </div>
               )}
-              
+
               {/* Live Code Generation Status */}
               {activeTab === 'generation' && generationProgress.isGenerating && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-neutral-800/70 rounded-lg text-xs font-medium text-ink-100">
-                  <div className="w-2 h-2 bg-moss-500 rounded-full animate-pulse" />
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-neutral-800/70 rounded-lg text-xs font-semibold text-ink-100">
+                  <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse" />
                   {generationProgress.isEdit ? 'Editing code' : 'Live generation'}
                 </div>
               )}
@@ -3495,7 +3496,7 @@ Focus on the key sections and content, making it clean and modern.`;
               {/* Sandbox Status Indicator */}
               {sandboxData && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-800 border border-neutral-800/70 rounded-lg text-xs font-medium text-ink-100">
-                  <div className="w-2.5 h-2.5 bg-moss-500 rounded-full" />
+                  <div className="w-1 h-1 bg-moss-500 rounded-full" />
                   Sandbox active
                 </div>
               )}

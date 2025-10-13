@@ -1213,7 +1213,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   <div className="text-purple-600 font-medium flex items-center gap-2">
                     {generationProgress.isThinking ? (
                       <>
-                        <div className="w-2 h-2 bg-purple-600 rounded-full animate-pulse" />
+                        <div className="w-1 h-1 bg-purple-600 rounded-full animate-pulse" />
                         AI is thinking...
                       </>
                     ) : (
@@ -1384,7 +1384,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
                           </span>
                         </div>
-                        <div className="bg-surface-ink-900/80 border border-neutral-800 max-h-48 overflow-y-auto scrollbar-dark rounded-b-xl">
+                        <div className="bg-surface-ink-900/80 border border-neutral-800 min-h-[200px] max-h-[600px] overflow-y-auto scrollbar-dark rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               file.type === 'css' ? 'css' :
@@ -2117,17 +2117,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
-    
+
     if (ext === 'jsx' || ext === 'js') {
-      return <SiJavascript className="w-5 h-5 text-yellow-500" />;
+      return <SiJavascript className="w-4 h-4 text-yellow-500" />;
     } else if (ext === 'tsx' || ext === 'ts') {
-      return <SiReact className="w-5 h-5 text-blue-500" />;
+      return <SiReact className="w-4 h-4 text-blue-500" />;
     } else if (ext === 'css') {
-      return <SiCss3 className="w-5 h-5 text-blue-500" />;
+      return <SiCss3 className="w-4 h-4 text-blue-500" />;
     } else if (ext === 'json') {
-      return <SiJson className="w-5 h-5 text-muted-foreground" />;
+      return <SiJson className="w-4 h-4 text-muted-foreground" />;
     } else {
-      return <FiFile className="w-5 h-5 text-muted-foreground" />;
+      return <FiFile className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -2974,6 +2974,41 @@ Focus on the key sections and content, making it clean and modern.`;
                 >
                   Build React apps with AI. Describe your idea or clone a URL.
                 </motion.p>
+
+                {/* Model Selector - Prominently displayed */}
+                <motion.div
+                  className="mt-8 w-full max-w-md mx-auto"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: 'easeOut', delay: 0.25 }}
+                >
+                  <label className="block text-sm font-medium text-ink-300 mb-2 text-center">AI Model</label>
+                  <select
+                    value={aiModel}
+                    onChange={(e) => {
+                      const newModel = e.target.value;
+                      setAiModel(newModel);
+                      const params = new URLSearchParams(searchParams);
+                      params.set('model', newModel);
+                      if (sandboxData?.sandboxId) {
+                        params.set('sandbox', sandboxData.sandboxId);
+                      }
+                      router.push(`/?${params.toString()}`);
+                    }}
+                    className="w-full h-[48px] px-4 py-2 text-sm bg-surface-ink-900 text-ink-100 border border-neutral-800/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 hover:border-moss-400/60 transition-all shadow-[0_8px_24px_rgba(7,10,16,0.3)]"
+                    style={{ boxSizing: 'border-box' }}
+                  >
+                    {appConfig.ai.availableModels.map(model => {
+                      const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
+                      const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
+                      return (
+                        <option key={model} value={model}>
+                          {cleanName}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </motion.div>
               </div>
 
               <motion.form 
@@ -3017,7 +3052,7 @@ Focus on the key sections and content, making it clean and modern.`;
   className="absolute bottom-6 right-8 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
   title="Send"
 >
-  <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg className="w-4 h-4" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <polyline points="9 10 4 15 9 20"></polyline>
     <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
   </svg>
@@ -3073,51 +3108,21 @@ Focus on the key sections and content, making it clean and modern.`;
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
+                        width="16"
+                        height="16"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="h-6 w-6"
+                        className="h-4 w-4"
                       >
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                       </svg>
                     </button>
                   </div>
-                </div>
-                
-                {/* Add model selector to home screen */}
-                <div className="mt-6">
-                  <label className="block text-sm font-medium text-ink-300 mb-2">AI Model</label>
-                  <select
-                    value={aiModel}
-                    onChange={(e) => {
-                      const newModel = e.target.value;
-                      setAiModel(newModel);
-                      const params = new URLSearchParams(searchParams);
-                      params.set('model', newModel);
-                      if (sandboxData?.sandboxId) {
-                        params.set('sandbox', sandboxData.sandboxId);
-                      }
-                      router.push(`/?${params.toString()}`);
-                    }}
-                    className="w-full h-[48px] px-4 py-2 text-sm bg-surface-ink-900 text-ink-100 border border-neutral-800/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500"
-                    style={{ boxSizing: 'border-box' }}
-                  >
-                    {appConfig.ai.availableModels.map(model => {
-                      const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
-                      const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
-                      return (
-                        <option key={model} value={model}>
-                          {cleanName}
-                        </option>
-                      );
-                    })}
-                  </select>
                 </div>
               </motion.form>
 
@@ -3348,7 +3353,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
               const _completedFiles = msg.metadata?.appliedFiles || [];
               
               return (
-                <div key={idx} className="block">
+                <div key={idx} className="block py-2">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
                       <div className={`block rounded-2xl px-10 py-8 text-sm leading-relaxed ${
@@ -3419,9 +3424,9 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
                                   <span className={`inline-block w-1 h-1 rounded-full ${
-                                    file.type === 'css' ? 'bg-moss-400' :
-                                    file.type === 'javascript' ? 'bg-heat-100' :
-                                    file.type === 'json' ? 'bg-moss-500' :
+                                    fileType === 'css' ? 'bg-moss-400' :
+                                    fileType === 'javascript' ? 'bg-heat-100' :
+                                    fileType === 'json' ? 'bg-moss-500' :
                                     'bg-surface-ink-600'
                                   }`} />
                                   {fileName}
@@ -3513,7 +3518,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 bg-moss-500 rounded-full animate-pulse" />
+                        <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse" />
                         <span className="text-xs font-medium text-ink-400">AI Response Stream</span>
                       </div>
                       <div className="flex-1 h-px bg-gradient-to-r from-surface-ink-600/50 to-transparent" />
@@ -3629,24 +3634,24 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 </button>
               </div>
             </div>
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-6 items-center">
               {/* Live Code Generation Status - Moved to far right */}
               {activeTab === 'generation' && (generationProgress.isGenerating || generationProgress.files.length > 0) && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-6">
                   {!generationProgress.isEdit && (
-                    <div className="text-muted-foreground text-sm">
+                    <div className="text-muted-foreground text-sm font-normal">
                       {generationProgress.files.length} files generated
                     </div>
                   )}
-                  <div className={`inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800 text-ink-100 hover:text-ink-50 hover:bg-surface-ink-750 shadow-sm h-9 px-4 gap-2`}>
+                  <div className={`inline-flex items-center justify-center whitespace-nowrap rounded-lg font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800 text-ink-100 hover:text-ink-50 hover:bg-surface-ink-750 shadow-sm h-9 px-4 gap-2`}>
                     {generationProgress.isGenerating ? (
                       <>
-                        <div className="w-2 h-2 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
+                        <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
                         {generationProgress.isEdit ? 'Editing code' : 'Live code generation'}
                       </>
                     ) : (
                       <>
-                        <div className="w-2 h-2 bg-surface-ink-600 rounded-full" />
+                        <div className="w-1 h-1 bg-surface-ink-600 rounded-full" />
                         COMPLETE
                       </>
                     )}
