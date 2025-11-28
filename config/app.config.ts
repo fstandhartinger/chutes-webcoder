@@ -50,34 +50,25 @@ export const appConfig = {
   
   // AI Model Configuration
   ai: {
-    // Default AI model (Chutes-first, but UI still shows all providers)
-    defaultModel: 'chutes/zai-org/GLM-4.6-turbo',
+    // Default AI model
+    defaultModel: 'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
     
     // Available models
     availableModels: [
-      'chutes/zai-org/GLM-4.6-turbo',
       'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
-      'chutes/moonshotai/Kimi-K2-Instruct-0905',
-      'chutes/deepseek-ai/DeepSeek-V3.2-Exp',
-      'chutesai/Ling-1T-FP8'
+      'chutes/zai-org/GLM-4.6-turbo',
     ],
     
     // Model display names
     modelDisplayNames: {
-      'chutes/zai-org/GLM-4.6-turbo': 'GLM 4.6 Turbo (Chutes)',
-      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder 480B (Chutes)',
-      'chutes/moonshotai/Kimi-K2-Instruct-0905': 'Kimi-K2 (Chutes)',
-      'chutes/deepseek-ai/DeepSeek-V3.2-Exp': 'DeepSeek V3.2 (Chutes)',
-      'chutesai/Ling-1T-FP8': 'Ling 1T FP8 (ChutesAI)'
+      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder 480B',
+      'chutes/zai-org/GLM-4.6-turbo': 'GLM 4.6 Turbo',
     } as Record<string, string>,
     
     // Model API configuration to help downstream helpers pick the right SDK
     modelApiConfig: {
-      'chutes/zai-org/GLM-4.6-turbo': { provider: 'chutes' },
       'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': { provider: 'chutes' },
-      'chutes/moonshotai/Kimi-K2-Instruct-0905': { provider: 'chutes' },
-      'chutes/deepseek-ai/DeepSeek-V3.2-Exp': { provider: 'chutes' },
-      'chutesai/Ling-1T-FP8': { provider: 'chutesai' }
+      'chutes/zai-org/GLM-4.6-turbo': { provider: 'chutes' },
     },
     
     // Temperature settings for non-reasoning models

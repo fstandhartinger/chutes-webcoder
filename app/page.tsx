@@ -2961,7 +2961,7 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <div className="relative font-sans bg-surface-ink-950 text-ink-50 min-h-[100svh] md:min-h-screen flex flex-col">
+    <div className="relative font-sans bg-surface-ink-950 text-ink-50 h-[100svh] md:h-screen flex flex-col overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-surface-ink-950 via-surface-ink-850 to-surface-ink-800" />
       <div className="pointer-events-none absolute -z-10 -left-24 -top-16 h-80 w-80 rounded-full bg-moss-500/15 blur-3xl" />
       <div className="pointer-events-none absolute -z-10 right-[-22%] top-6 h-96 w-96 rounded-full bg-heat-90/12 blur-[88px]" />
@@ -3070,14 +3070,13 @@ Focus on the key sections and content, making it clean and modern.`;
                       </span>
                       <button
                         type="submit"
-                        disabled={!homePromptInput.trim()}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg bg-moss-500/10 border border-moss-500/20 text-moss-400 hover:bg-moss-500/20 hover:border-moss-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                        className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-ink-800 text-ink-200 hover:bg-surface-ink-700 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                         title="Send"
                       >
                         <svg
-                          className="h-4 w-4 shrink-0"
-                          width="16"
-                          height="16"
+                          className="h-6 w-6 shrink-0"
+                          width="24"
+                          height="24"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -3136,26 +3135,24 @@ Focus on the key sections and content, making it clean and modern.`;
                     />
                     <button
                       type="submit"
-                      disabled={!homeUrlInput.trim()}
-                      className="absolute top-1/2 right-6 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+                      className="absolute top-1/2 right-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl bg-surface-ink-800 text-ink-200 hover:bg-surface-ink-700 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                       title="Clone Website"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
+                        width="20"
+                        height="20"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="h-4 w-4 shrink-0"
-                        style={{ width: '16px', height: '16px' }}
+                        className="h-5 w-5 shrink-0"
                         aria-hidden="true"
                       >
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        <polyline points="9 10 4 15 9 20"></polyline>
+                        <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
                       </svg>
                     </button>
                   </div>
@@ -3175,21 +3172,6 @@ Focus on the key sections and content, making it clean and modern.`;
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-moss-500/0 via-moss-400/20 to-moss-500/0 rounded-full opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300" />
                     
                     <div className="relative flex items-center gap-2 px-4 py-2 bg-surface-ink-850 bg-opacity-80 backdrop-blur-sm border border-ink-700 border-opacity-50 rounded-full hover:border-moss-500/30 transition-all duration-200">
-                      {/* AI Icon */}
-                      <svg 
-                        className="w-3.5 h-3.5 text-moss-400" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                      >
-                        <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" />
-                        <circle cx="8" cy="14" r="1.5" fill="currentColor" />
-                        <circle cx="16" cy="14" r="1.5" fill="currentColor" />
-                      </svg>
-                      
                       <span className="text-xs text-ink-400 font-medium">Model</span>
                       
                       <select
