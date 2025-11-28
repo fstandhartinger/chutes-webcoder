@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { withTimeout } from '@/lib/retry';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import type { CommandResult } from '@/lib/sandbox/types';
 
 export async function POST() {
   try {
@@ -17,14 +18,14 @@ export async function POST() {
     const distDir = `${workingDir}/dist`;
 
     // Run Vite build inside sandbox
-    const buildResult = await withTimeout(provider.runCommand('npm run build'), 180000, 'Build timed out');
+    const buildResult = await withTimeout(provider.runCommand('npm run build'), 180000, 'Build timed out') as CommandResult;
 
     if (buildResult.exitCode !== 0) {
       return NextResponse.json({ success: false, error: 'Build failed', details: buildResult.stderr || buildResult.stdout }, { status: 500 });
     }
 
     // Collect dist files as base64 payload
-    const fileList = await withTimeout(provider.listFiles(distDir), 120000, 'Collecting build files timed out');
+    const fileList = await withTimeout(provider.listFiles(distDir), 120000, 'Collecting build files timed out') as string[];
 
     if (!fileList || fileList.length === 0) {
       return NextResponse.json({ success: false, error: 'No build files produced' }, { status: 500 });
