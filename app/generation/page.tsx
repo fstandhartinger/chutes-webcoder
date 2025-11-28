@@ -3139,61 +3139,66 @@ Focus on the key sections and content, making it clean and modern.`;
 
         {/* Right side controls */}
         <div className="flex items-center gap-3">
-          {/* Model Selector */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg hover:border-moss-400 hover:border-opacity-30 transition-all duration-200">
-            {/* AI Icon */}
-            <svg 
-              className="w-3.5 h-3.5 text-moss-400" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" />
-              <circle cx="8" cy="14" r="1.5" fill="currentColor" />
-              <circle cx="16" cy="14" r="1.5" fill="currentColor" />
-            </svg>
+          {/* Model Selector - Pill design matching home page */}
+          <div className="relative group">
+            {/* Subtle glow effect on hover */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-moss-500/0 via-moss-400/20 to-moss-500/0 rounded-full opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300" />
             
-            <span className="text-xs text-ink-400 font-medium">Model</span>
-            
-            <select
-              value={aiModel}
-              onChange={(e) => {
-                const newModel = e.target.value;
-                setAiModel(newModel);
-                const params = new URLSearchParams(searchParams);
-                params.set('model', newModel);
-                if (sandboxData?.sandboxId) {
-                  params.set('sandbox', sandboxData.sandboxId);
-                }
-                router.push(`/generation?${params.toString()}`);
-              }}
-              className="appearance-none bg-transparent text-sm text-ink-200 font-medium cursor-pointer focus:outline-none pr-5"
-              style={{ 
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2382c77f' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 0 center',
-                backgroundSize: '16px'
-              }}
-            >
-              {appConfig.ai.availableModels.map(model => {
-                const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)?.[model] || model;
-                const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
-                return (
-                  <option key={model} value={model} className="bg-surface-ink-900 text-ink-100">
-                    {cleanName}
-                  </option>
-                );
-              })}
-            </select>
+            <div className="relative flex items-center gap-2 px-4 py-1.5 bg-surface-ink-850 backdrop-blur-sm border border-neutral-700 rounded-full hover:border-moss-500/30 transition-all duration-200">
+              {/* AI Icon */}
+              <svg 
+                className="w-3.5 h-3.5 text-moss-400" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" />
+                <circle cx="8" cy="14" r="1.5" fill="currentColor" />
+                <circle cx="16" cy="14" r="1.5" fill="currentColor" />
+              </svg>
+              
+              <span className="text-xs text-ink-400 font-medium">Model</span>
+              
+              <select
+                value={aiModel}
+                onChange={(e) => {
+                  const newModel = e.target.value;
+                  setAiModel(newModel);
+                  const params = new URLSearchParams(searchParams);
+                  params.set('model', newModel);
+                  if (sandboxData?.sandboxId) {
+                    params.set('sandbox', sandboxData.sandboxId);
+                  }
+                  router.push(`/generation?${params.toString()}`);
+                }}
+                className="appearance-none bg-transparent text-sm text-ink-100 font-medium cursor-pointer focus:outline-none pr-5"
+                style={{ 
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2363d297' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 0 center',
+                  backgroundSize: '16px'
+                }}
+              >
+                {appConfig.ai.availableModels.map(model => {
+                  const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)?.[model] || model;
+                  const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
+                  return (
+                    <option key={model} value={model} className="bg-surface-ink-900 text-ink-100">
+                      {cleanName}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
           </div>
           
-          {/* Action Buttons */}
+          {/* Action Buttons - Rounded to match pill design */}
           <button
             onClick={() => createSandbox()}
-            className="h-8 w-8 flex items-center justify-center rounded-lg transition-colors bg-neutral-800 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-400"
+            className="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30"
             title="Create new sandbox"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3202,7 +3207,7 @@ Focus on the key sections and content, making it clean and modern.`;
           </button>
           <button
             onClick={reapplyLastGeneration}
-            className="h-8 w-8 flex items-center justify-center rounded-lg transition-colors bg-neutral-800 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-ink-300 disabled:hover:border-neutral-700"
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
           >
@@ -3213,7 +3218,7 @@ Focus on the key sections and content, making it clean and modern.`;
           <button
             onClick={downloadZip}
             disabled={!sandboxData}
-            className="h-8 w-8 flex items-center justify-center rounded-lg transition-colors bg-neutral-800 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-ink-300 disabled:hover:border-neutral-700"
             title="Download your Vite app as ZIP"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
