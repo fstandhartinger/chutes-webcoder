@@ -93,17 +93,21 @@ print(json.dumps({
 }))
     `);
 
-    const output = execResult.logs.stdout.join('\\n').trim();
+    // Join stdout lines with actual newlines (not escaped backslash-n)
+    const output = execResult.logs.stdout.join('\n').trim();
     let parsed: any = null;
 
     try {
-      parsed = JSON.parse(output.split('\\n').pop() || '');
+      // Get the last line which contains the JSON output from our Python script
+      const lines = output.split('\n');
+      const jsonLine = lines[lines.length - 1];
+      parsed = JSON.parse(jsonLine || '');
     } catch {
       parsed = null;
     }
 
     const stdout = parsed?.stdout ?? output;
-    const stderr = parsed?.stderr ?? execResult.logs.stderr.join('\\n');
+    const stderr = parsed?.stderr ?? execResult.logs.stderr.join('\n');
     const exitCode = typeof parsed?.returncode === 'number'
       ? parsed.returncode
       : (execResult.error ? 1 : 0);
