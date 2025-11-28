@@ -71,6 +71,8 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 | `npm run lint` | ESLint via `next lint` |
 | `npm run test:all` | Node-based smoke tests (sandbox utils + parser) |
 
+> **Commit/Push Checklist:** Always run `npm run lint` and `npm run build` before committing or pushing. The Render deploy pipeline enforces the same checks and will fail on any linting/type errors, so keeping your local checks green prevents broken builds.
+
 ## Credits & License
 
 Originally created by the Firecrawl team as **Open Lovable**. This fork tracks upstream while layering in the Chutes defaults. Licensed under MIT.
