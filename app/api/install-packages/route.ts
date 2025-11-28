@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 
 declare global {
   var activeSandbox: any;
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Get active sandbox provider
-    const provider = global.activeSandboxProvider;
+    const provider = sandboxManager.getActiveProvider() || global.activeSandboxProvider;
     
     if (!provider) {
       return NextResponse.json({ 

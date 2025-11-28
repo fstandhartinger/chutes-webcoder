@@ -224,14 +224,15 @@ export async function POST(request: NextRequest) {
     const morphUpdatedPaths = new Set<string>();
 
     if (morphEnabled && morphEdits.length > 0) {
-      if (!global.activeSandbox) {
+      const morphSandbox = global.activeSandbox || global.activeSandboxProvider;
+      if (!morphSandbox) {
         console.warn('[apply-ai-code] Morph edits found but no active sandbox; skipping Morph application');
       } else {
         console.log(`[apply-ai-code] Applying ${morphEdits.length} fast edits via Morph...`);
         for (const edit of morphEdits) {
           try {
             const result = await applyMorphEditToFile({
-              sandbox: global.activeSandbox,
+              sandbox: morphSandbox,
               targetPath: edit.targetFile,
               instructions: edit.instructions,
               updateSnippet: edit.update

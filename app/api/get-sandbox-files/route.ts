@@ -1,15 +1,20 @@
 import { NextResponse } from 'next/server';
 import { parseJavaScriptFile, buildComponentTree } from '@/lib/file-parser';
 import { FileManifest, FileInfo, RouteInfo } from '@/types/file-manifest';
+import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 // SandboxState type used implicitly through global.activeSandbox
 
 declare global {
   var activeSandbox: any;
+  var activeSandboxProvider: any;
+  var sandboxData: any;
 }
 
 export async function GET() {
   try {
-    if (!global.activeSandbox) {
+    const provider = sandboxManager.getActiveProvider() || global.activeSandboxProvider;
+    
+    if (!provider) {
       return NextResponse.json({
         success: false,
         error: 'No active sandbox'
@@ -17,34 +22,14 @@ export async function GET() {
     }
 
     console.log('[get-sandbox-files] Fetching and analyzing file structure...');
-    
-    // Get list of all relevant files
-    const findResult = await global.activeSandbox.runCommand({
-      cmd: 'find',
-      args: [
-        '.',
-        '-name', 'node_modules', '-prune', '-o',
-        '-name', '.git', '-prune', '-o',
-        '-name', 'dist', '-prune', '-o',
-        '-name', 'build', '-prune', '-o',
-        '-type', 'f',
-        '(',
-        '-name', '*.jsx',
-        '-o', '-name', '*.js',
-        '-o', '-name', '*.tsx',
-        '-o', '-name', '*.ts',
-        '-o', '-name', '*.css',
-        '-o', '-name', '*.json',
-        ')',
-        '-print'
-      ]
-    });
-    
-    if (findResult.exitCode !== 0) {
-      throw new Error('Failed to list files');
-    }
-    
-    const fileList = (await findResult.stdout()).split('\n').filter((f: string) => f.trim());
+
+    const sandboxInfo = provider.getSandboxInfo?.();
+    const baseDir = sandboxInfo?.provider === 'vercel' ? '/vercel/sandbox' : '/home/user/app';
+    const allowedExtensions = /\.(jsx?|tsx?|css|json)$/;
+
+    const fileList = (await provider.listFiles(baseDir))
+      .filter(f => allowedExtensions.test(f));
+
     console.log('[get-sandbox-files] Found', fileList.length, 'files');
     
     // Read content of each file (limit to reasonable sizes)
@@ -53,28 +38,20 @@ export async function GET() {
     for (const filePath of fileList) {
       try {
         // Check file size first
-        const statResult = await global.activeSandbox.runCommand({
-          cmd: 'stat',
-          args: ['-f', '%z', filePath]
-        });
-        
-        if (statResult.exitCode === 0) {
-          const fileSize = parseInt(await statResult.stdout());
-          
-          // Only read files smaller than 10KB
-          if (fileSize < 10000) {
-            const catResult = await global.activeSandbox.runCommand({
-              cmd: 'cat',
-              args: [filePath]
-            });
-            
-            if (catResult.exitCode === 0) {
-              const content = await catResult.stdout();
-              // Remove leading './' from path
-              const relativePath = filePath.replace(/^\.\//, '');
-              filesContent[relativePath] = content;
-            }
-          }
+        const fullPath = filePath.startsWith('/') ? filePath : `${baseDir}/${filePath}`;
+        const statResult = await provider.runCommand(`stat -c %s ${fullPath}`);
+
+        if (statResult.exitCode !== 0) {
+          continue;
+        }
+
+        const fileSize = parseInt(String(statResult.stdout).trim(), 10);
+
+        // Only read files smaller than 10KB
+        if (Number.isFinite(fileSize) && fileSize < 10000) {
+          const content = await provider.readFile(fullPath);
+          const relativePath = filePath.replace(/^\.\//, '');
+          filesContent[relativePath] = content;
         }
       } catch (parseError) {
         console.debug('Error parsing component info:', parseError);
@@ -84,16 +61,17 @@ export async function GET() {
     }
     
     // Get directory structure
-    const treeResult = await global.activeSandbox.runCommand({
-      cmd: 'find',
-      args: ['.', '-type', 'd', '-not', '-path', '*/node_modules*', '-not', '-path', '*/.git*']
-    });
-    
-    let structure = '';
-    if (treeResult.exitCode === 0) {
-      const dirs = (await treeResult.stdout()).split('\n').filter((d: string) => d.trim());
-      structure = dirs.slice(0, 50).join('\n'); // Limit to 50 lines
+    const dirs = new Set<string>(['.']);
+    for (const filePath of fileList) {
+      const parts = filePath.split('/').slice(0, -1);
+      let current = '.';
+      for (const part of parts) {
+        if (!part) continue;
+        current = current === '.' ? `./${part}` : `${current}/${part}`;
+        dirs.add(current);
+      }
     }
+    const structure = Array.from(dirs).slice(0, 50).join('\n'); // Limit to 50 lines
     
     // Build enhanced file manifest
     const fileManifest: FileManifest = {

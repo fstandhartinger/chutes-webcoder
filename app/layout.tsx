@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import ConsoleCapture from "./components/ConsoleCapture";
 
-const inter = Inter({ subsets: ["latin"] });
-
-// Tomato Grotesk font definitions
-const tomatoGrotesk = {
-  style: {
-    fontFamily: 'Tomato Grotesk, Inter, system-ui, sans-serif',
-  },
-};
+const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-grotesk" });
 
 export const metadata: Metadata = {
   title: "Chutes Webcoder",
@@ -32,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={inter.className}>
+    <html lang="en" className={`dark ${grotesk.variable}`}>
+      <body className={`${grotesk.className} antialiased bg-surface-ink-950 text-ink-50`}>
         <ConsoleCapture />
         <Suspense fallback={<div />}>{children}</Suspense>
       </body>

@@ -77,33 +77,42 @@ export class E2BProvider extends SandboxProvider {
       throw new Error('No active sandbox');
     }
 
-    
-    const result = await this.sandbox.runCode(`
-      import subprocess
-      import os
+    const execResult = await this.sandbox.runCode(`
+import subprocess, os, shlex, json
 
-      os.chdir('/home/user/app')
-      result = subprocess.run(${JSON.stringify(command.split(' '))}, 
-                            capture_output=True, 
-                            text=True, 
-                            shell=False)
+os.chdir('${appConfig.e2b.workingDirectory}')
 
-      print("STDOUT:")
-      print(result.stdout)
-      if result.stderr:
-          print("\\nSTDERR:")
-          print(result.stderr)
-      print(f"\\nReturn code: {result.returncode}")
+raw_cmd = ${JSON.stringify(command)}
+cmd = shlex.split(raw_cmd)
+proc = subprocess.run(cmd, capture_output=True, text=True)
+
+print(json.dumps({
+  "stdout": proc.stdout,
+  "stderr": proc.stderr,
+  "returncode": proc.returncode
+}))
     `);
-    
-    const output = result.logs.stdout.join('\n');
-    const stderr = result.logs.stderr.join('\n');
-    
+
+    const output = execResult.logs.stdout.join('\\n').trim();
+    let parsed: any = null;
+
+    try {
+      parsed = JSON.parse(output.split('\\n').pop() || '');
+    } catch {
+      parsed = null;
+    }
+
+    const stdout = parsed?.stdout ?? output;
+    const stderr = parsed?.stderr ?? execResult.logs.stderr.join('\\n');
+    const exitCode = typeof parsed?.returncode === 'number'
+      ? parsed.returncode
+      : (execResult.error ? 1 : 0);
+
     return {
-      stdout: output,
+      stdout,
       stderr,
-      exitCode: result.error ? 1 : 0,
-      success: !result.error
+      exitCode,
+      success: exitCode === 0
     };
   }
 
@@ -173,45 +182,17 @@ export class E2BProvider extends SandboxProvider {
       throw new Error('No active sandbox');
     }
 
-    const packageList = packages.join(' ');
-    const flags = appConfig.packages.useLegacyPeerDeps ? '--legacy-peer-deps' : '';
-    
-    
-    const result = await this.sandbox.runCode(`
-      import subprocess
-      import os
+    const flags = appConfig.packages.useLegacyPeerDeps ? '--legacy-peer-deps ' : '';
+    const installCmd = `npm install ${flags}${packages.join(' ')}`;
 
-      os.chdir('/home/user/app')
+    const result = await this.runCommand(installCmd);
 
-      # Install packages
-      result = subprocess.run(
-          ['npm', 'install', ${flags ? `'${flags}',` : ''} ${packages.map(p => `'${p}'`).join(', ')}],
-          capture_output=True,
-          text=True
-      )
-
-      print("STDOUT:")
-      print(result.stdout)
-      if result.stderr:
-          print("\\nSTDERR:")
-          print(result.stderr)
-      print(f"\\nReturn code: {result.returncode}")
-    `);
-    
-    const output = result.logs.stdout.join('\n');
-    const stderr = result.logs.stderr.join('\n');
-    
     // Restart Vite if configured
-    if (appConfig.packages.autoRestartVite && !result.error) {
+    if (appConfig.packages.autoRestartVite && result.exitCode === 0) {
       await this.restartViteServer();
     }
     
-    return {
-      stdout: output,
-      stderr,
-      exitCode: result.error ? 1 : 0,
-      success: !result.error
-    };
+    return result;
   }
 
   async setupViteApp(): Promise<void> {
@@ -379,22 +360,11 @@ print('\\nAll files created successfully!')
     await this.sandbox.runCode(setupScript);
     
     // Install dependencies
-    await this.sandbox.runCode(`
-import subprocess
-
-print('Installing npm packages...')
-result = subprocess.run(
-    ['npm', 'install'],
-    cwd='/home/user/app',
-    capture_output=True,
-    text=True
-)
-
-if result.returncode == 0:
-    print('✓ Dependencies installed successfully')
-else:
-    print(f'⚠ Warning: npm install had issues: {result.stderr}')
-    `);
+    const installResult = await this.runCommand('npm install');
+    
+    if (installResult.exitCode !== 0) {
+      throw new Error(`npm install failed: ${installResult.stderr || installResult.stdout}`);
+    }
     
     // Start Vite dev server
     await this.sandbox.runCode(`

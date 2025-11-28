@@ -2963,6 +2963,9 @@ Focus on the key sections and content, making it clean and modern.`;
   return (
     <div className="relative font-sans bg-surface-ink-950 text-ink-50 min-h-[100svh] md:min-h-screen flex flex-col">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-surface-ink-950 via-surface-ink-850 to-surface-ink-800" />
+      <div className="pointer-events-none absolute -z-10 -left-24 -top-16 h-80 w-80 rounded-full bg-moss-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute -z-10 right-[-22%] top-6 h-96 w-96 rounded-full bg-heat-90/12 blur-[88px]" />
+      <div className="pointer-events-none absolute -z-10 left-1/2 bottom-[-18%] h-80 w-[32rem] -translate-x-1/2 rotate-6 bg-gradient-to-r from-moss-400/10 via-blue-500/10 to-heat-90/14 blur-[96px]" />
       {showHomeScreen && (
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
           <div className="absolute inset-0 overflow-hidden bg-surface-ink-900/95">

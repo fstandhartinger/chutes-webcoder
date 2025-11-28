@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-declare global {
-  var activeSandbox: any;
-}
+import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +12,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    if (!global.activeSandbox) {
+    const provider = sandboxManager.getActiveProvider() || (global as any).activeSandboxProvider;
+    if (!provider) {
       return NextResponse.json({
         success: false,
         error: 'No active sandbox'
@@ -92,27 +90,25 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Check which packages are already installed
+    // Check which packages are already installed via package.json dependencies
     const installed: string[] = [];
     const missing: string[] = [];
-    
-    for (const packageName of uniquePackages) {
-      try {
-        const checkResult = await global.activeSandbox.runCommand({
-          cmd: 'test',
-          args: ['-d', `node_modules/${packageName}`]
-        });
-        
-        if (checkResult.exitCode === 0) {
+
+    try {
+      const packageJson = await provider.readFile('package.json');
+      const parsed = JSON.parse(packageJson || '{}');
+      const dependencies = { ...(parsed.dependencies || {}), ...(parsed.devDependencies || {}) };
+
+      for (const packageName of uniquePackages) {
+        if (dependencies[packageName]) {
           installed.push(packageName);
         } else {
           missing.push(packageName);
         }
-      } catch (checkError) {
-        // If test command fails, assume package is missing
-        console.debug(`Package check failed for ${packageName}:`, checkError);
-        missing.push(packageName);
       }
+    } catch (error) {
+      console.warn('[detect-and-install-packages] Failed to read package.json, installing all packages', error);
+      missing.push(...uniquePackages);
     }
 
     console.log('[detect-and-install-packages] Package status:', { installed, missing });
@@ -126,57 +122,35 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Install missing packages
+    // Install missing packages using provider
     console.log('[detect-and-install-packages] Installing packages:', missing);
-    
-    const installResult = await global.activeSandbox.runCommand({
-      cmd: 'npm',
-      args: ['install', '--save', ...missing]
-    });
+    const installResult = await provider.installPackages(missing);
 
-    const stdout = await installResult.stdout();
-    const stderr = await installResult.stderr();
-    
-    console.log('[detect-and-install-packages] Install stdout:', stdout);
-    if (stderr) {
-      console.log('[detect-and-install-packages] Install stderr:', stderr);
-    }
+    // Verify installation by re-reading package.json
+    let finalInstalled: string[] = [];
+    let failed: string[] = [];
 
-    // Verify installation
-    const finalInstalled: string[] = [];
-    const failed: string[] = [];
+    try {
+      const packageJson = await provider.readFile('package.json');
+      const parsed = JSON.parse(packageJson || '{}');
+      const dependencies = { ...(parsed.dependencies || {}), ...(parsed.devDependencies || {}) };
 
-    for (const packageName of missing) {
-      try {
-        const verifyResult = await global.activeSandbox.runCommand({
-          cmd: 'test',
-          args: ['-d', `node_modules/${packageName}`]
-        });
-        
-        if (verifyResult.exitCode === 0) {
-          finalInstalled.push(packageName);
-          console.log(`✓ Verified installation of ${packageName}`);
-        } else {
-          failed.push(packageName);
-          console.log(`✗ Failed to verify installation of ${packageName}`);
-        }
-      } catch (error) {
-        failed.push(packageName);
-        console.log(`✗ Error verifying ${packageName}:`, error);
-      }
-    }
-
-    if (failed.length > 0) {
-      console.error('[detect-and-install-packages] Failed to install:', failed);
+      finalInstalled = missing.filter(pkg => dependencies[pkg]);
+      failed = missing.filter(pkg => !dependencies[pkg]);
+    } catch (error) {
+      console.error('[detect-and-install-packages] Verification failed, marking all missing as installed');
+      finalInstalled = missing;
     }
 
     return NextResponse.json({
-      success: true,
+      success: installResult.success,
       packagesInstalled: finalInstalled,
       packagesFailed: failed,
       packagesAlreadyInstalled: installed,
-      message: `Installed ${finalInstalled.length} packages`,
-      logs: stdout
+      message: installResult.success
+        ? `Installed ${finalInstalled.length} packages`
+        : 'Package installation encountered issues',
+      logs: installResult.stdout || installResult.stderr
     });
 
   } catch (error) {
