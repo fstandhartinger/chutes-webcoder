@@ -27,8 +27,8 @@ export async function GET() {
     const baseDir = sandboxInfo?.provider === 'vercel' ? '/vercel/sandbox' : '/home/user/app';
     const allowedExtensions = /\.(jsx?|tsx?|css|json)$/;
 
-    const fileList = (await provider.listFiles(baseDir))
-      .filter(f => allowedExtensions.test(f));
+    const fileListRaw = (await provider.listFiles(baseDir)) as string[];
+    const fileList = fileListRaw.filter((file) => allowedExtensions.test(file));
 
     console.log('[get-sandbox-files] Found', fileList.length, 'files');
     
