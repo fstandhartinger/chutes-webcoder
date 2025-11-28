@@ -1251,7 +1251,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   <button
                     type="button"
                     onClick={() => setIsCodeExpanded(prev => !prev)}
-                    className="inline-flex items-center gap-2 rounded-full border border-neutral-800/70 bg-surface-ink-850/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-300 hover:text-ink-50 hover:bg-surface-ink-750 hover:border-neutral-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/50"
+                    className="inline-flex items-center gap-2 rounded-full border border-neutral-800/70 bg-surface-ink-850 bg-opacity-70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-300 hover:text-ink-50 hover:bg-surface-ink-750 hover:border-neutral-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/50"
                   >
                     {isCodeExpanded ? 'Collapse view' : 'Expand view'}
                   </button>
@@ -1276,7 +1276,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           </svg>
                         </button>
                       </div>
-                      <div className="relative bg-surface-ink-800/80 border border-neutral-800 rounded-b-lg">
+                      <div className="relative bg-surface-ink-800 bg-opacity-80 border border-neutral-800 rounded-b-lg">
                         <SyntaxHighlighter
                           language={(() => {
                             const ext = selectedFile.split('.').pop()?.toLowerCase();
@@ -1305,7 +1305,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           })()}
                         </SyntaxHighlighter>
                         {!isCodeExpanded && (
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-800 via-surface-ink-800/70 to-transparent" />
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-800 via-surface-ink-800 to-transparent" />
                         )}
                       </div>
                     </div>
@@ -1331,7 +1331,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           <span className="font-mono text-sm">Streaming code...</span>
                         </div>
                       </div>
-                      <div className="relative p-4 bg-surface-ink-900/80 rounded-b-xl">
+                      <div className="relative p-4 bg-surface-ink-900 bg-opacity-80 rounded-b-xl">
                         <SyntaxHighlighter
                           language="jsx"
                           style={vscDarkPlus}
@@ -1351,7 +1351,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         </SyntaxHighlighter>
                         <span className="inline-block w-2 h-4 bg-orange-400 ml-1 animate-pulse" />
                         {!isCodeExpanded && (
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b-xl" />
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-xl" />
                         )}
                       </div>
                     </div>
@@ -1375,7 +1375,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             </span>
                           </div>
                         </div>
-                      <div className="relative bg-surface-ink-900/80 border border-neutral-800 rounded-b-xl">
+                      <div className="relative bg-surface-ink-900 bg-opacity-80 border border-neutral-800 rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               generationProgress.currentFile.type === 'css' ? 'css' :
@@ -1400,7 +1400,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           </SyntaxHighlighter>
                           <span className="inline-block w-2 h-3 bg-orange-400 ml-4 mb-4 animate-pulse" />
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b-xl" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-xl" />
                           )}
                         </div>
                       </div>
@@ -1423,7 +1423,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
                           </span>
                         </div>
-                        <div className="relative bg-surface-ink-900/80 border border-neutral-800 rounded-b-xl">
+                        <div className="relative bg-surface-ink-900 bg-opacity-80 border border-neutral-800 rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               file.type === 'css' ? 'css' :
@@ -1448,7 +1448,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             {file.content}
                           </SyntaxHighlighter>
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b-xl" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-xl" />
                           )}
                         </div>
                       </div>
@@ -1463,7 +1463,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             <span className="font-mono text-sm">Processing...</span>
                           </div>
                         </div>
-                        <div className="relative bg-surface-ink-900/80 border border-neutral-800 rounded-b-xl">
+                        <div className="relative bg-surface-ink-900 bg-opacity-80 border border-neutral-800 rounded-b-xl">
                           <SyntaxHighlighter
                             language="jsx"
                             style={vscDarkPlus}
@@ -1494,7 +1494,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             })()}
                           </SyntaxHighlighter>
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b-xl" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-xl" />
                           )}
                         </div>
                       </div>
@@ -1531,8 +1531,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               className="w-full h-full object-contain"
             />
             {(generationProgress.isGenerating || isPreparingDesign) && (
-              <div className="absolute inset-0 bg-surface-ink-950/60 backdrop-blur-sm flex items-center justify-center">
-                <div className="text-center bg-surface-ink-850/90 rounded-2xl px-8 py-7 backdrop-blur-md border border-neutral-800/70 shadow-[var(--shadow-elevated)]">
+              <div className="absolute inset-0 bg-surface-ink-950 bg-opacity-60 backdrop-blur-sm flex items-center justify-center">
+                <div className="text-center bg-surface-ink-850 bg-opacity-90 rounded-2xl px-8 py-7 backdrop-blur-md border border-neutral-800/70 shadow-[var(--shadow-elevated)]">
                   <div className="w-14 h-14 border-4 border-moss-400/30 border-t-moss-500 rounded-full animate-spin mx-auto mb-4" />
                   <p className="text-ink-100 text-base font-medium">
                     {generationProgress.isGenerating ? 'Generating code...' : `Preparing your design for ${targetUrl}...`}
@@ -1591,7 +1591,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   iframeRef.current.src = newSrc;
                 }
               }}
-              className="absolute bottom-5 right-5 bg-surface-ink-850/90 hover:bg-surface-ink-800 text-ink-100 p-2.5 rounded-xl shadow-[var(--shadow-floating)] transition-all duration-200 hover:scale-105 border border-neutral-800/70"
+              className="absolute bottom-5 right-5 bg-surface-ink-850 bg-opacity-90 hover:bg-surface-ink-800 text-ink-100 p-2.5 rounded-xl shadow-[var(--shadow-floating)] transition-all duration-200 hover:scale-105 border border-neutral-800/70"
               title="Refresh sandbox"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2968,7 +2968,7 @@ Focus on the key sections and content, making it clean and modern.`;
       <div className="pointer-events-none absolute -z-10 left-1/2 bottom-[-18%] h-80 w-[32rem] -translate-x-1/2 rotate-6 bg-gradient-to-r from-moss-400/10 via-blue-500/10 to-heat-90/14 blur-[96px]" />
       {showHomeScreen && (
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
-          <div className="absolute inset-0 overflow-hidden bg-surface-ink-900/95">
+          <div className="absolute inset-0 overflow-hidden bg-surface-ink-900 bg-opacity-95">
             <div className="absolute left-0 right-0 h-3/5 bottom-[-10%]">
               <ParticleWave className="absolute inset-0 opacity-80" />
             </div>
@@ -3053,7 +3053,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         setShowStyleSelector(hasValidUrl || hasPrompt);
                       }}
                       placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                      className="min-h-[180px] w-full resize-y rounded-xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-24 py-8 pb-[70px] text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
+                      className="min-h-[180px] w-full resize-y rounded-xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-6 py-6 pb-16 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -3063,32 +3063,34 @@ Focus on the key sections and content, making it clean and modern.`;
                         }
                       }}
                     />
-                    <span className="absolute bottom-8 left-10 text-label-medium text-ink-400 select-none font-medium">
-                      Press Enter to send, Shift+Enter for linebreaks
-                    </span>
-                    <button
-                      type="submit"
-                      disabled={!homePromptInput.trim()}
-                      className="absolute bottom-6 right-8 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 hover:bg-moss-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
-                      title="Send"
-                    >
-                      <svg
-                        className="h-4 w-4 shrink-0"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{ width: '16px', height: '16px' }}
-                        aria-hidden="true"
+                    {/* Bottom action bar */}
+                    <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
+                      <span className="text-label-medium text-ink-400 select-none font-medium">
+                        Press Enter to send, Shift+Enter for linebreaks
+                      </span>
+                      <button
+                        type="submit"
+                        disabled={!homePromptInput.trim()}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg bg-moss-500/10 border border-moss-500/20 text-moss-400 hover:bg-moss-500/20 hover:border-moss-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                        title="Send"
                       >
-                        <polyline points="9 10 4 15 9 20"></polyline>
-                        <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                      </svg>
-                    </button>
+                        <svg
+                          className="h-4 w-4 shrink-0"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <polyline points="9 10 4 15 9 20"></polyline>
+                          <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </motion.form>
@@ -3099,8 +3101,8 @@ Focus on the key sections and content, making it clean and modern.`;
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
               >
-                <div className="h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-surface-ink-600/60 to-transparent" />
-                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-850/90 backdrop-blur-sm px-10 py-4 text-label-medium uppercase tracking-[0.2em] text-ink-300 font-medium shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
+                <div className="h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-surface-ink-600 to-transparent" />
+                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-850 bg-opacity-90 backdrop-blur-sm px-10 py-4 text-label-medium uppercase tracking-[0.2em] text-ink-300 font-medium shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
                   OR
                 </span>
               </motion.div>
@@ -3160,39 +3162,68 @@ Focus on the key sections and content, making it clean and modern.`;
                 </div>
               </motion.form>
 
-              {/* Model Selector - Subtle, below URL input */}
+              {/* Model Selector - Elegant pill design */}
               <motion.div
-                className="mt-4 w-full max-w-5xl mx-auto"
+                className="mt-8 w-full max-w-5xl mx-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, ease: 'easeOut', delay: 0.6 }}
               >
-                <div className="flex items-center justify-center gap-3">
-                  <label className="text-xs text-ink-500">AI Model:</label>
-                  <select
-                    value={aiModel}
-                    onChange={(e) => {
-                      const newModel = e.target.value;
-                      setAiModel(newModel);
-                      const params = new URLSearchParams(searchParams);
-                      params.set('model', newModel);
-                      if (sandboxData?.sandboxId) {
-                        params.set('sandbox', sandboxData.sandboxId);
-                      }
-                      router.push(`/?${params.toString()}`);
-                    }}
-                    className="h-[32px] px-3 py-1 text-xs bg-surface-ink-900/50 text-ink-300 border border-neutral-800/30 rounded-lg focus:outline-none focus:ring-1 focus:ring-moss-500/40 focus:border-moss-500/40 hover:border-moss-400/40 transition-all"
-                  >
-                    {appConfig.ai.availableModels.map(model => {
-                      const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
-                      const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
-                      return (
-                        <option key={model} value={model}>
-                          {cleanName}
-                        </option>
-                      );
-                    })}
-                  </select>
+                <div className="flex items-center justify-center">
+                  <div className="relative group">
+                    {/* Subtle glow effect on hover */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-moss-500/0 via-moss-400/20 to-moss-500/0 rounded-full opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300" />
+                    
+                    <div className="relative flex items-center gap-2 px-4 py-2 bg-surface-ink-850 bg-opacity-80 backdrop-blur-sm border border-ink-700 border-opacity-50 rounded-full hover:border-moss-500/30 transition-all duration-200">
+                      {/* AI Icon */}
+                      <svg 
+                        className="w-3.5 h-3.5 text-moss-400" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" />
+                        <circle cx="8" cy="14" r="1.5" fill="currentColor" />
+                        <circle cx="16" cy="14" r="1.5" fill="currentColor" />
+                      </svg>
+                      
+                      <span className="text-xs text-ink-400 font-medium">Model</span>
+                      
+                      <select
+                        value={aiModel}
+                        onChange={(e) => {
+                          const newModel = e.target.value;
+                          setAiModel(newModel);
+                          const params = new URLSearchParams(searchParams);
+                          params.set('model', newModel);
+                          if (sandboxData?.sandboxId) {
+                            params.set('sandbox', sandboxData.sandboxId);
+                          }
+                          router.push(`/?${params.toString()}`);
+                        }}
+                        className="appearance-none bg-transparent text-sm text-ink-100 font-medium cursor-pointer focus:outline-none pr-5"
+                        style={{ 
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2363d297' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundPosition: 'right 0 center',
+                          backgroundSize: '16px'
+                        }}
+                      >
+                        {appConfig.ai.availableModels.map(model => {
+                          const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
+                          const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
+                          return (
+                            <option key={model} value={model} className="bg-surface-ink-900 text-ink-100">
+                              {cleanName}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
 
@@ -3205,7 +3236,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 >
                   <div className="relative">
                     <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/10 via-moss-500/5 to-moss-400/10 rounded-3xl blur-sm" />
-                    <div className="relative rounded-3xl border border-neutral-800/50 bg-ink-800/40 backdrop-blur-xl px-8 py-6 shadow-[0_20px_60px_rgba(7,10,16,0.3)]">
+                    <div className="relative rounded-3xl border border-neutral-800/50 bg-ink-800 bg-opacity-40 backdrop-blur-xl px-8 py-6 shadow-[0_20px_60px_rgba(7,10,16,0.3)]">
                       <div className="text-center mb-12">
                         <h3 className="text-title-h4 text-ink-50 font-medium mb-3">Choose a style preset</h3>
                         <p className="text-body-medium text-ink-300 max-w-2xl mx-auto">
@@ -3248,7 +3279,7 @@ Focus on the key sections and content, making it clean and modern.`;
 className={`group relative flex flex-col items-start gap-3 rounded-2xl border px-8 py-4 transition-all duration-300 text-left ${
           selectedStyle === style.name
             ? 'border-moss-400/80 bg-gradient-to-br from-moss-400/10 to-moss-500/5 text-ink-100 shadow-[0_12px_40px_rgba(99,210,151,0.15)]'
-            : 'border-neutral-800/50 bg-ink-800/20 text-ink-200 hover:border-moss-400/40 hover:bg-ink-800/30 hover:text-ink-100 hover:shadow-[0_8px_32px_rgba(7,10,16,0.2)]'
+            : 'border-neutral-800/50 bg-ink-800 bg-opacity-20 text-ink-200 hover:border-moss-400/40 hover:bg-ink-800 hover:text-ink-100 hover:shadow-[0_8px_32px_rgba(7,10,16,0.2)]'
         }`}
                             >
                               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -3270,7 +3301,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       
       {!showHomeScreen && (
       <>
-      <div className="bg-surface-ink-850/90 backdrop-blur-lg px-8 py-8 border-b border-neutral-800/80 flex items-center justify-between">
+      <div className="bg-surface-ink-850 bg-opacity-90 backdrop-blur-lg px-8 py-8 border-b border-neutral-800/80 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="h-16 w-16 text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
             <svg className="h-16 w-16" width="64" height="64" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
@@ -3345,8 +3376,8 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
         </div>
       </div>
 
-      <div className="md:hidden bg-surface-ink-850/80 backdrop-blur border-b border-neutral-800/70 px-4 py-3">
-        <div className="flex bg-surface-ink-800/80 rounded-xl p-1.5 w-full max-w-sm mx-auto justify-between">
+      <div className="md:hidden bg-surface-ink-850 bg-opacity-80 backdrop-blur border-b border-neutral-800/70 px-4 py-3">
+        <div className="flex bg-surface-ink-800 bg-opacity-80 rounded-xl p-1.5 w-full max-w-sm mx-auto justify-between">
           <button
             className={`${mobileTab === 'chat' ? 'bg-surface-ink-700 text-ink-50' : 'text-ink-400 hover:text-ink-50 hover:bg-surface-ink-750'} flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('chat'); }}
@@ -3375,7 +3406,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
-        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[460px] flex flex-col border-b md:border-b-0 md:border-r border-neutral-800/70 bg-surface-ink-850/90 backdrop-blur-lg min-h-0`}>
+        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[460px] flex flex-col border-b md:border-b-0 md:border-r border-neutral-800/70 bg-surface-ink-850 bg-opacity-90 backdrop-blur-lg min-h-0`}>
           {conversationContext.scrapedWebsites.length > 0 && (
             <div className="p-4 bg-card">
               <div className="flex flex-col gap-2">
@@ -3457,7 +3488,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold mb-1 text-ink-50">Build Errors Detected</div>
-                          <div className="whitespace-pre-wrap text-sm text-ink-100/90">{msg.content}</div>
+                          <div className="whitespace-pre-wrap text-sm text-ink-100">{msg.content}</div>
                           <div className="mt-2 text-xs text-ink-400">Press 'F' or click the Fix button above to resolve</div>
                         </div>
                       </div>
@@ -3597,9 +3628,9 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                         <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse" />
                         <span className="text-xs font-medium text-ink-400">AI Response Stream</span>
                       </div>
-                      <div className="flex-1 h-px bg-gradient-to-r from-surface-ink-600/50 to-transparent" />
+                      <div className="flex-1 h-px bg-gradient-to-r from-surface-ink-600 to-transparent" />
                     </div>
-                   <div className="relative bg-surface-ink-900/80 border border-neutral-800 rounded-lg scrollbar-dark">
+                   <div className="relative bg-surface-ink-900 bg-opacity-80 border border-neutral-800 rounded-lg scrollbar-dark">
                       <SyntaxHighlighter
                         language="jsx"
                         style={vscDarkPlus}
@@ -3623,7 +3654,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                         })()}
                       </SyntaxHighlighter>
                       <span className="inline-block w-2 h-3 bg-orange-400 ml-3 mb-3 animate-pulse" />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/60 to-transparent rounded-b-lg" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-lg" />
                     </div>
                   </motion.div>
                 )}
@@ -3673,10 +3704,10 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           </div>
         </div>
 
-        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-surface-ink-900/95 backdrop-blur-lg`}>
-          <div className="px-4 sm:px-6 py-4 bg-surface-ink-850/90 backdrop-blur border-b border-neutral-800/70 flex justify-between items-center">
+        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-surface-ink-900 bg-opacity-95 backdrop-blur-lg`}>
+          <div className="px-4 sm:px-6 py-4 bg-surface-ink-850 bg-opacity-90 backdrop-blur border-b border-neutral-800/70 flex justify-between items-center">
             <div className="flex items-center gap-4 text-ink-200">
-              <div className="hidden md:flex relative bg-surface-ink-800/80 backdrop-blur-xl border border-neutral-800/50 rounded-2xl p-1 shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
+              <div className="hidden md:flex relative bg-surface-ink-800 bg-opacity-80 backdrop-blur-xl border border-neutral-800/50 rounded-2xl p-1 shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
                 {/* Animated background indicator */}
                 <div 
                   className={`absolute top-1 bottom-1 w-[calc(50%-2px)] bg-gradient-to-r from-moss-400/20 to-moss-500/20 backdrop-blur-sm rounded-xl transition-all duration-300 ease-out ${
@@ -3688,7 +3719,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   className={`relative z-10 flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 text-base font-medium ${
                     activeTab === 'generation'
                       ? 'text-moss-400 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
-                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700/50'
+                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700'
                   }`}
                   title="Code Editor"
                 >
@@ -3702,7 +3733,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   className={`relative z-10 flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 text-base font-medium ${
                     activeTab === 'preview'
                       ? 'text-moss-400 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
-                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700/50'
+                      : 'text-ink-300 hover:text-ink-100 hover:bg-surface-ink-700'
                   }`}
                   title="Live Preview"
                 >
@@ -3723,7 +3754,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                       {generationProgress.files.length} files generated
                     </div>
                   )}
-                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-lg font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800/90 text-ink-50 hover:text-ink-100 hover:bg-surface-ink-700 shadow-sm">
+                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-lg font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800 bg-opacity-90 text-ink-50 hover:text-ink-100 hover:bg-surface-ink-700 shadow-sm">
                     {generationProgress.isGenerating ? (
                       <>
                         <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />

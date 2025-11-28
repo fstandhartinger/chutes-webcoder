@@ -200,7 +200,7 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
       
       {/* Legend */}
       <div className="mt-16 flex justify-center">
-        <div className="inline-flex flex-row gap-16 text-xs text-ink-300 bg-surface-ink-900/80 px-16 py-8 rounded-xl border border-neutral-800 backdrop-blur-lg shadow-[var(--shadow-floating)]">
+        <div className="inline-flex flex-row gap-16 text-xs text-ink-300 bg-surface-ink-900 bg-opacity-80 px-16 py-8 rounded-xl border border-neutral-800 backdrop-blur-lg shadow-[var(--shadow-floating)]">
           <div className="flex items-center gap-8">
             <div className="w-12 h-12 rounded-full bg-heat-100/60" />
             <span className="whitespace-nowrap">80-100%</span>

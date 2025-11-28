@@ -5,8 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { appConfig } from '@/config/app.config';
 import HeroInput from '@/components/HeroInput';
 import SidebarInput from '@/components/app/generation/SidebarInput';
-import HeaderBrandKit from '@/components/shared/header/BrandKit/BrandKit';
-import { HeaderProvider } from '@/components/shared/header/HeaderContext';
+import Link from 'next/link';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 // Import icons from centralized module to avoid Turbopack chunk issues
@@ -3111,35 +3110,90 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <HeaderProvider>
-      <div className="font-sans bg-background text-foreground h-screen flex flex-col">
-      <div className="bg-white py-[15px] py-[8px] border-b border-border-faint flex items-center justify-between shadow-sm">
-        <HeaderBrandKit />
-        <div className="flex items-center gap-2">
-          {/* Model Selector - Left side */}
-          <select
-            value={aiModel}
-            onChange={(e) => {
-              const newModel = e.target.value;
-              setAiModel(newModel);
-              const params = new URLSearchParams(searchParams);
-              params.set('model', newModel);
-              if (sandboxData?.sandboxId) {
-                params.set('sandbox', sandboxData.sandboxId);
-              }
-              router.push(`/generation?${params.toString()}`);
-            }}
-            className="px-3 py-1.5 text-sm text-gray-900 bg-gray-50 border border-neutral-600 rounded-lg focus:outline-none focus:border-neutral-500 transition-colors"
+      <div className="font-sans bg-surface-ink-950 text-ink-50 h-screen flex flex-col">
+      {/* Dark Mode Header */}
+      <div className="bg-surface-ink-900 py-3 px-4 border-b border-neutral-800 flex items-center justify-between">
+        {/* Chutes Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-3 text-ink-100 hover:text-moss-400 transition-colors"
+        >
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 62 41"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            {appConfig.ai.availableModels.map(model => (
-              <option key={model} value={model}>
-                {appConfig.ai.modelDisplayNames?.[model] || model}
-              </option>
-            ))}
-          </select>
+            <path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="url(#headerLogoGradient)" />
+            <path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#headerLogoGradient)" />
+            <defs>
+              <linearGradient id="headerLogoGradient" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse">
+                <stop stopColor="currentColor" />
+                <stop offset="1" stopColor="currentColor" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span className="text-sm font-semibold tracking-wide">Chutes Webcoder</span>
+        </Link>
+
+        {/* Right side controls */}
+        <div className="flex items-center gap-3">
+          {/* Model Selector */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg hover:border-moss-400 hover:border-opacity-30 transition-all duration-200">
+            {/* AI Icon */}
+            <svg 
+              className="w-3.5 h-3.5 text-moss-400" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" />
+              <circle cx="8" cy="14" r="1.5" fill="currentColor" />
+              <circle cx="16" cy="14" r="1.5" fill="currentColor" />
+            </svg>
+            
+            <span className="text-xs text-ink-400 font-medium">Model</span>
+            
+            <select
+              value={aiModel}
+              onChange={(e) => {
+                const newModel = e.target.value;
+                setAiModel(newModel);
+                const params = new URLSearchParams(searchParams);
+                params.set('model', newModel);
+                if (sandboxData?.sandboxId) {
+                  params.set('sandbox', sandboxData.sandboxId);
+                }
+                router.push(`/generation?${params.toString()}`);
+              }}
+              className="appearance-none bg-transparent text-sm text-ink-200 font-medium cursor-pointer focus:outline-none pr-5"
+              style={{ 
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2382c77f' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 0 center',
+                backgroundSize: '16px'
+              }}
+            >
+              {appConfig.ai.availableModels.map(model => {
+                const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)?.[model] || model;
+                const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
+                return (
+                  <option key={model} value={model} className="bg-surface-ink-900 text-ink-100">
+                    {cleanName}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          
+          {/* Action Buttons */}
           <button
             onClick={() => createSandbox()}
-            className="h-8 w-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100"
+            className="h-8 w-8 flex items-center justify-center rounded-lg transition-colors bg-neutral-800 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-400"
             title="Create new sandbox"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3148,7 +3202,7 @@ Focus on the key sections and content, making it clean and modern.`;
           </button>
           <button
             onClick={reapplyLastGeneration}
-            className="h-8 w-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 flex items-center justify-center rounded-lg transition-colors bg-neutral-800 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-400 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
           >
@@ -3159,20 +3213,19 @@ Focus on the key sections and content, making it clean and modern.`;
           <button
             onClick={downloadZip}
             disabled={!sandboxData}
-            className="h-8 w-8 rounded-lg transition-colors bg-gray-50 border border-neutral-600 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 flex items-center justify-center rounded-lg transition-colors bg-neutral-800 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-400 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Download your Vite app as ZIP"
           >
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </button>
-       
         </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Center Panel - AI Chat (1/3 of remaining width) */}
-        <div className="flex-1 max-w-[400px] flex flex-col border-r border-border bg-background">
+        <div className="flex-1 max-w-[400px] flex flex-col border-r border-neutral-800 bg-surface-ink-900">
           {/* Sidebar Input Component */}
           {!hasInitialSubmission ? (
             <div className="p-4 border-b border-border">
@@ -3474,7 +3527,7 @@ Focus on the key sections and content, making it clean and modern.`;
             )}
           </div>
 
-          <div className="p-4 border-t border-neutral-800/70 bg-surface-ink-900/85">
+          <div className="p-4 border-t border-neutral-800/70 bg-surface-ink-900 bg-opacity-85">
             <HeroInput
               value={aiChatInput}
               onChange={setAiChatInput}
@@ -3487,7 +3540,7 @@ Focus on the key sections and content, making it clean and modern.`;
 
         {/* Right Panel - Preview or Generation (2/3 of remaining width) */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-3 pt-4 pb-4 bg-surface-ink-850/90 border-b border-neutral-800/70 flex justify-between items-center">
+          <div className="px-3 pt-4 pb-4 bg-surface-ink-850 bg-opacity-90 border-b border-neutral-800/70 flex justify-between items-center">
             <div className="flex items-center gap-2">
               {/* Toggle-style Code/View switcher */}
               <div className="inline-flex bg-surface-ink-800 border border-neutral-800/70 rounded-lg p-1 opacity-90">
@@ -3532,7 +3585,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       {generationProgress.files.length} files generated
                     </div>
                   )}
-                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-lg font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800/90 text-ink-50 hover:text-ink-100 hover:bg-surface-ink-700 shadow-sm">
+                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-lg font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-surface-ink-800 bg-opacity-90 text-ink-50 hover:text-ink-100 hover:bg-surface-ink-700 shadow-sm">
                     {generationProgress.isGenerating ? (
                       <>
                         <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
@@ -3549,7 +3602,7 @@ Focus on the key sections and content, making it clean and modern.`;
               )}
 
               {sandboxData && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-800/70 bg-surface-ink-800/80 text-xs font-medium text-ink-200">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-800/70 bg-surface-ink-800 bg-opacity-80 text-xs font-medium text-ink-200">
                   <div className="w-1 h-1 bg-moss-500 rounded-full" />
                   Sandbox active
                 </div>
@@ -3580,7 +3633,6 @@ Focus on the key sections and content, making it clean and modern.`;
 
 
     </div>
-    </HeaderProvider>
   );
 }
 

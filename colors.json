@@ -221,17 +221,11 @@
   "surface-ink-800": {
     "hex": "111726ff"
   },
-  "surface-ink-800/50": {
-    "hex": "11172680"
-  },
   "surface-ink-750": {
     "hex": "142030ff"
   },
   "surface-ink-700": {
     "hex": "142030ff"
-  },
-  "surface-ink-700/70": {
-    "hex": "142030b3"
   },
   "surface-ink-650": {
     "hex": "1a274fff"
@@ -241,9 +235,6 @@
   },
   "surface-ink-500": {
     "hex": "243047ff"
-  },
-  "surface-neutral-900/40": {
-    "hex": "10141e66"
   },
   "moss-100": {
     "hex": "71dcb71f"

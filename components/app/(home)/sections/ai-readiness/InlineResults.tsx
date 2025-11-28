@@ -188,7 +188,7 @@ export default function InlineResults({
                   padding: "4px",
                 }}
               >
-                <div className="w-full h-full bg-surface-ink-900/90 rounded-full flex flex-col items-center justify-center border border-neutral-800">
+                <div className="w-full h-full bg-surface-ink-900 bg-opacity-90 rounded-full flex flex-col items-center justify-center border border-neutral-800">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
