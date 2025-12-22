@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import "./globals.css";
 import ConsoleCapture from "./components/ConsoleCapture";
 import { AuthProvider } from "@/hooks/useAuth";
-import { Header2 } from "@/components/layout/Header2";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -29,10 +28,8 @@ export default function RootLayout({
       <body className="font-sans antialiased bg-neutral-950 text-white">
         <AuthProvider>
           <ConsoleCapture />
-          <Header2 />
-          <main className="pt-16">
-            <Suspense fallback={<div />}>{children}</Suspense>
-          </main>
+          {/* Header is now rendered inside pages to allow different headers per page */}
+          <Suspense fallback={<div />}>{children}</Suspense>
           <Toaster 
             position="bottom-right"
             toastOptions={{

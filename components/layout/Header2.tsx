@@ -3,6 +3,22 @@
 import Link from 'next/link';
 import { UserAvatar2 } from '@/components/auth/UserAvatar2';
 
+// Chutes Logo SVG component
+function ChutesLogo({ className = "w-8 h-8" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="#10b981"/>
+      <path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#header_logo_grad)"/>
+      <defs>
+        <linearGradient id="header_logo_grad" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#10b981"/>
+          <stop offset="1" stopColor="#059669"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 export function Header2() {
   return (
     <header className="fixed top-0 left-0 right-0 z-[60] h-16 bg-neutral-950/95 backdrop-blur-md border-b border-neutral-800">
@@ -12,15 +28,7 @@ export function Header2() {
           href="/" 
           className="flex items-center gap-3 hover:opacity-90 transition-opacity"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <svg
-              viewBox="0 0 24 24"
-              className="w-5 h-5 text-white"
-              fill="currentColor"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-          </div>
+          <ChutesLogo className="w-8 h-8" />
           <span className="text-lg font-bold text-white">
             Chutes <span className="text-emerald-400">Webcoder</span>
           </span>
@@ -34,3 +42,5 @@ export function Header2() {
     </header>
   );
 }
+
+export { ChutesLogo };

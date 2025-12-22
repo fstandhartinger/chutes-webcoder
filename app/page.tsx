@@ -34,6 +34,8 @@ const ParticleWave = dynamic(() => import('@/components/ParticleWave'), { ssr: f
 import { HomeScreen } from '@/components/v2/HomeScreen';
 import { WorkspaceToolbar } from '@/components/v2/WorkspaceToolbar';
 import { ChatInput } from '@/components/v2/ChatInput';
+import { Header2, ChutesLogo } from '@/components/layout/Header2';
+import { UserAvatar2 } from '@/components/auth/UserAvatar2';
 
 const FILE_ICON_SIZE = 16;
 const CODE_PANEL_COLLAPSED_MAX_HEIGHT = '24rem';
@@ -3033,7 +3035,11 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <div className="relative font-sans bg-neutral-950 text-white h-[calc(100svh-var(--app-header-height))] md:h-[calc(100vh-var(--app-header-height))] flex flex-col overflow-hidden">
+    <>
+      {/* Render global header on home screen only */}
+      {showHomeScreen && <Header2 />}
+      
+    <div className={`relative font-sans bg-neutral-950 text-white ${showHomeScreen ? 'pt-16' : ''} h-screen flex flex-col overflow-hidden`}>
       {showHomeScreen && (
         <div className={`fixed inset-0 pt-16 z-40 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
           <div className="absolute inset-0 overflow-hidden bg-neutral-950">
@@ -3300,21 +3306,46 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       
       {!showHomeScreen && (
       <>
+      {/* Combined Workspace Header - Single row with all controls */}
       <div className="bg-neutral-900 px-4 h-14 border-b border-neutral-800 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-            {/* Chutes Logo */}
-            <svg className="w-7 h-7" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="#10b981"/>
-              <path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#chutes_logo_grad)"/>
-              <defs><linearGradient id="chutes_logo_grad" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="#10b981"/><stop offset="1" stopColor="#059669"/></linearGradient></defs>
-            </svg>
-            <span className="text-base font-bold text-white">Chutes <span className="text-emerald-400">Webcoder</span></span>
+        {/* Left: Logo only */}
+        <div className="flex items-center">
+          <Link href="/" className="hover:opacity-90 transition-opacity" title="Back to home">
+            <ChutesLogo className="w-7 h-7" />
           </Link>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="hidden md:block">
-            <label className="sr-only">AI Model</label>
+        
+        {/* Center: Code/Preview Toggle */}
+        <div className="hidden md:flex relative bg-neutral-800 border border-neutral-700 rounded-lg p-0.5">
+          <div 
+            className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-emerald-500/20 rounded-md transition-all duration-200 ease-out ${
+              activeTab === 'generation' ? 'left-0.5' : 'left-[calc(50%+1px)]'
+            }`}
+          />
+          <button
+            onClick={() => setActiveTab('generation')}
+            className={`relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${
+              activeTab === 'generation' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
+            }`}
+          >
+            <Code2 className="w-4 h-4" />
+            <span>Code</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('preview')}
+            className={`relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${
+              activeTab === 'preview' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
+            }`}
+          >
+            <Eye className="w-4 h-4" />
+            <span>Preview</span>
+          </button>
+        </div>
+        
+        {/* Right: Model Selector, Download, Status, Avatar */}
+        <div className="flex items-center gap-2">
+          {/* Model Selector */}
+          <div className="hidden lg:block">
             <select
               value={aiModel}
               onChange={(e) => {
@@ -3327,7 +3358,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="h-10 px-4 text-sm bg-neutral-800 text-white border border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 hover:border-neutral-600 transition-colors font-medium"
+              className="h-9 px-3 text-sm bg-neutral-800 text-white border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 hover:border-neutral-600 transition-colors font-medium"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3340,20 +3371,27 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
               })}
             </select>
           </div>
+          
+          {/* Download Button */}
           <button
             onClick={downloadZip}
             disabled={!sandboxData}
-            title="Download your Vite app as ZIP"
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Download as ZIP"
+            className="flex items-center justify-center w-9 h-9 rounded-lg bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </button>
-          <div className="flex items-center gap-2 bg-neutral-800 text-white px-4 h-10 rounded-xl text-sm font-medium border border-neutral-700">
-            <span id="status-text">{status.text}</span>
-            <div className={`w-2.5 h-2.5 rounded-full ${status.active ? 'bg-emerald-400' : 'bg-neutral-600'}`} />
+          
+          {/* Sandbox Status */}
+          <div className="flex items-center gap-1.5 bg-neutral-800 text-white px-3 h-9 rounded-lg text-sm font-medium border border-neutral-700">
+            <span className="hidden sm:inline">{status.text}</span>
+            <div className={`w-2 h-2 rounded-full ${status.active ? 'bg-emerald-400' : 'bg-neutral-600'}`} />
           </div>
+          
+          {/* User Avatar */}
+          <UserAvatar2 />
         </div>
       </div>
 
@@ -3689,93 +3727,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           </div>
         </div>
 
-        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[#171717] bg-opacity-95 backdrop-blur-lg`}>
-          <div className="px-4 sm:px-6 py-4 bg-[#171717] bg-opacity-90 backdrop-blur border-b border-[#262626]/70 flex justify-between items-center">
-            <div className="flex items-center gap-4 text-[#a3a3a3]">
-              <div className="hidden md:flex relative bg-neutral-800 border border-neutral-700 rounded-xl p-1">
-                {/* Animated background indicator */}
-                <div 
-                  className={`absolute top-1 bottom-1 w-[calc(50%-2px)] bg-emerald-500/20 rounded-lg transition-all duration-200 ease-out ${
-                    activeTab === 'generation' ? 'left-1' : 'left-[calc(50%+1px)]'
-                  }`}
-                />
-                <button
-                  onClick={() => setActiveTab('generation')}
-                  className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
-                    activeTab === 'generation'
-                      ? 'text-emerald-400'
-                      : 'text-neutral-400 hover:text-neutral-200'
-                  }`}
-                  title="Code Editor"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                  </svg>
-                  <span>Code</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('preview')}
-                  className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
-                    activeTab === 'preview'
-                      ? 'text-emerald-400'
-                      : 'text-neutral-400 hover:text-neutral-200'
-                  }`}
-                  title="Live Preview"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  <span>Preview</span>
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center gap-8 md:gap-10">
-              {/* Live Code Generation Status - Moved to far right */}
-              {activeTab === 'generation' && (generationProgress.isGenerating || generationProgress.files.length > 0) && (
-                <div className="flex items-center gap-8 md:gap-10">
-                  {!generationProgress.isEdit && (
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#737373]">
-                      {generationProgress.files.length} files generated
-                    </div>
-                  )}
-                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-2xl font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-[#262626] bg-opacity-90 text-[#f5f5f5] hover:text-[#d4d4d4] hover:bg-[#404040] shadow-sm">
-                    {generationProgress.isGenerating ? (
-                      <>
-                        <div className="w-1 h-1 bg-emerald-600 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
-                        {generationProgress.isEdit ? 'Editing code' : 'Live code generation'}
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-1 h-1 bg-[#525252] rounded-full" />
-                        COMPLETE
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-              {sandboxData && !generationProgress.isGenerating && (
-                <>
-                  <Button
-                    variant="code"
-                    size="sm"
-                    asChild
-                  >
-                    <a 
-                      href={sandboxData.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      title="Open in new tab"
-                    >
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '24px', height: '24px' }}>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
+        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[#171717]`}>
           <div className="flex-1 relative overflow-hidden min-h-0">
             {renderMainContent()}
           </div>
@@ -3783,11 +3735,8 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       </div>
       </>
       )}
-
-
-
-
     </div>
+    </>
   );
 }
 
