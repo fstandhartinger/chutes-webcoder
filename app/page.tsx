@@ -324,9 +324,10 @@ function AISandboxPageContent() {
   
   useEffect(() => {
     // If user just authenticated and there's a pending request, resume it
-    if (isAuthenticated && pendingRequest && !pendingRequestProcessedRef.current && !isAuthLoading) {
+    // Wait for sandbox to be ready first
+    if (isAuthenticated && pendingRequest && !pendingRequestProcessedRef.current && !isAuthLoading && sandboxData) {
       pendingRequestProcessedRef.current = true;
-      console.log('[auth] Resuming pending request after login:', pendingRequest);
+      console.log('[auth] Resuming pending request after login:', pendingRequest, 'sandbox:', sandboxData?.sandboxId);
       
       if (pendingRequest.type === 'generate' && pendingRequest.payload?.prompt) {
         // Close the home screen and start generation
@@ -343,7 +344,7 @@ function AISandboxPageContent() {
         clearPendingRequest();
       }
     }
-  }, [isAuthenticated, pendingRequest, isAuthLoading, clearPendingRequest, user]);
+  }, [isAuthenticated, pendingRequest, isAuthLoading, clearPendingRequest, user, sandboxData]);
   
   useEffect(() => {
     // Handle Escape key for home screen
