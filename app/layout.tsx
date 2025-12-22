@@ -3,6 +3,9 @@ import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import ConsoleCapture from "./components/ConsoleCapture";
+import { AuthProvider } from "@/hooks/useAuth";
+import { Header } from "@/components/layout/Header";
+import { Toaster } from "sonner";
 
 const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-grotesk" });
 
@@ -27,8 +30,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${grotesk.variable}`}>
       <body className={`${grotesk.className} antialiased bg-surface-ink-950 text-ink-50`}>
-        <ConsoleCapture />
-        <Suspense fallback={<div />}>{children}</Suspense>
+        <AuthProvider>
+          <ConsoleCapture />
+          <Header />
+          <main className="pt-14">
+            <Suspense fallback={<div />}>{children}</Suspense>
+          </main>
+          <Toaster 
+            position="bottom-right"
+            toastOptions={{
+              className: 'bg-surface-ink-800 text-ink-100 border border-surface-ink-600',
+            }}
+          />
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { appConfig } from '@/config/app.config';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useAuth, usePendingAuthRequest } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 // Import icons from centralized module to avoid Turbopack chunk issues
@@ -65,6 +67,10 @@ function AISandboxPageContent() {
   const [aiEnabled] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
+  
+  // Auth state - enforce login on first request
+  const { isAuthenticated, isLoading: isAuthLoading, login, user } = useAuth();
+  const { pendingRequest, clearPendingRequest } = usePendingAuthRequest();
   const creatingSandboxRef = useRef<Promise<any> | null>(null);
   const [aiModel, setAiModel] = useState(() => {
     const modelParam = searchParams.get('model');
@@ -297,6 +303,33 @@ function AISandboxPageContent() {
     
     initializePage();
   }, []); // Run only on mount
+  
+  // Handle pending request after successful auth
+  // This is a ref to track if we've processed the pending request
+  const pendingRequestProcessedRef = useRef(false);
+  
+  useEffect(() => {
+    // If user just authenticated and there's a pending request, resume it
+    if (isAuthenticated && pendingRequest && !pendingRequestProcessedRef.current && !isAuthLoading) {
+      pendingRequestProcessedRef.current = true;
+      console.log('[auth] Resuming pending request after login:', pendingRequest);
+      
+      if (pendingRequest.type === 'generate' && pendingRequest.payload?.prompt) {
+        // Close the home screen and start generation
+        setShowHomeScreen(false);
+        setActiveTab('generation');
+        
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          void sendChatMessage(pendingRequest.payload.prompt);
+          clearPendingRequest();
+          toast.success(`Welcome back, ${user?.username}! Continuing with your request...`);
+        }, 300);
+      } else {
+        clearPendingRequest();
+      }
+    }
+  }, [isAuthenticated, pendingRequest, isAuthLoading, clearPendingRequest, user]);
   
   useEffect(() => {
     // Handle Escape key for home screen
@@ -1642,6 +1675,16 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     const message = (overrideMessage ?? aiChatInput).trim();
     if (!message) return;
     
+    // Enforce authentication on first request
+    if (!isAuthenticated && !isAuthLoading) {
+      // Save the request and redirect to login
+      login(window.location.pathname, {
+        type: 'generate',
+        payload: { prompt: message }
+      });
+      return;
+    }
+    
     if (!aiEnabled) {
       addChatMessage('AI is disabled. Please enable it first.', 'system');
       return;
@@ -2948,6 +2991,15 @@ Focus on the key sections and content, making it clean and modern.`;
     const promptText = styleText ? `${baseText}\n\n${styleText}` : baseText;
     if (!promptText) return;
 
+    // Enforce authentication before proceeding
+    if (!isAuthenticated && !isAuthLoading) {
+      login(window.location.pathname, {
+        type: 'generate',
+        payload: { prompt: promptText }
+      });
+      return;
+    }
+
     setHomeScreenFading(true);
     setTimeout(async () => {
       setShowHomeScreen(false);
@@ -2975,36 +3027,11 @@ Focus on the key sections and content, making it clean and modern.`;
           </div>
 
 
-          <div className="absolute top-0 left-0 right-0 z-20 px-6 md:px-12 py-9 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center justify-center text-ink-100 hover:text-moss-400 transition-colors"
-              style={{ width: '64px', height: '64px' }}
-            >
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 62 41"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-full w-full"
-              >
-                <path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="url(#logoGradient)" />
-                <path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#logoGradient)" />
-                <defs>
-                  <linearGradient id="logoGradient" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="currentColor" />
-                    <stop offset="1" stopColor="currentColor" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </Link>
-            <div />
-          </div>
+          {/* Home screen header - hidden because main header is always visible */}
 
-          <div className="relative z-10 h-full flex justify-center items-start pt-24 md:pt-32 px-4">
-            <div className="text-center w-full max-w-6xl mx-auto px-4 sm:px-8">
-              <div className="mb-20 space-y-8">
+          <div className="relative z-10 h-full flex justify-center items-start pt-20 md:pt-28 px-4 overflow-y-auto">
+            <div className="text-center w-full max-w-5xl mx-auto px-4 sm:px-8 pb-12">
+              <div className="mb-12 space-y-6">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -3033,15 +3060,14 @@ Focus on the key sections and content, making it clean and modern.`;
 
               <motion.form 
                 onSubmit={handleHomePromptSubmit} 
-                className="mt-24 w-full max-w-5xl mx-auto"
+                className="mt-10 w-full max-w-4xl mx-auto"
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
               >
                 <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/20 via-moss-500/10 to-moss-400/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative">
-                    <span className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-moss-400/30 via-moss-500/15 to-moss-400/30 rounded-2xl blur opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500" />
+                  <div className="relative bg-surface-ink-900/90 backdrop-blur-xl rounded-2xl border border-surface-ink-600/50 shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
                     <textarea
                       value={homePromptInput}
                       onChange={(e) => {
@@ -3052,8 +3078,8 @@ Focus on the key sections and content, making it clean and modern.`;
                         const hasPrompt = value.trim().length > 5;
                         setShowStyleSelector(hasValidUrl || hasPrompt);
                       }}
-                      placeholder="Describe your app idea (e.g., Build a fun snake game with glowing snakes that eat apples and oranges)"
-                      className="min-h-[180px] w-full resize-y rounded-xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-6 py-6 pb-16 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.4)] opacity-80"
+                      placeholder="Describe your app idea... (e.g., Build a snake game with neon effects)"
+                      className="min-h-[140px] w-full resize-none rounded-2xl bg-transparent px-6 py-5 pb-16 text-lg text-ink-50 placeholder-ink-400 focus-visible:outline-none transition-all duration-300"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -3064,29 +3090,30 @@ Focus on the key sections and content, making it clean and modern.`;
                       }}
                     />
                     {/* Bottom action bar */}
-                    <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
-                      <span className="text-label-medium text-ink-400 select-none font-medium">
-                        Press Enter to send, Shift+Enter for linebreaks
+                    <div className="absolute bottom-4 left-6 right-4 flex items-center justify-between">
+                      <span className="text-sm text-ink-500 select-none">
+                        Enter to send
                       </span>
                       <button
                         type="submit"
-                        className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-ink-800 text-ink-200 hover:bg-surface-ink-700 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
-                        title="Send"
+                        className="flex h-10 items-center gap-2 px-5 rounded-xl bg-moss-400 text-surface-ink-950 font-medium hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                        title="Generate"
                       >
+                        <span>Generate</span>
                         <svg
-                          className="h-6 w-6 shrink-0"
+                          className="h-4 w-4 shrink-0"
                           width="24"
                           height="24"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth="2"
+                          strokeWidth="2.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           aria-hidden="true"
                         >
-                          <polyline points="9 10 4 15 9 20"></polyline>
-                          <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                          <polyline points="12 5 19 12 12 19" />
                         </svg>
                       </button>
                     </div>
@@ -3095,30 +3122,31 @@ Focus on the key sections and content, making it clean and modern.`;
               </motion.form>
 
               <motion.div 
-                className="relative my-20 flex items-center justify-center"
+                className="relative my-10 flex items-center justify-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
               >
-                <div className="h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-surface-ink-600 to-transparent" />
-                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-850 bg-opacity-90 backdrop-blur-sm px-10 py-4 text-label-medium uppercase tracking-[0.2em] text-ink-300 font-medium shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
-                  OR
+                <div className="h-px w-full max-w-4xl bg-gradient-to-r from-transparent via-surface-ink-600/50 to-transparent" />
+                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-900 border border-surface-ink-700 px-6 py-2 text-sm uppercase tracking-[0.15em] text-ink-400">
+                  or clone a website
                 </span>
               </motion.div>
 
               <motion.form 
                 onSubmit={handleHomePromptSubmit} 
-                className="w-full max-w-5xl mx-auto mt-20"
+                className="w-full max-w-4xl mx-auto"
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
               >
                 <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/20 via-moss-500/10 to-moss-400/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative">
-                    <span className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-heat-100/20 via-heat-100/10 to-heat-100/20 rounded-xl blur opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex items-center bg-surface-ink-900/90 backdrop-blur-xl rounded-xl border border-surface-ink-600/50 shadow-[0_16px_48px_rgba(0,0,0,0.4)]">
+                    <ExternalLink className="absolute left-4 w-5 h-5 text-ink-500" />
                     <input
                       type="text"
+                      value={homeUrlInput}
                       onChange={(e) => {
                         const value = e.target.value;
                         setHomeUrlInput(value);
@@ -3131,29 +3159,14 @@ Focus on the key sections and content, making it clean and modern.`;
                         }, 100);
                       }}
                       placeholder="https://example.com"
-                      className="h-[48px] w-full rounded-xl border border-neutral-800/50 bg-surface-ink-900 backdrop-blur-xl px-10 pr-20 py-3 text-body-x-large text-ink-50 placeholder-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-900 focus-visible:ring-moss-400/60 transition-all duration-300 shadow-[0_20px_60px_rgba(7,10,16,0.45)] opacity-80"
+                      className="h-14 w-full bg-transparent pl-12 pr-32 text-lg text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
                     />
                     <button
                       type="submit"
-                      className="absolute top-1/2 right-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl bg-surface-ink-800 text-ink-200 hover:bg-surface-ink-700 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                      className="absolute right-3 flex h-9 items-center gap-2 px-4 rounded-lg bg-surface-ink-700 text-sm text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                       title="Clone Website"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-5 w-5 shrink-0"
-                        aria-hidden="true"
-                      >
-                        <polyline points="9 10 4 15 9 20"></polyline>
-                        <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                      </svg>
+                      <span>Clone</span>
                     </button>
                   </div>
                 </div>
