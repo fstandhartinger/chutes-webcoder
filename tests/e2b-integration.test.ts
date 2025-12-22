@@ -665,3 +665,4 @@ print(json.dumps(files))
 console.log('Starting E2B Integration Tests...');
 console.log('E2B_API_KEY:', E2B_API_KEY ? 'Set (length: ' + E2B_API_KEY.length + ')' : 'Not set');
 
+

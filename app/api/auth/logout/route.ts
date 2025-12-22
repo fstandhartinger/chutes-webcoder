@@ -52,3 +52,4 @@ export async function GET(request: NextRequest) {
   // Redirect to home after logout
   return NextResponse.redirect(new URL('/', request.url));
 }
+

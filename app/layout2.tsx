@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default function RootLayout2({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -36,7 +36,7 @@ export default function RootLayout({
           <Toaster 
             position="bottom-right"
             toastOptions={{
-              className: 'bg-neutral-900 text-white border border-neutral-700 rounded-xl',
+              className: 'bg-neutral-900 text-white border border-neutral-700',
             }}
           />
         </AuthProvider>

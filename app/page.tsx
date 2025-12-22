@@ -1287,7 +1287,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             )}
             
             {/* Live Code Display */}
-            <div className="flex-1 rounded-lg p-6 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex-1 rounded-2xl p-6 flex flex-col min-h-0 overflow-hidden">
               {hasCodePanelContent && (
                 <div className="flex justify-end mb-4">
                   <button
@@ -1303,7 +1303,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 {/* Show selected file if one is selected */}
                 {selectedFile ? (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="bg-[#161b22] border border-[#21262d] rounded-lg overflow-hidden shadow-[var(--shadow-floating)]">
+                    <div className="bg-[#161b22] border border-[#21262d] rounded-2xl overflow-hidden shadow-[var(--shadow-floating)]">
                       <div className="px-4 py-2 bg-[#21262d] text-[#e6edf3] flex items-center justify-between rounded-t-lg">
                         <div className="flex items-center gap-2">
                           {getFileIcon(selectedFile)}
@@ -1456,7 +1456,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             <span className="text-moss-500">✓</span>
                             <span className="font-mono text-sm">{file.path}</span>
                           </div>
-                          <span className={`px-2 py-0.5 text-xs rounded-md ${
+                          <span className={`px-2 py-0.5 text-xs rounded-xl ${
                             file.type === 'css' ? 'bg-moss-400/20 text-moss-400' :
                             file.type === 'javascript' ? 'bg-heat-100/20 text-heat-100' :
                             file.type === 'json' ? 'bg-moss-500/20 text-moss-500' :
@@ -3027,13 +3027,16 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <div className="relative font-sans bg-[#0d1117] text-[#e6edf3] h-[calc(100svh-var(--app-header-height))] md:h-[calc(100vh-var(--app-header-height))] flex flex-col overflow-hidden">
+    <div className="relative font-sans bg-neutral-950 text-white h-[calc(100svh-var(--app-header-height))] md:h-[calc(100vh-var(--app-header-height))] flex flex-col overflow-hidden">
       {showHomeScreen && (
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
-          <div className="absolute inset-0 overflow-hidden bg-[#0d1117]">
+          <div className="absolute inset-0 overflow-hidden bg-neutral-950">
             <div className="absolute left-0 right-0 h-3/5 bottom-[-10%]">
-              <ParticleWave className="absolute inset-0 opacity-40" />
+              <ParticleWave className="absolute inset-0 opacity-30" />
             </div>
+            {/* Subtle gradient overlays */}
+            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-emerald-500/5 to-transparent" />
+            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-blue-500/5 to-transparent" />
           </div>
 
 
@@ -3075,7 +3078,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
               >
-                <div className="relative bg-[#161b22] rounded-lg border border-[#30363d]">
+                <div className="relative bg-neutral-900 rounded-2xl border border-neutral-700 shadow-xl">
                   <textarea
                     value={homePromptInput}
                     onChange={(e) => {
@@ -3087,7 +3090,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea... (e.g., Build a snake game with neon effects)"
-                    className="min-h-[140px] w-full resize-none rounded-lg bg-transparent px-4 py-4 pb-14 text-base text-[#e6edf3] placeholder-[#6e7681] focus-visible:outline-none"
+                    className="min-h-[180px] w-full resize-none rounded-2xl bg-transparent px-6 py-5 pb-20 text-lg text-white placeholder-neutral-500 focus-visible:outline-none focus:ring-2 focus:ring-emerald-500/50"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -3098,22 +3101,22 @@ Focus on the key sections and content, making it clean and modern.`;
                     }}
                   />
                   {/* Bottom action bar */}
-                  <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
-                    <span className="text-xs text-[#6e7681] select-none">
-                      Enter to send
+                  <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
+                    <span className="text-sm text-neutral-500 select-none">
+                      Press Enter to send
                     </span>
                     <button
                       type="submit"
-                      className="flex items-center gap-2 h-9 px-4 rounded-md bg-moss-400 text-[#0d1117] font-medium text-sm hover:bg-moss-500 transition-colors"
+                      className="flex items-center gap-2 h-12 px-6 rounded-xl bg-emerald-500 text-white font-semibold text-base hover:bg-emerald-600 active:scale-[0.98] transition-all shadow-lg shadow-emerald-500/25"
                       title="Generate"
                     >
                       <span>Generate</span>
                       <svg
-                        className="h-4 w-4 shrink-0"
+                        className="h-5 w-5 shrink-0"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2"
+                        strokeWidth="2.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       >
@@ -3126,13 +3129,13 @@ Focus on the key sections and content, making it clean and modern.`;
               </motion.form>
 
               <motion.div 
-                className="relative flex items-center justify-center my-8"
+                className="relative flex items-center justify-center my-12"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
               >
-                <div className="h-px w-full max-w-3xl bg-[#21262d]" />
-                <span className="absolute inline-flex items-center justify-center bg-[#0d1117] px-4 text-xs uppercase tracking-wide text-[#6e7681]">
+                <div className="h-px w-full max-w-3xl bg-neutral-800" />
+                <span className="absolute inline-flex items-center justify-center bg-neutral-950 px-6 py-2 text-sm font-medium uppercase tracking-wider text-neutral-500 rounded-full border border-neutral-800">
                   or clone a website
                 </span>
               </motion.div>
@@ -3144,8 +3147,8 @@ Focus on the key sections and content, making it clean and modern.`;
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
               >
-                <div className="relative flex items-center bg-[#161b22] rounded-lg border border-[#30363d]">
-                  <ExternalLink className="absolute left-3 w-4 h-4 text-[#6e7681]" />
+                <div className="relative flex items-center bg-neutral-900 rounded-2xl border border-neutral-700 shadow-lg">
+                  <ExternalLink className="absolute left-5 w-5 h-5 text-neutral-500" />
                   <input
                     type="text"
                     value={homeUrlInput}
@@ -3161,11 +3164,11 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="w-full h-11 bg-transparent pl-10 pr-24 text-sm text-[#e6edf3] placeholder-[#6e7681] focus-visible:outline-none"
+                    className="w-full h-14 bg-transparent pl-14 pr-28 text-base text-white placeholder-neutral-500 focus-visible:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-2xl"
                   />
                   <button
                     type="submit"
-                    className="absolute right-2 flex items-center h-7 px-3 rounded-md bg-[#21262d] text-xs font-medium text-[#c9d1d9] hover:bg-[#30363d] transition-colors"
+                    className="absolute right-3 flex items-center h-10 px-5 rounded-xl bg-neutral-800 text-sm font-semibold text-white hover:bg-neutral-700 active:scale-[0.98] transition-all border border-neutral-700"
                     title="Clone Website"
                   >
                     Clone
@@ -3175,14 +3178,14 @@ Focus on the key sections and content, making it clean and modern.`;
 
               {/* Model Selector */}
               <motion.div
-                className="mt-6 w-full max-w-3xl mx-auto"
+                className="mt-8 w-full max-w-3xl mx-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, ease: 'easeOut', delay: 0.6 }}
               >
                 <div className="flex items-center justify-center">
-                  <div className="flex items-center gap-2 px-3 h-8 bg-[#161b22] border border-[#30363d] rounded-md">
-                    <span className="text-xs text-[#8b949e]">Model:</span>
+                  <div className="flex items-center gap-3 px-5 h-12 bg-neutral-900 border border-neutral-700 rounded-xl shadow-lg">
+                    <span className="text-sm text-neutral-400 font-medium">Model:</span>
                     <select
                       value={aiModel}
                       onChange={(e) => {
@@ -3195,19 +3198,19 @@ Focus on the key sections and content, making it clean and modern.`;
                         }
                         router.push(`/?${params.toString()}`);
                       }}
-                      className="appearance-none bg-transparent text-sm text-[#e6edf3] font-medium cursor-pointer focus:outline-none pr-5"
+                      className="appearance-none bg-transparent text-base text-white font-semibold cursor-pointer focus:outline-none pr-7"
                       style={{ 
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2310b981' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
                         backgroundRepeat: 'no-repeat',
                         backgroundPosition: 'right 0 center',
-                        backgroundSize: '14px'
+                        backgroundSize: '18px'
                       }}
                     >
                       {appConfig.ai.availableModels.map(model => {
                         const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
                         const cleanName = displayName.replace(/\s*\(Chutes\)\s*$/i, '').trim();
                         return (
-                          <option key={model} value={model} className="bg-[#161b22] text-[#e6edf3]">
+                          <option key={model} value={model} className="bg-neutral-900 text-white">
                             {cleanName}
                           </option>
                         );
@@ -3291,13 +3294,15 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       
       {!showHomeScreen && (
       <>
-      <div className="bg-[#161b22] px-4 h-12 border-b border-[#21262d] flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center justify-center w-8 h-8 text-[#e6edf3] hover:text-moss-400 cursor-pointer transition-colors">
-            <svg className="w-6 h-6" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+      <div className="bg-neutral-900 px-4 h-14 border-b border-neutral-800 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white hover:opacity-90 cursor-pointer transition-all shadow-lg shadow-emerald-500/20">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
           </Link>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="hidden md:block">
             <label className="sr-only">AI Model</label>
             <select
@@ -3312,7 +3317,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="h-8 px-3 text-sm bg-[#21262d] text-[#c9d1d9] border border-[#30363d] rounded-md focus:outline-none focus:ring-1 focus:ring-moss-400 focus:border-moss-400 hover:border-[#484f58] transition-colors font-medium"
+              className="h-10 px-4 text-sm bg-neutral-800 text-white border border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 hover:border-neutral-600 transition-colors font-medium"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3328,9 +3333,9 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           <button
             onClick={() => createSandbox()}
             title="Create new sandbox"
-            className="flex items-center justify-center w-8 h-8 rounded-md bg-[#21262d] text-[#c9d1d9] border border-[#30363d] hover:bg-[#30363d] hover:border-[#484f58] transition-colors"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
@@ -3338,31 +3343,31 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             onClick={reapplyLastGeneration}
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
-            className="flex items-center justify-center w-8 h-8 rounded-md bg-[#21262d] text-[#c9d1d9] border border-[#30363d] hover:bg-[#30363d] hover:border-[#484f58] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Clipboard className="w-4 h-4" />
+            <Clipboard className="w-5 h-5" />
           </button>
           <button
             onClick={downloadZip}
             disabled={!sandboxData}
             title="Download your Vite app as ZIP"
-            className="flex items-center justify-center w-8 h-8 rounded-md bg-[#21262d] text-[#c9d1d9] border border-[#30363d] hover:bg-[#30363d] hover:border-[#484f58] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </button>
-          <div className="flex items-center gap-1.5 bg-[#21262d] text-[#c9d1d9] px-3 h-8 rounded-md text-xs font-medium border border-[#30363d]">
+          <div className="flex items-center gap-2 bg-neutral-800 text-white px-4 h-10 rounded-xl text-sm font-medium border border-neutral-700">
             <span id="status-text">{status.text}</span>
-            <div className={`w-2 h-2 rounded-full ${status.active ? 'bg-moss-400' : 'bg-[#484f58]'}`} />
+            <div className={`w-2.5 h-2.5 rounded-full ${status.active ? 'bg-emerald-400' : 'bg-neutral-600'}`} />
           </div>
         </div>
       </div>
 
       <div className="md:hidden bg-[#161b22] border-b border-[#21262d] px-3 py-2">
-        <div className="flex bg-[#0d1117] rounded-lg p-1 w-full max-w-sm mx-auto justify-between">
+        <div className="flex bg-[#0d1117] rounded-2xl p-1 w-full max-w-sm mx-auto justify-between">
           <button
-            className={`${mobileTab === 'chat' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm`}
+            className={`${mobileTab === 'chat' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('chat'); }}
             title="Chat"
           >
@@ -3370,7 +3375,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             <span className="hidden min-[380px]:inline">Chat</span>
           </button>
           <button
-            className={`${mobileTab === 'code' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm`}
+            className={`${mobileTab === 'code' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('code'); }}
             title="Code"
           >
@@ -3378,7 +3383,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             <span className="hidden min-[380px]:inline">Code</span>
           </button>
           <button
-            className={`${mobileTab === 'preview' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm`}
+            className={`${mobileTab === 'preview' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('preview'); }}
             title="Preview"
           >
@@ -3617,7 +3622,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                       </div>
                       <div className="flex-1 h-px bg-gradient-to-r from-surface-ink-600 to-transparent" />
                     </div>
-                   <div className="relative bg-[#161b22] bg-opacity-80 border border-[#21262d] rounded-lg scrollbar-dark">
+                   <div className="relative bg-[#161b22] bg-opacity-80 border border-[#21262d] rounded-2xl scrollbar-dark">
                       <SyntaxHighlighter
                         language="jsx"
                         style={vscDarkPlus}
@@ -3649,10 +3654,10 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             )}
           </div>
 
-          <div className="p-4 border-t border-[#21262d] bg-[#0d1117]">
+          <div className="p-4 border-t border-neutral-800 bg-neutral-950">
             <div className="relative">
               <Textarea
-                className="min-h-[80px] pr-12 pl-3 resize-y rounded-lg border border-[#30363d] bg-[#161b22] text-[#e6edf3] placeholder-[#6e7681] focus:outline-none focus:ring-1 focus:ring-moss-400 focus:border-moss-400"
+                className="min-h-[100px] pr-14 pl-4 py-4 resize-y rounded-2xl border border-neutral-700 bg-neutral-900 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
                 placeholder="Continue the conversation..."
                 value={aiChatInput}
                 onChange={(e) => setAiChatInput(e.target.value)}
@@ -3666,7 +3671,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
               />
               <button
                 onClick={() => void sendChatMessage()}
-                className="absolute right-3 bottom-3 flex h-8 w-8 items-center justify-center rounded-md text-[#8b949e] hover:text-moss-400 transition-colors"
+                className="absolute right-3 bottom-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/25"
                 title="Send message (Enter)"
               >
                     <svg
@@ -3741,7 +3746,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                       {generationProgress.files.length} files generated
                     </div>
                   )}
-                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-lg font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-[#21262d] bg-opacity-90 text-[#e6edf3] hover:text-[#c9d1d9] hover:bg-[#30363d] shadow-sm">
+                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-2xl font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-[#21262d] bg-opacity-90 text-[#e6edf3] hover:text-[#c9d1d9] hover:bg-[#30363d] shadow-sm">
                     {generationProgress.isGenerating ? (
                       <>
                         <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
