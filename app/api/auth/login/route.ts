@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import {
   generateState,
-  generateCodeVerifier,
-  generateCodeChallenge,
   buildAuthorizationUrl,
   AUTH_STATE_COOKIE_NAME,
   AuthState,
@@ -16,15 +14,12 @@ export async function GET(request: NextRequest) {
     const pendingRequestType = searchParams.get('pendingRequestType');
     const pendingRequestPayload = searchParams.get('pendingRequestPayload');
     
-    // Generate PKCE values
+    // Generate state (PKCE disabled due to Chutes IDP bug)
     const state = generateState();
-    const codeVerifier = generateCodeVerifier();
-    const codeChallenge = generateCodeChallenge(codeVerifier);
     
     // Build auth state to store in cookie
     const authState: AuthState = {
       state,
-      codeVerifier,
       returnTo,
     };
     
@@ -50,8 +45,8 @@ export async function GET(request: NextRequest) {
       path: '/',
     });
     
-    // Build authorization URL and redirect
-    const authUrl = buildAuthorizationUrl(state, codeChallenge);
+    // Build authorization URL and redirect (without PKCE)
+    const authUrl = buildAuthorizationUrl(state);
     
     console.log('[auth/login] Redirecting to Chutes IDP:', authUrl);
     

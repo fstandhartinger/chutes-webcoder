@@ -56,7 +56,7 @@ export interface AuthSession {
 
 export interface AuthState {
   state: string;
-  codeVerifier: string;
+  codeVerifier?: string; // Optional - PKCE disabled due to Chutes IDP bug
   returnTo?: string;
   pendingRequest?: {
     type: string;
@@ -79,7 +79,8 @@ export function generateCodeChallenge(verifier: string): string {
 }
 
 // Build the authorization URL
-export function buildAuthorizationUrl(state: string, codeChallenge: string): string {
+// NOTE: PKCE is disabled due to a bug in Chutes IDP that returns 502 with code_challenge
+export function buildAuthorizationUrl(state: string): string {
   const { clientId, redirectUri } = getClientCredentials();
   
   const params = new URLSearchParams({
@@ -88,15 +89,14 @@ export function buildAuthorizationUrl(state: string, codeChallenge: string): str
     redirect_uri: redirectUri,
     scope: SCOPES.join(' '),
     state: state,
-    code_challenge: codeChallenge,
-    code_challenge_method: 'S256',
   });
   
   return `${CHUTES_IDP_CONFIG.authorizationEndpoint}?${params.toString()}`;
 }
 
 // Exchange authorization code for tokens
-export async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<AuthTokens> {
+// NOTE: code_verifier is optional - PKCE is disabled due to Chutes IDP bug
+export async function exchangeCodeForTokens(code: string, codeVerifier?: string): Promise<AuthTokens> {
   const { clientId, clientSecret, redirectUri } = getClientCredentials();
   
   const params = new URLSearchParams({
@@ -104,8 +104,12 @@ export async function exchangeCodeForTokens(code: string, codeVerifier: string):
     code: code,
     redirect_uri: redirectUri,
     client_id: clientId,
-    code_verifier: codeVerifier,
   });
+  
+  // Add code_verifier if PKCE was used
+  if (codeVerifier) {
+    params.append('code_verifier', codeVerifier);
+  }
   
   // Add client secret if available (confidential client)
   if (clientSecret) {

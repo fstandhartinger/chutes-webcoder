@@ -3096,8 +3096,9 @@ Focus on the key sections and content, making it clean and modern.`;
                       </span>
                       <button
                         type="submit"
-                        className="flex h-12 items-center gap-2 px-6 rounded-xl bg-moss-400 text-surface-ink-950 font-medium hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-moss-400 text-surface-ink-950 font-medium hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                         title="Generate"
+                        style={{ minHeight: '48px' }}
                       >
                         <span>Generate</span>
                         <svg
@@ -3122,13 +3123,14 @@ Focus on the key sections and content, making it clean and modern.`;
               </motion.form>
 
               <motion.div 
-                className="relative my-16 flex items-center justify-center"
+                className="relative flex items-center justify-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
+                style={{ marginTop: '48px', marginBottom: '48px' }}
               >
                 <div className="h-px w-full max-w-4xl bg-gradient-to-r from-transparent via-surface-ink-600/50 to-transparent" />
-                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-900 border border-surface-ink-700 px-6 py-3 text-sm uppercase tracking-[0.15em] text-ink-400">
+                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-950 border border-surface-ink-700 px-8 py-3 text-sm uppercase tracking-[0.15em] text-ink-400 shadow-lg">
                   or clone a website
                 </span>
               </motion.div>
@@ -3142,8 +3144,8 @@ Focus on the key sections and content, making it clean and modern.`;
               >
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-heat-100/20 via-heat-100/10 to-heat-100/20 rounded-xl blur opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500" />
-                  <div className="relative flex items-center bg-surface-ink-900/90 backdrop-blur-xl rounded-xl border border-surface-ink-600/50 shadow-[0_16px_48px_rgba(0,0,0,0.4)]">
-                    <ExternalLink className="absolute left-4 w-5 h-5 text-ink-500" />
+                  <div className="relative flex items-center bg-surface-ink-900/90 backdrop-blur-xl rounded-2xl border border-surface-ink-600/50 shadow-[0_16px_48px_rgba(0,0,0,0.4)]">
+                    <ExternalLink className="absolute left-5 w-5 h-5 text-ink-500" />
                     <input
                       type="text"
                       value={homeUrlInput}
@@ -3159,12 +3161,14 @@ Focus on the key sections and content, making it clean and modern.`;
                         }, 100);
                       }}
                       placeholder="https://example.com"
-                      className="h-16 w-full bg-transparent pl-12 pr-36 text-lg text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
+                      className="w-full bg-transparent pl-14 pr-28 py-5 text-lg text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
+                      style={{ minHeight: '64px' }}
                     />
                     <button
                       type="submit"
-                      className="absolute right-3 flex h-11 items-center gap-2 px-5 rounded-lg bg-surface-ink-700 text-sm text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                      className="absolute right-4 flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-ink-700 text-sm font-medium text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                       title="Clone Website"
+                      style={{ minHeight: '44px' }}
                     >
                       <span>Clone</span>
                     </button>

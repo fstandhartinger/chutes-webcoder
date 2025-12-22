@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Exchange code for tokens
+    // Exchange code for tokens (codeVerifier is optional - PKCE disabled due to Chutes IDP bug)
     console.log('[auth/callback] Exchanging code for tokens...');
     const tokens = await exchangeCodeForTokens(code, authState.codeVerifier);
     
