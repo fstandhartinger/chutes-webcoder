@@ -1758,6 +1758,27 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     // Determine if this is an edit
     const isEdit = conversationContext.appliedCode.length > 0;
     
+    // If sandbox is being created, wait for it BEFORE calling the AI API
+    let effectiveSandboxId = sandboxData?.sandboxId;
+    let effectiveSandboxUrl = sandboxData?.url;
+    
+    if (sandboxCreating && sandboxPromise) {
+      console.log('[sendChatMessage] Waiting for sandbox creation before AI call...');
+      addChatMessage('Creating sandbox...', 'system');
+      try {
+        const createdSandbox = await sandboxPromise;
+        effectiveSandboxId = createdSandbox.sandboxId;
+        effectiveSandboxUrl = createdSandbox.url;
+        console.log('[sendChatMessage] Sandbox ready:', effectiveSandboxId);
+        // Remove the "Creating sandbox..." message
+        setChatMessages(prev => prev.filter(msg => msg.content !== 'Creating sandbox...'));
+      } catch (error: any) {
+        console.error('[sendChatMessage] Sandbox creation failed:', error);
+        addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
+        return;
+      }
+    }
+    
     try {
       // Generation tab is already active from scraping phase
       setGenerationProgress(prev => ({
@@ -1783,13 +1804,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       console.log('[chat] Using backend file cache for context');
       
       const fullContext = {
-        sandboxId: sandboxData?.sandboxId || (sandboxCreating ? 'pending' : null),
+        sandboxId: effectiveSandboxId || null,
         structure: structureContent,
         recentMessages: chatMessages.slice(-20),
         conversationContext: conversationContext,
         currentCode: promptInput,
-        sandboxUrl: sandboxData?.url,
-        sandboxCreating: sandboxCreating
+        sandboxUrl: effectiveSandboxUrl,
+        sandboxCreating: false // Sandbox is now ready
       };
       
       // Debug what we're sending
@@ -1833,10 +1854,6 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 
                 if (data.type === 'status') {
           setGenerationProgress(prev => ({ ...prev, status: data.message }));
-          // Wenn Sandbox gerade erstellt wird, UI-Status kombinieren
-          if (sandboxCreating && data.message?.toLowerCase().includes('planning')) {
-            addChatMessage('Waiting for sandbox to be ready...', 'system');
-          }
                 } else if (data.type === 'thinking') {
                   setGenerationProgress(prev => ({ 
                     ...prev, 
@@ -3330,15 +3347,15 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
         </div>
         
         {/* Center: Code/Preview Toggle */}
-        <div className="hidden md:flex relative bg-neutral-800 border border-neutral-700 rounded-lg p-0.5">
+        <div className="hidden md:flex relative bg-neutral-800 border border-neutral-700 rounded-xl p-1">
           <div 
-            className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-emerald-500/20 rounded-md transition-all duration-200 ease-out ${
-              activeTab === 'generation' ? 'left-0.5' : 'left-[calc(50%+1px)]'
+            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-emerald-500/20 rounded-lg transition-all duration-200 ease-out ${
+              activeTab === 'generation' ? 'left-1' : 'left-[calc(50%+2px)]'
             }`}
           />
           <button
             onClick={() => setActiveTab('generation')}
-            className={`relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${
+            className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
               activeTab === 'generation' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
             }`}
           >
@@ -3347,7 +3364,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           </button>
           <button
             onClick={() => setActiveTab('preview')}
-            className={`relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors duration-200 text-sm font-medium ${
+            className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
               activeTab === 'preview' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
             }`}
           >
@@ -3372,7 +3389,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="h-9 px-3 text-sm bg-neutral-800 text-white border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 hover:border-neutral-600 transition-colors font-medium"
+              className="h-10 px-4 text-sm bg-neutral-800 text-white border border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 hover:border-neutral-600 transition-colors font-medium"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3391,17 +3408,17 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             onClick={downloadZip}
             disabled={!sandboxData}
             title="Download as ZIP"
-            className="flex items-center justify-center w-9 h-9 rounded-lg bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </button>
           
           {/* Sandbox Status */}
-          <div className="flex items-center gap-1.5 bg-neutral-800 text-white px-3 h-9 rounded-lg text-sm font-medium border border-neutral-700">
+          <div className="flex items-center gap-2 bg-neutral-800 text-white px-4 h-10 rounded-xl text-sm font-medium border border-neutral-700">
             <span className="hidden sm:inline">{status.text}</span>
-            <div className={`w-2 h-2 rounded-full ${status.active ? 'bg-emerald-400' : 'bg-neutral-600'}`} />
+            <div className={`w-2.5 h-2.5 rounded-full ${status.active ? 'bg-emerald-400' : 'bg-neutral-600'}`} />
           </div>
           
           {/* User Avatar */}
