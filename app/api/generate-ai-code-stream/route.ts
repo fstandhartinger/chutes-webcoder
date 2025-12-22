@@ -1222,11 +1222,29 @@ MORPH FAST APPLY MODE (EDIT-ONLY):
         const packagesToInstall: string[] = [];
         
         // Determine which provider to use based on model
-        const isChutes = model.startsWith('chutes/');
         const isAnthropic = model.startsWith('anthropic/');
         const isGoogle = model.startsWith('google/');
         const isOpenAI = model.startsWith('openai/');
         const isKimiGroq = model === 'moonshotai/kimi-k2-instruct-0905';
+        // Check if model should use Chutes:
+        // 1. Explicitly prefixed with 'chutes/'
+        // 2. OR in the list of available Chutes models (from app.config)
+        // 3. OR model contains known Chutes model patterns (deepseek, GLM, MiMo, MiniMax)
+        const chutesModelPatterns = ['deepseek', 'glm-', 'mimo', 'minimax'];
+        const isChutes = model.startsWith('chutes/') || 
+                        appConfig.ai.availableModels.includes(model) ||
+                        chutesModelPatterns.some(pattern => model.toLowerCase().includes(pattern));
+        
+        console.log('[generate-ai-code-stream] Model routing:', {
+          model,
+          isChutes,
+          isAnthropic,
+          isGoogle,
+          isOpenAI,
+          isKimiGroq,
+          hasChutesApiKey: !!chutesApiKey
+        });
+        
         const modelProvider = isChutes ? chutes :
                               (isAnthropic ? anthropic : 
                               (isOpenAI ? openai : 
@@ -1236,7 +1254,8 @@ MORPH FAST APPLY MODE (EDIT-ONLY):
         // Fix model name transformation for different providers
         let actualModel: string;
         if (isChutes) {
-          actualModel = model.replace('chutes/', '');
+          // For Chutes models, use the model name as-is (or strip chutes/ prefix if present)
+          actualModel = model.startsWith('chutes/') ? model.replace('chutes/', '') : model;
         } else if (isAnthropic) {
           actualModel = model.replace('anthropic/', '');
         } else if (isOpenAI) {
@@ -1856,7 +1875,7 @@ Provide the complete file content without any truncation. Include all necessary 
                 // Make a focused API call to complete this specific file
                 // Create a new client for the completion based on the provider
                 let completionClient;
-                if (model.includes('chutes/')) {
+                if (isChutes) {
                   completionClient = chutes;
                 } else if (model.includes('gpt') || model.includes('openai')) {
                   completionClient = openai;
@@ -1872,8 +1891,8 @@ Provide the complete file content without any truncation. Include all necessary 
                 let completionModelName: string;
                 if (model === 'moonshotai/kimi-k2-instruct-0905') {
                   completionModelName = 'moonshotai/kimi-k2-instruct-0905';
-                } else if (model.includes('chutes/')) {
-                  completionModelName = model.replace('chutes/', '');
+                } else if (isChutes) {
+                  completionModelName = model.startsWith('chutes/') ? model.replace('chutes/', '') : model;
                 } else if (model.includes('openai')) {
                   completionModelName = model.replace('openai/', '');
                 } else if (model.includes('anthropic')) {
