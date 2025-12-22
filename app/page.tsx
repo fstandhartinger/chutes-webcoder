@@ -30,6 +30,11 @@ import dynamic from 'next/dynamic';
 // Lazy-load the wave to avoid impacting TTI
 const ParticleWave = dynamic(() => import('@/components/ParticleWave'), { ssr: false });
 
+// V2 Design System Components
+import { HomeScreen } from '@/components/v2/HomeScreen';
+import { WorkspaceToolbar } from '@/components/v2/WorkspaceToolbar';
+import { ChatInput } from '@/components/v2/ChatInput';
+
 const FILE_ICON_SIZE = 16;
 const CODE_PANEL_COLLAPSED_MAX_HEIGHT = '24rem';
 const CODE_PANEL_EXPANDED_MAX_HEIGHT = '70vh';
@@ -1140,8 +1145,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         <div className="absolute inset-0 flex overflow-hidden">
           {/* File Explorer - Hide during edits */}
           {!generationProgress.isEdit && (
-            <div className="hidden sm:flex w-full sm:w-[240px] md:w-[250px] sm:flex-col border-b sm:border-b-0 sm:border-r border-[#21262d] bg-[#161b22] flex-shrink-0">
-            <div className="p-3 bg-[#21262d] text-[#c9d1d9] flex items-center justify-between">
+            <div className="hidden sm:flex w-full sm:w-[240px] md:w-[250px] sm:flex-col border-b sm:border-b-0 sm:border-r border-[#262626] bg-[#171717] flex-shrink-0">
+            <div className="p-3 bg-[#262626] text-[#d4d4d4] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BsFolderFill className="w-5 h-5" />
                 <span className="text-sm font-medium">Explorer</span>
@@ -1153,7 +1158,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               <div className="text-sm">
                 {/* Root app folder */}
                 <div 
-                  className="flex items-center gap-1 py-2 px-3 hover:bg-surface-ink-750 rounded cursor-pointer text-[#e6edf3]"
+                  className="flex items-center gap-1 py-2 px-3 hover:bg-surface-ink-750 rounded cursor-pointer text-[#f5f5f5]"
                   onClick={() => toggleFolder('app')}
                 >
                   {expandedFolders.has('app') ? (
@@ -1162,9 +1167,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     <FiChevronRight className="w-5 h-5 text-muted-foreground" />
                   )}
                   {expandedFolders.has('app') ? (
-                    <BsFolder2Open className="w-5 h-5 text-moss-400" />
+                    <BsFolder2Open className="w-5 h-5 text-emerald-500" />
                   ) : (
-                    <BsFolderFill className="w-5 h-5 text-moss-400" />
+                    <BsFolderFill className="w-5 h-5 text-emerald-500" />
                   )}
                   <span className="font-medium text-foreground">app</span>
                 </div>
@@ -1200,7 +1205,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         <div key={dir} className="mb-1">
                           {dir && (
                             <div 
-                              className="flex items-center gap-1 py-2 px-3 hover:bg-surface-ink-750 rounded cursor-pointer text-[#e6edf3]"
+                              className="flex items-center gap-1 py-2 px-3 hover:bg-surface-ink-750 rounded cursor-pointer text-[#f5f5f5]"
                               onClick={() => toggleFolder(dir)}
                             >
                               {expandedFolders.has(dir) ? (
@@ -1209,11 +1214,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                 <FiChevronRight className="w-5 h-5 text-muted-foreground" />
                               )}
                               {expandedFolders.has(dir) ? (
-                                <BsFolder2Open className="w-5 h-5 text-moss-400" />
+                                <BsFolder2Open className="w-5 h-5 text-emerald-500" />
                               ) : (
-                                <BsFolderFill className="w-5 h-5 text-moss-400" />
+                                <BsFolderFill className="w-5 h-5 text-emerald-500" />
                               )}
-                              <span className="text-[#c9d1d9]">{dir.split('/').pop()}</span>
+                              <span className="text-[#d4d4d4]">{dir.split('/').pop()}</span>
                             </div>
                           )}
                           {(!dir || expandedFolders.has(dir)) && (
@@ -1227,8 +1232,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                     key={fullPath} 
                                     className={`flex items-center gap-2 py-2 px-3 rounded cursor-pointer transition-all ${
                                       isSelected 
-                                        ? 'bg-moss-500 text-surface-ink-950' 
-                                        : 'text-[#e6edf3] hover:bg-surface-ink-750'
+                                        ? 'bg-emerald-600 text-neutral-950' 
+                                        : 'text-[#f5f5f5] hover:bg-surface-ink-750'
                                     }`}
                                     onClick={() => handleFileClick(fullPath)}
                                   >
@@ -1237,7 +1242,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                       {fileInfo.name}
                                       {fileInfo.edited && (
                                         <span className={`text-[10px] px-1.5 rounded ${
-                                        isSelected ? 'bg-moss-400 text-surface-ink-950' : 'bg-heat-100 text-surface-ink-950'
+                                        isSelected ? 'bg-emerald-500 text-neutral-950' : 'bg-orange-500 text-neutral-950'
                                         }`}>✓</span>
                                       )}
                                     </span>
@@ -1262,23 +1267,23 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             {generationProgress.isGenerating && (generationProgress.isThinking || generationProgress.thinkingText) && (
               <div className="px-6 pb-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="text-moss-400 font-medium flex items-center gap-2">
+                  <div className="text-emerald-500 font-medium flex items-center gap-2">
                     {generationProgress.isThinking ? (
                       <>
-                        <div className="w-1 h-1 bg-moss-400 rounded-full animate-pulse" />
+                        <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
                         AI is thinking...
                       </>
                     ) : (
                       <>
-                        <span className="text-moss-400">✓</span>
+                        <span className="text-emerald-500">✓</span>
                         Thought for {generationProgress.thinkingDuration || 0} seconds
                       </>
                     )}
                   </div>
                 </div>
                 {generationProgress.thinkingText && (
-                  <div className="bg-[#161b22] border border-[#30363d]/70 rounded-2xl p-4 max-h-48 overflow-y-auto scrollbar-hide">
-                    <pre className="text-xs font-mono text-[#8b949e] whitespace-pre-wrap">
+                  <div className="bg-[#171717] border border-[#404040]/70 rounded-2xl p-4 max-h-48 overflow-y-auto scrollbar-hide">
+                    <pre className="text-xs font-mono text-[#a3a3a3] whitespace-pre-wrap">
                       {generationProgress.thinkingText}
                     </pre>
                   </div>
@@ -1293,7 +1298,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   <button
                     type="button"
                     onClick={() => setIsCodeExpanded(prev => !prev)}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#21262d]/70 bg-[#161b22] bg-opacity-70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#8b949e] hover:text-[#e6edf3] hover:bg-surface-ink-750 hover:border-neutral-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/50"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#262626]/70 bg-[#171717] bg-opacity-70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a3a3a3] hover:text-[#f5f5f5] hover:bg-surface-ink-750 hover:border-neutral-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
                   >
                     {isCodeExpanded ? 'Collapse view' : 'Expand view'}
                   </button>
@@ -1303,8 +1308,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 {/* Show selected file if one is selected */}
                 {selectedFile ? (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="bg-[#161b22] border border-[#21262d] rounded-2xl overflow-hidden shadow-[var(--shadow-floating)]">
-                      <div className="px-4 py-2 bg-[#21262d] text-[#e6edf3] flex items-center justify-between rounded-t-lg">
+                    <div className="bg-[#171717] border border-[#262626] rounded-2xl overflow-hidden shadow-[var(--shadow-floating)]">
+                      <div className="px-4 py-2 bg-[#262626] text-[#f5f5f5] flex items-center justify-between rounded-t-lg">
                         <div className="flex items-center gap-2">
                           {getFileIcon(selectedFile)}
                           <span className="font-mono text-sm">{selectedFile}</span>
@@ -1318,7 +1323,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           </svg>
                         </button>
                       </div>
-                      <div className="relative bg-[#21262d] bg-opacity-80 border border-[#21262d] rounded-b-lg">
+                      <div className="relative bg-[#262626] bg-opacity-80 border border-[#262626] rounded-b-lg">
                         <SyntaxHighlighter
                           language={(() => {
                             const ext = selectedFile.split('.').pop()?.toLowerCase();
@@ -1347,7 +1352,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           })()}
                         </SyntaxHighlighter>
                         {!isCodeExpanded && (
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-800 via-surface-ink-800 to-transparent" />
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-800 via-neutral-800 to-transparent" />
                         )}
                       </div>
                     </div>
@@ -1359,21 +1364,21 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
                         <div className="mb-6">
-                          <div className="w-12 h-12 border-3 border-[#21262d] border-t-neutral-600 rounded-full animate-spin mx-auto" />
+                          <div className="w-12 h-12 border-3 border-[#262626] border-t-neutral-600 rounded-full animate-spin mx-auto" />
                         </div>
                         <h3 className="text-xl font-medium text-white mb-2">AI is analyzing your request</h3>
                         <p className="text-muted-foreground text-sm">{generationProgress.status || 'Preparing to generate code...'}</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-[#161b22] border border-[#21262d] rounded-xl overflow-hidden shadow-[var(--shadow-floating)]">
-                      <div className="px-4 py-2 bg-[#21262d] text-[#c9d1d9] flex items-center justify-between rounded-t-xl">
+                    <div className="bg-[#171717] border border-[#262626] rounded-xl overflow-hidden shadow-[var(--shadow-floating)]">
+                      <div className="px-4 py-2 bg-[#262626] text-[#d4d4d4] flex items-center justify-between rounded-t-xl">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-3 h-3 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                           <span className="font-mono text-sm">Streaming code...</span>
                         </div>
                       </div>
-                      <div className="relative p-4 bg-[#161b22] bg-opacity-80 rounded-b-xl">
+                      <div className="relative p-4 bg-[#171717] bg-opacity-80 rounded-b-xl">
                         <SyntaxHighlighter
                           language="jsx"
                           style={vscDarkPlus}
@@ -1393,7 +1398,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         </SyntaxHighlighter>
                         <span className="inline-block w-2 h-4 bg-orange-400 ml-1 animate-pulse" />
                         {!isCodeExpanded && (
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-xl" />
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-900 via-neutral-900 to-transparent rounded-b-xl" />
                         )}
                       </div>
                     </div>
@@ -1402,22 +1407,22 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   <div className="space-y-4">
                     {/* Show current file being generated */}
                     {generationProgress.currentFile && (
-                      <div className="bg-[#161b22] border border-[#21262d] rounded-xl overflow-hidden shadow-[var(--shadow-floating)]">
-                        <div className="px-4 py-2.5 bg-[#21262d] text-[#c9d1d9] flex items-center justify-between rounded-t-xl">
+                      <div className="bg-[#171717] border border-[#262626] rounded-xl overflow-hidden shadow-[var(--shadow-floating)]">
+                        <div className="px-4 py-2.5 bg-[#262626] text-[#d4d4d4] flex items-center justify-between rounded-t-xl">
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">{generationProgress.currentFile.path}</span>
                             <span className={`px-2 py-0.5 text-xs rounded ${
-                              generationProgress.currentFile.type === 'css' ? 'bg-moss-400/20 text-moss-400' :
-                              generationProgress.currentFile.type === 'javascript' ? 'bg-heat-100/20 text-heat-100' :
-                              generationProgress.currentFile.type === 'json' ? 'bg-moss-500/20 text-moss-500' :
-                              'bg-[#30363d] text-[#8b949e]'
+                              generationProgress.currentFile.type === 'css' ? 'bg-emerald-500/20 text-emerald-500' :
+                              generationProgress.currentFile.type === 'javascript' ? 'bg-orange-500/20 text-orange-500' :
+                              generationProgress.currentFile.type === 'json' ? 'bg-emerald-600/20 text-emerald-600' :
+                              'bg-[#404040] text-[#a3a3a3]'
                             }`}>
                               {generationProgress.currentFile.type === 'javascript' ? 'JSX' : generationProgress.currentFile.type.toUpperCase()}
                             </span>
                           </div>
                         </div>
-                      <div className="relative bg-[#161b22] bg-opacity-80 border border-[#21262d] rounded-b-xl">
+                      <div className="relative bg-[#171717] bg-opacity-80 border border-[#262626] rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               generationProgress.currentFile.type === 'css' ? 'css' :
@@ -1442,7 +1447,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           </SyntaxHighlighter>
                           <span className="inline-block w-2 h-3 bg-orange-400 ml-4 mb-4 animate-pulse" />
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-xl" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-900 via-neutral-900 to-transparent rounded-b-xl" />
                           )}
                         </div>
                       </div>
@@ -1450,22 +1455,22 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     
                     {/* Show completed files */}
                     {generationProgress.files.map((file, idx) => (
-                      <div key={idx} className="bg-[#161b22] border border-[#21262d] rounded-xl overflow-hidden shadow-sm">
-                        <div className="px-4 py-2.5 bg-[#21262d] text-[#c9d1d9] flex items-center justify-between rounded-t-xl">
+                      <div key={idx} className="bg-[#171717] border border-[#262626] rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-4 py-2.5 bg-[#262626] text-[#d4d4d4] flex items-center justify-between rounded-t-xl">
                           <div className="flex items-center gap-2">
-                            <span className="text-moss-500">✓</span>
+                            <span className="text-emerald-600">✓</span>
                             <span className="font-mono text-sm">{file.path}</span>
                           </div>
                           <span className={`px-2 py-0.5 text-xs rounded-xl ${
-                            file.type === 'css' ? 'bg-moss-400/20 text-moss-400' :
-                            file.type === 'javascript' ? 'bg-heat-100/20 text-heat-100' :
-                            file.type === 'json' ? 'bg-moss-500/20 text-moss-500' :
-                            'bg-[#30363d] text-[#8b949e]'
+                            file.type === 'css' ? 'bg-emerald-500/20 text-emerald-500' :
+                            file.type === 'javascript' ? 'bg-orange-500/20 text-orange-500' :
+                            file.type === 'json' ? 'bg-emerald-600/20 text-emerald-600' :
+                            'bg-[#404040] text-[#a3a3a3]'
                           }`}>
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
                           </span>
                         </div>
-                        <div className="relative bg-[#161b22] bg-opacity-80 border border-[#21262d] rounded-b-xl">
+                        <div className="relative bg-[#171717] bg-opacity-80 border border-[#262626] rounded-b-xl">
                           <SyntaxHighlighter
                             language={
                               file.type === 'css' ? 'css' :
@@ -1490,7 +1495,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             {file.content}
                           </SyntaxHighlighter>
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-xl" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-900 via-neutral-900 to-transparent rounded-b-xl" />
                           )}
                         </div>
                       </div>
@@ -1498,14 +1503,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     
                     {/* Show remaining raw stream if there's content after the last file */}
                     {!generationProgress.currentFile && generationProgress.streamedCode.length > 0 && generationProgress.isGenerating && (
-                      <div className="bg-[#161b22] border border-[#21262d] rounded-xl overflow-hidden shadow-sm">
-                        <div className="px-4 py-2.5 bg-[#21262d] text-[#c9d1d9] flex items-center justify-between rounded-t-xl">
+                      <div className="bg-[#171717] border border-[#262626] rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-4 py-2.5 bg-[#262626] text-[#d4d4d4] flex items-center justify-between rounded-t-xl">
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">Processing...</span>
                           </div>
                         </div>
-                        <div className="relative bg-[#161b22] bg-opacity-80 border border-[#21262d] rounded-b-xl">
+                        <div className="relative bg-[#171717] bg-opacity-80 border border-[#262626] rounded-b-xl">
                           <SyntaxHighlighter
                             language="jsx"
                             style={vscDarkPlus}
@@ -1536,7 +1541,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             })()}
                           </SyntaxHighlighter>
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-xl" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-900 via-neutral-900 to-transparent rounded-b-xl" />
                           )}
                         </div>
                       </div>
@@ -1551,7 +1556,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               <div className="mx-6 mb-6">
                 <div className="h-2 bg-surface-ink-750 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-moss-500 to-moss-400 transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-emerald-600 to-emerald-500 transition-all duration-300"
                     style={{
                       width: `${(generationProgress.currentComponent / Math.max(generationProgress.components.length, 1)) * 100}%`
                     }}
@@ -1566,7 +1571,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Show screenshot when we have one and (loading OR generating OR no sandbox yet)
       if (urlScreenshot && (loading || generationProgress.isGenerating || !sandboxData?.url || isPreparingDesign)) {
         return (
-          <div className="absolute inset-0 w-full h-full bg-[#161b22] relative">
+          <div className="absolute inset-0 w-full h-full bg-[#171717] relative">
             <NextImage
               src={urlScreenshot}
               alt="Website preview"
@@ -1576,10 +1581,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               sizes="100vw"
             />
             {(generationProgress.isGenerating || isPreparingDesign) && (
-              <div className="absolute inset-0 bg-[#0d1117] bg-opacity-60 backdrop-blur-sm flex items-center justify-center">
-                <div className="text-center bg-[#161b22] bg-opacity-90 rounded-2xl px-8 py-7 backdrop-blur-md border border-[#21262d]/70 shadow-[var(--shadow-elevated)]">
-                  <div className="w-14 h-14 border-4 border-moss-400/30 border-t-moss-500 rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-[#c9d1d9] text-base font-medium">
+              <div className="absolute inset-0 bg-[#0a0a0a] bg-opacity-60 backdrop-blur-sm flex items-center justify-center">
+                <div className="text-center bg-[#171717] bg-opacity-90 rounded-2xl px-8 py-7 backdrop-blur-md border border-[#262626]/70 shadow-[var(--shadow-elevated)]">
+                  <div className="w-14 h-14 border-4 border-emerald-500/30 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-[#d4d4d4] text-base font-medium">
                     {generationProgress.isGenerating ? 'Generating code...' : `Preparing your design for ${targetUrl}...`}
                   </p>
                 </div>
@@ -1593,17 +1598,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Don't show loading overlay for edits
       if (loadingStage || (generationProgress.isGenerating && !generationProgress.isEdit)) {
         return (
-          <div className="absolute inset-0 w-full h-full bg-[#161b22] flex items-center justify-center">
+          <div className="absolute inset-0 w-full h-full bg-[#171717] flex items-center justify-center">
             <div className="text-center">
               <div className="mb-8">
-                <div className="w-16 h-16 border-4 border-moss-400/30 border-t-moss-500 rounded-full animate-spin mx-auto"></div>
+                <div className="w-16 h-16 border-4 border-emerald-500/30 border-t-emerald-600 rounded-full animate-spin mx-auto"></div>
               </div>
-              <h3 className="text-xl font-semibold text-[#c9d1d9] mb-2">
+              <h3 className="text-xl font-semibold text-[#d4d4d4] mb-2">
                 {loadingStage === 'gathering' && 'Gathering website information...'}
                 {loadingStage === 'planning' && 'Planning your design...'}
                 {(loadingStage === 'generating' || generationProgress.isGenerating) && 'Generating your application...'}
               </h3>
-              <p className="text-[#6e7681] text-sm">
+              <p className="text-[#737373] text-sm">
                 {loadingStage === 'gathering' && 'Analyzing the website structure and content'}
                 {loadingStage === 'planning' && 'Creating the optimal React component architecture'}
                 {(loadingStage === 'generating' || generationProgress.isGenerating) && 'Writing clean, modern code for your app'}
@@ -1636,7 +1641,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   iframeRef.current.src = newSrc;
                 }
               }}
-              className="absolute bottom-5 right-5 bg-[#161b22] bg-opacity-90 hover:bg-[#21262d] text-[#c9d1d9] p-2.5 rounded-xl shadow-[var(--shadow-floating)] transition-all duration-200 hover:scale-105 border border-[#21262d]/70"
+              className="absolute bottom-5 right-5 bg-[#171717] bg-opacity-90 hover:bg-[#262626] text-[#d4d4d4] p-2.5 rounded-xl shadow-[var(--shadow-floating)] transition-all duration-200 hover:scale-105 border border-[#262626]/70"
               title="Refresh sandbox"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1650,10 +1655,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Show loading animation when capturing screenshot
       if (isCapturingScreenshot) {
         return (
-          <div className="flex items-center justify-center h-full bg-[#161b22]">
+          <div className="flex items-center justify-center h-full bg-[#171717]">
             <div className="text-center">
-              <div className="w-14 h-14 border-4 border-moss-400/30 border-t-moss-500 rounded-full animate-spin mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-[#c9d1d9]">Gathering website information</h3>
+              <div className="w-14 h-14 border-4 border-emerald-500/30 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-[#d4d4d4]">Gathering website information</h3>
             </div>
           </div>
         );
@@ -1661,11 +1666,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       
       // Default state when no sandbox and no screenshot
       return (
-        <div className="flex items-center justify-center h-full bg-[#161b22] text-[#6e7681] text-lg">
+        <div className="flex items-center justify-center h-full bg-[#171717] text-[#737373] text-lg">
           {screenshotError ? (
             <div className="text-center">
               <p className="mb-2">Failed to capture screenshot</p>
-              <p className="text-sm text-[#6e7681]">{screenshotError}</p>
+              <p className="text-sm text-[#737373]">{screenshotError}</p>
             </div>
           ) : sandboxData ? (
             <div className="text-muted-foreground">
@@ -2229,9 +2234,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     if (ext === 'jsx' || ext === 'js') {
       return <SiJavascript size={FILE_ICON_SIZE} className="shrink-0 text-yellow-500" aria-hidden="true" />;
     } else if (ext === 'tsx' || ext === 'ts') {
-      return <SiReact size={FILE_ICON_SIZE} className="shrink-0 text-moss-400" aria-hidden="true" />;
+      return <SiReact size={FILE_ICON_SIZE} className="shrink-0 text-emerald-500" aria-hidden="true" />;
     } else if (ext === 'css') {
-      return <SiCss3 size={FILE_ICON_SIZE} className="shrink-0 text-heat-100" aria-hidden="true" />;
+      return <SiCss3 size={FILE_ICON_SIZE} className="shrink-0 text-orange-500" aria-hidden="true" />;
     } else if (ext === 'json') {
       return <SiJson size={FILE_ICON_SIZE} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
     } else {
@@ -3049,12 +3054,12 @@ Focus on the key sections and content, making it clean and modern.`;
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, ease: 'easeOut' }}
-                  className="inline-flex items-center rounded-full bg-gradient-to-r from-moss-400/10 to-moss-500/10 backdrop-blur-sm text-moss-400 px-6 py-2.5 text-label-medium uppercase tracking-[0.2em] font-medium"
+                  className="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 backdrop-blur-sm text-emerald-500 px-6 py-2.5 text-label-medium uppercase tracking-[0.2em] font-medium"
                 >
                   Chutes AI
                 </motion.div>
                 <motion.h1 
-                  className="text-title-h1 text-balance text-[#e6edf3] font-medium leading-tight"
+                  className="text-title-h1 text-balance text-[#f5f5f5] font-medium leading-tight"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
@@ -3062,7 +3067,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   Chutes Webcoder
                 </motion.h1>
                 <motion.p
-                  className="text-body-x-large text-[#b1bac4] max-w-3xl mx-auto leading-relaxed"
+                  className="text-body-x-large text-[#a3a3a3] max-w-3xl mx-auto leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: showStyleSelector ? 0.6 : 1, y: 0 }}
                   transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
@@ -3228,11 +3233,11 @@ Focus on the key sections and content, making it clean and modern.`;
                   transition={{ duration: 0.8, ease: 'easeOut', delay: 0.6 }}
                 >
                   <div className="relative">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-moss-400/10 via-moss-500/5 to-moss-400/10 rounded-3xl blur-sm" />
-                    <div className="relative rounded-3xl border border-[#21262d]/50 bg-[#21262d] bg-opacity-40 backdrop-blur-xl px-8 py-6 shadow-[0_20px_60px_rgba(7,10,16,0.3)]">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/10 via-emerald-600/5 to-emerald-500/10 rounded-3xl blur-sm" />
+                    <div className="relative rounded-3xl border border-[#262626]/50 bg-[#262626] bg-opacity-40 backdrop-blur-xl px-8 py-6 shadow-[0_20px_60px_rgba(7,10,16,0.3)]">
                       <div className="text-center mb-12">
-                        <h3 className="text-title-h4 text-[#e6edf3] font-medium mb-3">Choose a style preset</h3>
-                        <p className="text-body-medium text-[#8b949e] max-w-2xl mx-auto">
+                        <h3 className="text-title-h4 text-[#f5f5f5] font-medium mb-3">Choose a style preset</h3>
+                        <p className="text-body-medium text-[#a3a3a3] max-w-2xl mx-auto">
                           Select a visual style that matches your app's personality
                         </p>
                       </div>
@@ -3271,14 +3276,14 @@ Focus on the key sections and content, making it clean and modern.`;
                               }}
 className={`group relative flex flex-col items-start gap-3 rounded-2xl border px-8 py-4 transition-all duration-300 text-left ${
           selectedStyle === style.name
-            ? 'border-moss-400/80 bg-gradient-to-br from-moss-400/10 to-moss-500/5 text-[#c9d1d9] shadow-[0_12px_40px_rgba(99,210,151,0.15)]'
-            : 'border-[#21262d]/50 bg-[#21262d] bg-opacity-20 text-[#b1bac4] hover:border-moss-400/40 hover:bg-[#21262d] hover:text-[#c9d1d9] hover:shadow-[0_8px_32px_rgba(7,10,16,0.2)]'
+            ? 'border-emerald-500/80 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 text-[#d4d4d4] shadow-[0_12px_40px_rgba(99,210,151,0.15)]'
+            : 'border-[#262626]/50 bg-[#262626] bg-opacity-20 text-[#a3a3a3] hover:border-emerald-500/40 hover:bg-[#262626] hover:text-[#d4d4d4] hover:shadow-[0_8px_32px_rgba(7,10,16,0.2)]'
         }`}
                             >
-                              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-moss-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                               <div className="relative">
-                                <span className="text-label-large text-[#e6edf3] font-medium">{style.name}</span>
-                                <span className="text-label-small text-[#6e7681] mt-2 block">{style.description}</span>
+                                <span className="text-label-large text-[#f5f5f5] font-medium">{style.name}</span>
+                                <span className="text-label-small text-[#737373] mt-2 block">{style.description}</span>
                               </div>
                             </motion.button>
                           ))}
@@ -3364,10 +3369,10 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
         </div>
       </div>
 
-      <div className="md:hidden bg-[#161b22] border-b border-[#21262d] px-3 py-2">
-        <div className="flex bg-[#0d1117] rounded-2xl p-1 w-full max-w-sm mx-auto justify-between">
+      <div className="md:hidden bg-[#171717] border-b border-[#262626] px-3 py-2">
+        <div className="flex bg-[#0a0a0a] rounded-2xl p-1 w-full max-w-sm mx-auto justify-between">
           <button
-            className={`${mobileTab === 'chat' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
+            className={`${mobileTab === 'chat' ? 'bg-[#262626] text-[#f5f5f5]' : 'text-[#a3a3a3] hover:text-[#d4d4d4]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('chat'); }}
             title="Chat"
           >
@@ -3375,7 +3380,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             <span className="hidden min-[380px]:inline">Chat</span>
           </button>
           <button
-            className={`${mobileTab === 'code' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
+            className={`${mobileTab === 'code' ? 'bg-[#262626] text-[#f5f5f5]' : 'text-[#a3a3a3] hover:text-[#d4d4d4]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('code'); }}
             title="Code"
           >
@@ -3383,7 +3388,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             <span className="hidden min-[380px]:inline">Code</span>
           </button>
           <button
-            className={`${mobileTab === 'preview' ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#c9d1d9]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
+            className={`${mobileTab === 'preview' ? 'bg-[#262626] text-[#f5f5f5]' : 'text-[#a3a3a3] hover:text-[#d4d4d4]'} flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-sm`}
             onClick={() => { userTabbedRef.current = true; setMobileTab('preview'); }}
             title="Preview"
           >
@@ -3394,7 +3399,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
-        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[420px] flex flex-col border-b md:border-b-0 md:border-r border-[#21262d] bg-[#0d1117] min-h-0`}>
+        <div className={`${isMobilePortraitLayout ? (mobileTab === 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 md:flex-none w-full md:w-[420px] flex flex-col border-b md:border-b-0 md:border-r border-[#262626] bg-[#0a0a0a] min-h-0`}>
           {conversationContext.scrapedWebsites.length > 0 && (
             <div className="p-4 bg-card">
               <div className="flex flex-col gap-2">
@@ -3450,38 +3455,38 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
                       <div className={`block rounded-2xl px-8 py-6 text-sm leading-relaxed ${
-                        msg.type === 'user' ? 'bg-gradient-to-r from-moss-500/40 to-moss-400/30 border border-[#21262d] text-[#e6edf3] ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
-                        msg.type === 'ai' ? 'bg-neutral-800/90 backdrop-blur-xl border border-[#21262d] text-[#c9d1d9] mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
-                        msg.type === 'system' ? 'bg-transparent text-[#6e7681] font-medium text-xs tracking-wide uppercase' :
-                        msg.type === 'command' ? 'bg-neutral-800/90 backdrop-blur-xl border border-[#21262d] text-[#c9d1d9] font-mono text-xs' :
-                        msg.type === 'error' ? 'bg-heat-12 border border-heat-40 text-heat-100 text-sm' :
-                        'bg-neutral-800/90 backdrop-blur-xl border border-[#21262d] text-[#c9d1d9] text-sm'
+                        msg.type === 'user' ? 'bg-gradient-to-r from-emerald-600/40 to-emerald-500/30 border border-[#262626] text-[#f5f5f5] ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
+                        msg.type === 'ai' ? 'bg-neutral-800/90 backdrop-blur-xl border border-[#262626] text-[#d4d4d4] mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
+                        msg.type === 'system' ? 'bg-transparent text-[#737373] font-medium text-xs tracking-wide uppercase' :
+                        msg.type === 'command' ? 'bg-neutral-800/90 backdrop-blur-xl border border-[#262626] text-[#d4d4d4] font-mono text-xs' :
+                        msg.type === 'error' ? 'bg-orange-500/10 border border-orange-500/40 text-orange-500 text-sm' :
+                        'bg-neutral-800/90 backdrop-blur-xl border border-[#262626] text-[#d4d4d4] text-sm'
                       }`}>
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
                         <span className={`text-xs ${
-                          msg.metadata?.commandType === 'input' ? 'text-moss-400' :
-                          msg.metadata?.commandType === 'error' ? 'text-heat-100' :
-                          msg.metadata?.commandType === 'success' ? 'text-moss-500' :
-                          'text-[#6e7681]'
+                          msg.metadata?.commandType === 'input' ? 'text-emerald-500' :
+                          msg.metadata?.commandType === 'error' ? 'text-orange-500' :
+                          msg.metadata?.commandType === 'success' ? 'text-emerald-600' :
+                          'text-[#737373]'
                         }`}>
                           {msg.metadata?.commandType === 'input' ? '$' : '>'}
                         </span>
-                        <span className="flex-1 whitespace-pre-wrap text-[#e6edf3]">{msg.content}</span>
+                        <span className="flex-1 whitespace-pre-wrap text-[#f5f5f5]">{msg.content}</span>
                       </div>
                     ) : msg.type === 'error' ? (
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0">
-                          <div className="w-8 h-8 bg-moss-500/20 border border-moss-500/60 rounded-full flex items-center justify-center">
-                            <svg className="w-5 h-5 text-moss-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className="w-8 h-8 bg-emerald-600/20 border border-emerald-600/60 rounded-full flex items-center justify-center">
+                            <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                           </div>
                         </div>
                         <div className="flex-1">
-                          <div className="font-semibold mb-1 text-[#e6edf3]">Build Errors Detected</div>
-                          <div className="whitespace-pre-wrap text-sm text-[#c9d1d9]">{msg.content}</div>
-                          <div className="mt-2 text-xs text-[#6e7681]">Press 'F' or click the Fix button above to resolve</div>
+                          <div className="font-semibold mb-1 text-[#f5f5f5]">Build Errors Detected</div>
+                          <div className="whitespace-pre-wrap text-sm text-[#d4d4d4]">{msg.content}</div>
+                          <div className="mt-2 text-xs text-[#737373]">Press 'F' or click the Fix button above to resolve</div>
                         </div>
                       </div>
                     ) : (
@@ -3499,7 +3504,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                       {/* Show applied files if this is an apply success message */}
                       {msg.metadata?.appliedFiles && msg.metadata.appliedFiles.length > 0 && (
                         <div className="mt-8 ml-6 inline-block">
-                          <div className="text-xs font-medium mb-4 text-[#b1bac4]">
+                          <div className="text-xs font-medium mb-4 text-[#a3a3a3]">
                             {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
                           </div>
                           <div className="flex flex-wrap items-start gap-3">
@@ -3513,15 +3518,15 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                               return (
                                 <div
                                   key={`applied-${fileIdx}`}
-                                  className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-[#c9d1d9] rounded-xl text-xs animate-fade-in-up"
+                                  className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-[#d4d4d4] rounded-xl text-xs animate-fade-in-up"
                                   style={{ animationDelay: `${fileIdx * 30}ms` }}
                                 >
                                   <span
                                     className={`inline-block rounded-full ${
-                                    fileType === 'css' ? 'bg-moss-400' :
-                                    fileType === 'javascript' ? 'bg-heat-100' :
-                                    fileType === 'json' ? 'bg-moss-500' :
-                                    'bg-[#484f58]'
+                                    fileType === 'css' ? 'bg-emerald-500' :
+                                    fileType === 'javascript' ? 'bg-orange-500' :
+                                    fileType === 'json' ? 'bg-emerald-600' :
+                                    'bg-[#525252]'
                                   }`}
                                     style={{ width: '4px', height: '4px' }}
                                   />
@@ -3535,20 +3540,20 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
 
                       {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
                         <div className="mt-8 ml-6 inline-block">
-                          <div className="text-xs font-medium mb-4 text-[#b1bac4]">Generated Files:</div>
+                          <div className="text-xs font-medium mb-4 text-[#a3a3a3]">Generated Files:</div>
                           <div className="flex flex-wrap items-start gap-3">
                             {generationProgress.files.map((file, fileIdx) => (
                               <div
                                 key={`complete-${fileIdx}`}
-                                className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-[#c9d1d9] rounded-xl text-xs animate-fade-in-up"
+                                className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-[#d4d4d4] rounded-xl text-xs animate-fade-in-up"
                                 style={{ animationDelay: `${fileIdx * 30}ms` }}
                               >
                               <span
                                 className={`inline-block rounded-full ${
-                                    file.type === 'css' ? 'bg-moss-400' :
-                                    file.type === 'javascript' ? 'bg-heat-100' :
-                                    file.type === 'json' ? 'bg-moss-500' :
-                                    'bg-[#484f58]'
+                                    file.type === 'css' ? 'bg-emerald-500' :
+                                    file.type === 'javascript' ? 'bg-orange-500' :
+                                    file.type === 'json' ? 'bg-emerald-600' :
+                                    'bg-[#525252]'
                                   }`}
                                 style={{ width: '4px', height: '4px' }}
                               />
@@ -3557,8 +3562,8 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                             ))}
                           </div>
                           {!sandboxData && (
-                            <div className="mt-3 flex items-center gap-2 text-xs text-[#6e7681]">
-                              <div className="w-3 h-3 border-2 border-[#21262d] border-t-transparent rounded-full animate-spin" />
+                            <div className="mt-3 flex items-center gap-2 text-xs text-[#737373]">
+                              <div className="w-3 h-3 border-2 border-[#262626] border-t-transparent rounded-full animate-spin" />
                               <span>Deploying sandbox preview…</span>
                             </div>
                           )}
@@ -3577,8 +3582,8 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             
             {/* File generation progress - inline display (during generation) */}
             {generationProgress.isGenerating && (
-              <div className="inline-block bg-[#161b22] rounded-xl p-4 border border-[#21262d]/70 shadow-sm">
-                <div className="text-sm font-medium mb-3 text-[#b1bac4]">
+              <div className="inline-block bg-[#171717] rounded-xl p-4 border border-[#262626]/70 shadow-sm">
+                <div className="text-sm font-medium mb-3 text-[#a3a3a3]">
                   {generationProgress.status}
                 </div>
                 <div className="flex flex-wrap items-start gap-2">
@@ -3586,10 +3591,10 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   {generationProgress.files.map((file, idx) => (
                     <div
                       key={`file-${idx}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-ink-750 text-[#c9d1d9] rounded-full text-xs animate-fade-in-up"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-ink-750 text-[#d4d4d4] rounded-full text-xs animate-fade-in-up"
                       style={{ animationDelay: `${idx * 30}ms` }}
                     >
-                      <svg className="w-3 h-3 text-moss-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                       {file.path.split('/').pop()}
@@ -3598,9 +3603,9 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   
                   {/* Show current file being generated */}
                   {generationProgress.currentFile && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#21262d] text-[#c9d1d9] rounded-full text-xs animate-pulse"
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#262626] text-[#d4d4d4] rounded-full text-xs animate-pulse"
                       style={{ animationDelay: `${generationProgress.files.length * 30}ms` }}>
-                      <div className="w-3 h-3 border-2 border-moss-500 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3 h-3 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                       {generationProgress.currentFile.path.split('/').pop()}
                     </div>
                   )}
@@ -3613,16 +3618,16 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                   className="mt-4 border-t border-[#21262d]/70 pt-4"
+                   className="mt-4 border-t border-[#262626]/70 pt-4"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse" />
-                        <span className="text-xs font-medium text-[#6e7681]">AI Response Stream</span>
+                        <div className="w-1 h-1 bg-emerald-600 rounded-full animate-pulse" />
+                        <span className="text-xs font-medium text-[#737373]">AI Response Stream</span>
                       </div>
-                      <div className="flex-1 h-px bg-gradient-to-r from-surface-ink-600 to-transparent" />
+                      <div className="flex-1 h-px bg-gradient-to-r from-neutral-800 to-transparent" />
                     </div>
-                   <div className="relative bg-[#161b22] bg-opacity-80 border border-[#21262d] rounded-2xl scrollbar-dark">
+                   <div className="relative bg-[#171717] bg-opacity-80 border border-[#262626] rounded-2xl scrollbar-dark">
                       <SyntaxHighlighter
                         language="jsx"
                         style={vscDarkPlus}
@@ -3646,7 +3651,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                         })()}
                       </SyntaxHighlighter>
                       <span className="inline-block w-2 h-3 bg-orange-400 ml-3 mb-3 animate-pulse" />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900 to-transparent rounded-b-lg" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-neutral-900 via-neutral-900 to-transparent rounded-b-lg" />
                     </div>
                   </motion.div>
                 )}
@@ -3696,13 +3701,13 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           </div>
         </div>
 
-        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[#161b22] bg-opacity-95 backdrop-blur-lg`}>
-          <div className="px-4 sm:px-6 py-4 bg-[#161b22] bg-opacity-90 backdrop-blur border-b border-[#21262d]/70 flex justify-between items-center">
-            <div className="flex items-center gap-4 text-[#b1bac4]">
-              <div className="hidden md:flex relative bg-[#21262d] bg-opacity-80 backdrop-blur-xl border border-[#21262d]/50 rounded-2xl p-1 shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
+        <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[#171717] bg-opacity-95 backdrop-blur-lg`}>
+          <div className="px-4 sm:px-6 py-4 bg-[#171717] bg-opacity-90 backdrop-blur border-b border-[#262626]/70 flex justify-between items-center">
+            <div className="flex items-center gap-4 text-[#a3a3a3]">
+              <div className="hidden md:flex relative bg-[#262626] bg-opacity-80 backdrop-blur-xl border border-[#262626]/50 rounded-2xl p-1 shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
                 {/* Animated background indicator */}
                 <div 
-                  className={`absolute top-1 bottom-1 w-[calc(50%-2px)] bg-gradient-to-r from-moss-400/20 to-moss-500/20 backdrop-blur-sm rounded-xl transition-all duration-300 ease-out ${
+                  className={`absolute top-1 bottom-1 w-[calc(50%-2px)] bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 backdrop-blur-sm rounded-xl transition-all duration-300 ease-out ${
                     activeTab === 'generation' ? 'left-1' : 'left-[calc(50%+1px)]'
                   }`}
                 />
@@ -3710,8 +3715,8 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   onClick={() => setActiveTab('generation')}
                   className={`relative z-10 flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 text-base font-medium ${
                     activeTab === 'generation'
-                      ? 'text-moss-400 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
-                      : 'text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]'
+                      ? 'text-emerald-500 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
+                      : 'text-[#a3a3a3] hover:text-[#d4d4d4] hover:bg-[#404040]'
                   }`}
                   title="Code Editor"
                 >
@@ -3724,8 +3729,8 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   onClick={() => setActiveTab('preview')}
                   className={`relative z-10 flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 text-base font-medium ${
                     activeTab === 'preview'
-                      ? 'text-moss-400 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
-                      : 'text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]'
+                      ? 'text-emerald-500 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
+                      : 'text-[#a3a3a3] hover:text-[#d4d4d4] hover:bg-[#404040]'
                   }`}
                   title="Live Preview"
                 >
@@ -3742,19 +3747,19 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
               {activeTab === 'generation' && (generationProgress.isGenerating || generationProgress.files.length > 0) && (
                 <div className="flex items-center gap-8 md:gap-10">
                   {!generationProgress.isEdit && (
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#6e7681]">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#737373]">
                       {generationProgress.files.length} files generated
                     </div>
                   )}
-                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-2xl font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-[#21262d] bg-opacity-90 text-[#e6edf3] hover:text-[#c9d1d9] hover:bg-[#30363d] shadow-sm">
+                  <div className="inline-flex items-center justify-center gap-3 h-10 px-5 whitespace-nowrap rounded-2xl font-mono text-sm uppercase tracking-[0.18em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 bg-[#262626] bg-opacity-90 text-[#f5f5f5] hover:text-[#d4d4d4] hover:bg-[#404040] shadow-sm">
                     {generationProgress.isGenerating ? (
                       <>
-                        <div className="w-1 h-1 bg-moss-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
+                        <div className="w-1 h-1 bg-emerald-600 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
                         {generationProgress.isEdit ? 'Editing code' : 'Live code generation'}
                       </>
                     ) : (
                       <>
-                        <div className="w-1 h-1 bg-[#484f58] rounded-full" />
+                        <div className="w-1 h-1 bg-[#525252] rounded-full" />
                         COMPLETE
                       </>
                     )}

@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 @import "../styles/inside-border-fix.css";
+@import "../styles/design-system-v2.css";
 
 /* Tomato Grotesk font from CDN */
 @font-face {
