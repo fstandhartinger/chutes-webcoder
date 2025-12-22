@@ -7,8 +7,9 @@ export interface SandboxFile {
 export interface SandboxInfo {
   sandboxId: string;
   url: string;
-  provider: 'e2b' | 'vercel';
+  provider: 'e2b' | 'vercel' | 'sandy';
   createdAt: Date;
+  workdir?: string;
 }
 
 export interface CommandResult {
@@ -23,6 +24,13 @@ export interface SandboxProviderConfig {
     apiKey: string;
     timeoutMs?: number;
     template?: string;
+  };
+  sandy?: {
+    apiKey?: string;
+    baseUrl?: string;
+    hostSuffix?: string;
+    timeoutMs?: number;
+    workdir?: string;
   };
   vercel?: {
     teamId?: string;

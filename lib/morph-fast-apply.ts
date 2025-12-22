@@ -14,7 +14,7 @@ export interface MorphApplyResult {
 }
 
 // Normalize project-relative paths to sandbox layout
-export function normalizeProjectPath(inputPath: string): { normalizedPath: string; fullPath: string } {
+export function normalizeProjectPath(inputPath: string, workdir: string): { normalizedPath: string; fullPath: string } {
   let normalizedPath = inputPath.trim();
   if (normalizedPath.startsWith('/')) normalizedPath = normalizedPath.slice(1);
 
@@ -35,8 +35,23 @@ export function normalizeProjectPath(inputPath: string): { normalizedPath: strin
     normalizedPath = 'src/' + normalizedPath;
   }
 
-  const fullPath = `/home/user/app/${normalizedPath}`;
+  const baseDir = workdir || '/home/user/app';
+  const fullPath = `${baseDir.replace(/\/$/, '')}/${normalizedPath}`;
   return { normalizedPath, fullPath };
+}
+
+function resolveSandboxWorkdir(sandbox: any): string {
+  const providerInfo = sandbox?.getSandboxInfo?.();
+  if (providerInfo?.workdir) {
+    return providerInfo.workdir;
+  }
+  if (providerInfo?.provider === 'vercel') {
+    return '/vercel/sandbox';
+  }
+  if (providerInfo?.provider === 'sandy') {
+    return process.env.SANDY_WORKDIR || '/workspace';
+  }
+  return '/home/user/app';
 }
 
 async function morphChatCompletionsCreate(payload: any) {
@@ -82,7 +97,7 @@ async function readFileFromSandbox(sandbox: any, normalizedPath: string, fullPat
     return (global as any).sandboxState.fileCache.files[normalizedPath].content as string;
   }
 
-  // Try E2B files API
+  // Try sandbox files API
   if (sandbox?.files?.read) {
     return await sandbox.files.read(fullPath);
   }
@@ -106,7 +121,7 @@ async function readFileFromSandbox(sandbox: any, normalizedPath: string, fullPat
 
   // Try shell cat via commands.run
   if (sandbox?.commands?.run) {
-    const result = await sandbox.commands.run(`cat ${fullPath}`, { cwd: '/home/user/app', timeout: 30 });
+    const result = await sandbox.commands.run(`cat ${fullPath}`, { cwd: resolveSandboxWorkdir(sandbox), timeout: 30 });
     if (result?.exitCode === 0 && typeof result?.stdout === 'string') {
       return result.stdout as string;
     }
@@ -139,7 +154,7 @@ async function writeFileToSandbox(sandbox: any, normalizedPath: string, fullPath
     return;
   }
 
-  // Prefer E2B files API
+  // Prefer sandbox files API
   if (sandbox?.files?.write) {
     await sandbox.files.write(fullPath, content);
   } else if (sandbox?.runCode) {
@@ -157,7 +172,7 @@ print("WROTE:${fullPath}")
   } else if (sandbox?.commands?.run) {
     // Shell redirection (fallback)
     // Note: beware of special chars; this is a last-resort path
-    const result = await sandbox.commands.run(`bash -lc 'mkdir -p "$(dirname "${fullPath}")" && cat > "${fullPath}" << \EOF\n${content}\nEOF'`, { cwd: '/home/user/app', timeout: 60 });
+    const result = await sandbox.commands.run(`bash -lc 'mkdir -p "$(dirname "${fullPath}")" && cat > "${fullPath}" << \EOF\n${content}\nEOF'`, { cwd: resolveSandboxWorkdir(sandbox), timeout: 60 });
     if (result?.exitCode !== 0) {
       throw new Error(`Failed to write file via shell: ${normalizedPath}`);
     }
@@ -188,7 +203,8 @@ export async function applyMorphEditToFile(params: {
       return { success: false, error: 'MORPH_API_KEY not set' };
     }
 
-    const { normalizedPath, fullPath } = normalizeProjectPath(params.targetPath);
+    const workdir = resolveSandboxWorkdir(params.sandbox);
+    const { normalizedPath, fullPath } = normalizeProjectPath(params.targetPath, workdir);
 
     // Read original code (existence validation happens here)
     const initialCode = await readFileFromSandbox(params.sandbox, normalizedPath, fullPath);
@@ -215,5 +231,3 @@ export async function applyMorphEditToFile(params: {
     return { success: false, error: (error as Error).message };
   }
 }
-
-

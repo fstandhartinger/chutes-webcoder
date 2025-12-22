@@ -2195,7 +2195,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         
         const link = document.createElement('a');
         link.href = data.dataUrl;
-        link.download = data.fileName || 'e2b-project.zip';
+        link.download = data.fileName || 'sandbox-project.zip';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

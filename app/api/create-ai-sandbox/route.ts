@@ -63,7 +63,7 @@ export async function POST() {
 
 async function createSandboxInternal() {
   try {
-    console.log('[create-ai-sandbox] Creating E2B sandbox via factory...');
+    console.log('[create-ai-sandbox] Creating sandbox via factory...');
 
     if (global.sandboxProvider) {
       console.log('[create-ai-sandbox] Terminating existing sandbox provider before recreation');
@@ -82,7 +82,7 @@ async function createSandboxInternal() {
       global.existingFiles = new Set<string>();
     }
 
-    const provider = SandboxFactory.create('e2b');
+    const provider = SandboxFactory.create();
     const sandboxInfo = await provider.createSandbox();
     console.log('[create-ai-sandbox] Sandbox created:', sandboxInfo.sandboxId, sandboxInfo.url);
 

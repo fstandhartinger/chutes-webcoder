@@ -362,6 +362,12 @@ export class VercelProvider extends SandboxProvider {
     await this.writeFile('package.json', JSON.stringify(packageJson, null, 2));
     
     // Create vite.config.js
+    const sandyHostSuffix = process.env.SANDY_HOST_SUFFIX || process.env.NEXT_PUBLIC_SANDBOX_HOST_SUFFIX || '';
+    const normalizedSandySuffix = sandyHostSuffix
+      ? (sandyHostSuffix.startsWith('.') ? sandyHostSuffix : `.${sandyHostSuffix}`)
+      : null;
+    const allowedHosts = ['.vercel.run', normalizedSandySuffix, 'localhost'].filter(Boolean);
+
     const viteConfig = `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -371,11 +377,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
-    allowedHosts: [
-      '.vercel.run',  // Allow all Vercel sandbox domains
-      '.e2b.dev',     // Allow all E2B sandbox domains
-      'localhost'
-    ],
+    allowedHosts: ${JSON.stringify(allowedHosts)},
     hmr: {
       clientPort: 443,
       protocol: 'wss'

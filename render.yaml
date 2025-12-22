@@ -12,7 +12,15 @@ services:
         value: 20
       - key: CHUTES_BASE_URL
         value: https://llm.chutes.ai/v1
-      - key: E2B_API_KEY
+      - key: SANDBOX_PROVIDER
+        value: sandy
+      - key: SANDY_BASE_URL
+        sync: false
+      - key: SANDY_API_KEY
+        sync: false
+      - key: SANDY_HOST_SUFFIX
+        sync: false
+      - key: NEXT_PUBLIC_SANDBOX_HOST_SUFFIX
         sync: false
       - key: FIRECRAWL_API_KEY
         sync: false

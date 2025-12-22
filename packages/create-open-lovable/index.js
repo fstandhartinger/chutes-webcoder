@@ -18,7 +18,7 @@ program
   .name('create-open-lovable')
   .description('Create a new Open Lovable project with your choice of sandbox provider')
   .version('1.0.0')
-  .option('-s, --sandbox <provider>', 'Sandbox provider (e2b or vercel)')
+  .option('-s, --sandbox <provider>', 'Sandbox provider (sandy, e2b, or vercel)')
   .option('-n, --name <name>', 'Project name')
   .option('-p, --path <path>', 'Installation path (defaults to current directory)')
   .option('--skip-install', 'Skip npm install')
@@ -46,9 +46,9 @@ async function main() {
   }
 
   // Validate sandbox provider
-  if (!['e2b', 'vercel'].includes(config.sandbox)) {
+  if (!['sandy', 'e2b', 'vercel'].includes(config.sandbox)) {
     console.error(chalk.red(`\n❌ Invalid sandbox provider: ${config.sandbox}`));
-    console.log(chalk.yellow('Valid options: e2b, vercel\n'));
+    console.log(chalk.yellow('Valid options: sandy, e2b, vercel\n'));
     process.exit(1);
   }
 

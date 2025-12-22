@@ -43,6 +43,10 @@ const CODE_PANEL_EXPANDED_MAX_HEIGHT = '70vh';
 const CODE_PANEL_MIN_HEIGHT = '12rem';
 const CHAT_STREAM_MIN_HEIGHT = '8rem';
 const CHAT_STREAM_MAX_HEIGHT = '18rem';
+const SANDBOX_HOST_SUFFIX_RAW = (process.env.NEXT_PUBLIC_SANDBOX_HOST_SUFFIX || '.sandy.localhost').trim();
+const SANDBOX_HOST_SUFFIX = SANDBOX_HOST_SUFFIX_RAW
+  ? (SANDBOX_HOST_SUFFIX_RAW.startsWith('.') ? SANDBOX_HOST_SUFFIX_RAW : `.${SANDBOX_HOST_SUFFIX_RAW}`)
+  : '';
 
 interface SandboxData {
   sandboxId: string;
@@ -2148,7 +2152,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           ? sandboxData
           : (createdSandbox && createdSandbox.sandboxId)
             ? createdSandbox
-            : (sandboxParam ? { sandboxId: sandboxParam, url: `https://5173-${sandboxParam}.e2b.app` } as any : null);
+            : (sandboxParam ? { sandboxId: sandboxParam, url: SANDBOX_HOST_SUFFIX ? `https://${sandboxParam}${SANDBOX_HOST_SUFFIX}` : '' } as any : null);
         
         if (effectiveSandbox && generatedCode) {
           console.log('[chat] Applying generated code. sandboxId=', effectiveSandbox.sandboxId, 'url=', effectiveSandbox.url);
@@ -2220,7 +2224,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         
         const link = document.createElement('a');
         link.href = data.dataUrl;
-        link.download = data.fileName || 'e2b-project.zip';
+        link.download = data.fileName || 'sandbox-project.zip';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

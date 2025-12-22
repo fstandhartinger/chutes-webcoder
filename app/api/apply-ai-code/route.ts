@@ -322,15 +322,15 @@ export async function POST(request: NextRequest) {
           fileContent = fileContent.replace(/shadow-5xl/g, 'shadow-2xl');
         }
         
-        console.log(`[apply-ai-code] Writing file using E2B files API: ${fullPath}`);
+        console.log(`[apply-ai-code] Writing file to sandbox: ${fullPath}`);
         
         try {
           // Check if we're using provider pattern (v2) or direct sandbox (v1)
           if (sandbox.writeFile) {
-            // V2: Provider pattern (Vercel/E2B provider)
+            // V2: Provider pattern (Vercel/Sandy/E2B provider)
             await sandbox.writeFile(file.path, fileContent);
           } else if (sandbox.files?.write) {
-            // V1: Direct E2B sandbox
+            // V1: Direct sandbox
             await sandbox.files.write(fullPath, fileContent);
           } else {
             throw new Error('Unsupported sandbox type');
@@ -347,7 +347,7 @@ export async function POST(request: NextRequest) {
           }
           
         } catch (writeError) {
-          console.error(`[apply-ai-code] E2B file write error:`, writeError);
+          console.error(`[apply-ai-code] Sandbox file write error:`, writeError);
           throw writeError as Error;
         }
         

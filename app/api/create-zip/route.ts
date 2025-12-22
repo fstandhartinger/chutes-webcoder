@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { appConfig } from '@/config/app.config';
 
 declare global {
   var activeSandbox: any;
@@ -21,11 +22,13 @@ export async function POST() {
     console.log('[create-zip] Creating project zip...');
 
     // Detect provider type
-    const isE2B = provider && provider.constructor.name === 'E2BProvider';
-    const isVercel = provider && provider.constructor.name === 'VercelProvider';
+    const providerInfo = provider?.getSandboxInfo?.();
+    const isE2B = provider && (provider.constructor.name === 'E2BProvider' || providerInfo?.provider === 'e2b');
+    const isSandy = provider && (provider.constructor.name === 'SandyProvider' || providerInfo?.provider === 'sandy');
+    const isVercel = provider && (provider.constructor.name === 'VercelProvider' || providerInfo?.provider === 'vercel');
     const isV1Sandbox = !provider && sandbox;
 
-    console.log('[create-zip] Provider type:', { isE2B, isVercel, isV1Sandbox });
+    console.log('[create-zip] Provider type:', { isE2B, isSandy, isVercel, isV1Sandbox });
 
     if (isE2B && provider.sandbox) {
       // E2B Provider - use Python code execution to avoid command parsing issues
@@ -106,6 +109,72 @@ with open(zip_path, 'rb') as f:
 
       } catch (error) {
         console.error('[create-zip] E2B Provider error:', error);
+        throw error;
+      }
+
+    } else if (isSandy && provider) {
+      try {
+        console.log('[create-zip] Using Sandy Provider with Python-based zip creation');
+
+        const workdir = providerInfo?.workdir || appConfig.sandy.workingDirectory;
+        const zipCreationResult = await provider.runCommand(`python3 - <<'PY'
+import zipfile
+import os
+import base64
+
+os.chdir(${JSON.stringify(workdir)})
+
+zip_path = '/tmp/project.zip'
+exclude_patterns = ['node_modules', '.git', '.next', 'dist', 'build', '*.log', '__pycache__', '*.pyc']
+
+def should_exclude(path):
+    path_str = str(path)
+    for pattern in exclude_patterns:
+        if pattern in path_str:
+            return True
+        if pattern.startswith('*') and path_str.endswith(pattern[1:]):
+            return True
+    return False
+
+with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    for root, dirs, files in os.walk('.'):
+        dirs[:] = [d for d in dirs if not should_exclude(d)]
+        for file in files:
+            file_path = os.path.join(root, file)
+            if not should_exclude(file_path):
+                arcname = os.path.relpath(file_path, '.')
+                zipf.write(file_path, arcname)
+
+file_size = os.path.getsize(zip_path)
+print(f"ZIP_SIZE:{file_size}")
+
+with open(zip_path, 'rb') as f:
+    zip_content = f.read()
+    base64_content = base64.b64encode(zip_content).decode('utf-8')
+    print(f"BASE64_START:{base64_content}:BASE64_END")
+PY`);
+
+        const output = zipCreationResult.stdout || '';
+        const sizeMatch = output.match(/ZIP_SIZE:(\d+)/);
+        const fileSize = sizeMatch ? sizeMatch[1] : 'unknown';
+        console.log(`[create-zip] Created project.zip (${fileSize} bytes)`);
+
+        const base64Match = output.match(/BASE64_START:([\s\S]*?):BASE64_END/);
+        if (!base64Match) {
+          throw new Error('Failed to extract base64 content from Python output');
+        }
+
+        const base64Content = base64Match[1].trim();
+        const dataUrl = `data:application/zip;base64,${base64Content}`;
+
+        return NextResponse.json({
+          success: true,
+          dataUrl,
+          fileName: 'sandy-sandbox-project.zip',
+          message: 'Zip file created successfully'
+        });
+      } catch (error) {
+        console.error('[create-zip] Sandy Provider error:', error);
         throw error;
       }
 

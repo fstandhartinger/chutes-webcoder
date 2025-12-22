@@ -47,6 +47,26 @@ export const appConfig = {
     // Working directory in sandbox
     workingDirectory: '/home/user/app',
   },
+
+  // Sandy Sandbox Configuration
+  sandy: {
+    // Sandbox timeout in minutes
+    timeoutMinutes: 45,
+
+    // Convert to milliseconds for Sandy API
+    get timeoutMs() {
+      return this.timeoutMinutes * 60 * 1000;
+    },
+
+    // Development server port (Sandy uses 5173 for Vite)
+    vitePort: 5173,
+
+    // Time to wait for Vite dev server to be ready (in milliseconds)
+    viteStartupDelay: 10000,
+
+    // Working directory in sandbox
+    workingDirectory: '/workspace',
+  },
   
   // AI Model Configuration
   ai: {

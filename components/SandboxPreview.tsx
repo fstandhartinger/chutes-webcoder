@@ -22,9 +22,9 @@ export default function SandboxPreview({
 
   useEffect(() => {
     if (sandboxId && type !== 'console') {
-      // In production, this would be the actual E2B sandbox URL
-      // Format: https://{sandboxId}-{port}.e2b.dev
-      setPreviewUrl(`https://${sandboxId}-${port}.e2b.dev`);
+      const rawSuffix = (process.env.NEXT_PUBLIC_SANDBOX_HOST_SUFFIX || '.sandy.localhost').trim();
+      const suffix = rawSuffix ? (rawSuffix.startsWith('.') ? rawSuffix : `.${rawSuffix}`) : '';
+      setPreviewUrl(suffix ? `https://${sandboxId}${suffix}` : '');
     }
   }, [sandboxId, port, type]);
 

@@ -26,6 +26,11 @@ export function getPrompts(config) {
       message: 'Choose your sandbox provider:',
       choices: [
         {
+          name: 'Sandy - Self-hosted sandboxes',
+          value: 'sandy',
+          short: 'Sandy'
+        },
+        {
           name: 'E2B - Full-featured development sandboxes',
           value: 'e2b',
           short: 'E2B'
@@ -36,7 +41,7 @@ export function getPrompts(config) {
           short: 'Vercel'
         }
       ],
-      default: 'e2b'
+      default: 'sandy'
     });
   }
 
@@ -66,7 +71,41 @@ export function getEnvPrompts(provider) {
     }
   });
 
-  if (provider === 'e2b') {
+  if (provider === 'sandy') {
+    prompts.push({
+      type: 'input',
+      name: 'sandyBaseUrl',
+      message: 'Sandy base URL (e.g. https://sandy.example.com):',
+      validate: (input) => {
+        if (!input || input.trim() === '') {
+          return 'Sandy base URL is required';
+        }
+        return true;
+      }
+    });
+    prompts.push({
+      type: 'input',
+      name: 'sandyApiKey',
+      message: 'Sandy API key:',
+      validate: (input) => {
+        if (!input || input.trim() === '') {
+          return 'Sandy API key is required';
+        }
+        return true;
+      }
+    });
+    prompts.push({
+      type: 'input',
+      name: 'sandyHostSuffix',
+      message: 'Sandy host suffix (e.g. .sandy.example.com):',
+      validate: (input) => {
+        if (!input || input.trim() === '') {
+          return 'Sandy host suffix is required';
+        }
+        return true;
+      }
+    });
+  } else if (provider === 'e2b') {
     prompts.push({
       type: 'input',
       name: 'e2bApiKey',

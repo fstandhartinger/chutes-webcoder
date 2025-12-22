@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { parseJavaScriptFile, buildComponentTree } from '@/lib/file-parser';
 import { FileManifest, FileInfo, RouteInfo } from '@/types/file-manifest';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import { appConfig } from '@/config/app.config';
 // SandboxState type used implicitly through global.activeSandbox
 
 declare global {
@@ -24,7 +25,12 @@ export async function GET() {
     console.log('[get-sandbox-files] Fetching and analyzing file structure...');
 
     const sandboxInfo = provider.getSandboxInfo?.();
-    const baseDir = sandboxInfo?.provider === 'vercel' ? '/vercel/sandbox' : '/home/user/app';
+    const baseDir = sandboxInfo?.workdir ||
+      (sandboxInfo?.provider === 'vercel'
+        ? '/vercel/sandbox'
+        : sandboxInfo?.provider === 'sandy'
+          ? appConfig.sandy.workingDirectory
+          : appConfig.e2b.workingDirectory);
     const allowedExtensions = /\.(jsx?|tsx?|css|json)$/;
 
     const fileListRaw = (await provider.listFiles(baseDir)) as string[];

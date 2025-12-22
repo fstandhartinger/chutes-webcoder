@@ -8,7 +8,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
 ## What's Included
 
-- **Dual Sandbox Providers** – choose between the new Vercel sandbox (default) or E2B with automatic fallback handling.
+- **Sandbox Providers** – use the self-hosted Sandy sandbox by default, with Vercel or E2B available as optional alternatives.
 - **Chutes-first AI defaults** – preconfigured to use Chutes' OpenAI-compatible endpoint while still supporting Groq, OpenAI, Anthropic, Gemini, and the Vercel AI Gateway.
 - **Upstream Enhancements** – AI Builder UI, morph fast-apply edits, GitHub integration hooks, CLI scaffolding (`packages/create-open-lovable`).
 - **Render-ready deployment** – `render.yaml` and sensible `NEXT_PUBLIC_APP_URL` defaults for local routing.
@@ -30,13 +30,20 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
    CHUTES_BASE_URL=https://llm.chutes.ai/v1
    NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-   # Sandbox provider (E2B by default)
-   SANDBOX_PROVIDER=e2b
-   E2B_API_KEY=your_e2b_api_key
+   # Sandbox provider (Sandy by default)
+   SANDBOX_PROVIDER=sandy
+   SANDY_BASE_URL=https://sandy.example.com
+   SANDY_API_KEY=your_sandy_api_key
+   SANDY_HOST_SUFFIX=.sandy.example.com
+   NEXT_PUBLIC_SANDBOX_HOST_SUFFIX=.sandy.example.com
 
    # Optional: Vercel sandbox (requires Vercel account setup)
    # SANDBOX_PROVIDER=vercel
    # VERCEL_OIDC_TOKEN=... or VERCEL_TOKEN + VERCEL_TEAM_ID + VERCEL_PROJECT_ID
+
+   # Optional: E2B sandbox (legacy)
+   # SANDBOX_PROVIDER=e2b
+   # E2B_API_KEY=your_e2b_api_key
 
    # Optional: AI Gateway / vendor keys
    AI_GATEWAY_API_KEY=...
@@ -58,7 +65,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 ## Configuration Notes
 
 - `config/app.config.ts` lists all sandbox and model settings. The default model is `chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8`, but the upstream presets (GPT‑5, Claude Sonnet 4, Gemini 2.0 Flash, Kimi K2) remain available.
-- Switching between Vercel and E2B sandboxes is a matter of flipping `SANDBOX_PROVIDER` and providing the appropriate credentials.
+- Switching between Sandy, Vercel, and E2B sandboxes is a matter of flipping `SANDBOX_PROVIDER` and providing the appropriate credentials.
 - GitHub integration and the new “Builder” experience follow the upstream conventions—set `GITHUB_TOKEN`, `NEXTAUTH_SECRET`, etc., if you adopt those workflows.
 
 ## Scripts

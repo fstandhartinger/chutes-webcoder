@@ -146,7 +146,13 @@ async function createEnvFile(projectPath, sandbox, answers) {
   envContent += `# REQUIRED - Web scraping for cloning websites\n`;
   envContent += `FIRECRAWL_API_KEY=${answers.firecrawlApiKey || 'your_firecrawl_api_key_here'}\n\n`;
   
-  if (sandbox === 'e2b') {
+  if (sandbox === 'sandy') {
+    envContent += `# REQUIRED - Sandy Sandboxes\n`;
+    envContent += `SANDY_BASE_URL=${answers.sandyBaseUrl || 'https://sandy.example.com'}\n`;
+    envContent += `SANDY_API_KEY=${answers.sandyApiKey || 'your_sandy_api_key_here'}\n`;
+    envContent += `SANDY_HOST_SUFFIX=${answers.sandyHostSuffix || '.sandy.example.com'}\n`;
+    envContent += `NEXT_PUBLIC_SANDBOX_HOST_SUFFIX=${answers.sandyHostSuffix || '.sandy.example.com'}\n\n`;
+  } else if (sandbox === 'e2b') {
     envContent += `# REQUIRED - E2B Sandboxes\n`;
     envContent += `E2B_API_KEY=${answers.e2bApiKey || 'your_e2b_api_key_here'}\n\n`;
   } else if (sandbox === 'vercel') {
@@ -202,7 +208,13 @@ async function createEnvExample(projectPath, sandbox) {
   envContent += `# Get yours at https://firecrawl.dev\n`;
   envContent += `FIRECRAWL_API_KEY=your_firecrawl_api_key_here\n\n`;
   
-  if (sandbox === 'e2b') {
+  if (sandbox === 'sandy') {
+    envContent += `# REQUIRED - Sandy Sandboxes\n`;
+    envContent += `SANDY_BASE_URL=https://sandy.example.com\n`;
+    envContent += `SANDY_API_KEY=your_sandy_api_key_here\n`;
+    envContent += `SANDY_HOST_SUFFIX=.sandy.example.com\n`;
+    envContent += `NEXT_PUBLIC_SANDBOX_HOST_SUFFIX=.sandy.example.com\n\n`;
+  } else if (sandbox === 'e2b') {
     envContent += `# REQUIRED - Sandboxes for code execution\n`;
     envContent += `# Get yours at https://e2b.dev\n`;
     envContent += `E2B_API_KEY=your_e2b_api_key_here\n\n`;
