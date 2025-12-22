@@ -3083,7 +3083,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
               >
-                <div className="relative bg-neutral-900 rounded-2xl border border-neutral-700 shadow-xl">
+                <div className="relative bg-neutral-900 rounded-2xl border border-neutral-700 shadow-xl focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500/50 transition-all">
                   <textarea
                     value={homePromptInput}
                     onChange={(e) => {
@@ -3095,7 +3095,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       setShowStyleSelector(hasValidUrl || hasPrompt);
                     }}
                     placeholder="Describe your app idea... (e.g., Build a snake game with neon effects)"
-                    className="min-h-[180px] w-full resize-none rounded-2xl bg-transparent px-6 py-5 pb-20 text-lg text-white placeholder-neutral-500 focus-visible:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    className="min-h-[180px] w-full resize-none rounded-2xl bg-transparent px-6 py-5 pb-20 text-lg text-white placeholder-neutral-500 focus:outline-none"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
