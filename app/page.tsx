@@ -1693,10 +1693,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
   const sendChatMessage = async (overrideMessage?: string) => {
     const message = (overrideMessage ?? aiChatInput).trim();
-    if (!message) return;
+    console.log('[sendChatMessage] Called with message:', message?.substring(0, 50), '...');
+    console.log('[sendChatMessage] Auth state:', { isAuthenticated, isAuthLoading });
+    console.log('[sendChatMessage] Sandbox state:', { hasSandbox: !!sandboxData, sandboxId: sandboxData?.sandboxId });
+    
+    if (!message) {
+      console.log('[sendChatMessage] Empty message, returning');
+      return;
+    }
     
     // Enforce authentication on first request
     if (!isAuthenticated && !isAuthLoading) {
+      console.log('[sendChatMessage] Not authenticated, redirecting to login');
       // Save the request and redirect to login
       login(window.location.pathname, {
         type: 'generate',
@@ -1706,10 +1714,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
     
     if (!aiEnabled) {
+      console.log('[sendChatMessage] AI disabled');
       addChatMessage('AI is disabled. Please enable it first.', 'system');
       return;
     }
     
+    console.log('[sendChatMessage] Adding user message and starting generation');
     addChatMessage(message, 'user');
     if (!overrideMessage) {
       setAiChatInput('');
@@ -1732,13 +1742,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     
     if (!sandboxData) {
       sandboxCreating = true;
+      console.log('[sendChatMessage] No sandbox, creating one...');
       // In-Progress Hinweis für den Benutzer
       addChatMessage('Creating sandbox...', 'system');
       // Parallel starten, nicht blockieren
       sandboxPromise = createSandbox(true, true).catch((error: any) => {
+        console.error('[sendChatMessage] Sandbox creation failed:', error);
         addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
         throw error;
       }) as Promise<{ sandboxId: string; url: string }>;
+    } else {
+      console.log('[sendChatMessage] Using existing sandbox:', sandboxData.sandboxId);
     }
     
     // Determine if this is an edit
