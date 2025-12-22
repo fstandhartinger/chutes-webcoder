@@ -57,27 +57,26 @@ input[type="search"]::-webkit-search-results-decoration {
 .form-select,
 .form-checkbox,
 .form-radio {
-  @apply bg-white border border-zinc-200 focus:border-zinc-400 shadow shadow-black/5;
-}
-
-.form-input,
-.form-textarea,
-.form-multiselect,
-.form-select,
-.form-checkbox {
-  @apply rounded;
+  @apply bg-surface-ink-850 border border-neutral-800/70 focus:border-moss-500/60 shadow-sm shadow-black/40;
 }
 
 .form-input,
 .form-textarea,
 .form-multiselect,
 .form-select {
-  @apply text-zinc-600 text-sm px-4 py-2;
+  @apply rounded-[10px];
+}
+
+.form-input,
+.form-textarea,
+.form-multiselect,
+.form-select {
+  @apply text-ink-200 text-sm px-4 py-2;
 }
 
 .form-input,
 .form-textarea {
-  @apply placeholder-zinc-400;
+  @apply placeholder:text-ink-500;
 }
 
 .form-select {
@@ -86,11 +85,11 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .form-checkbox,
 .form-radio {
-  @apply text-zinc-800;
+  @apply text-ink-100;
 }
 
 .form-checkbox {
-  @apply rounded-sm;
+  @apply rounded-[6px];
 }
 
 /* Fix input cursor visibility on Windows Chrome */

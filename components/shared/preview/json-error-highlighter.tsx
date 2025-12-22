@@ -77,7 +77,7 @@ export function JsonErrorHighlighter({
   return (
     <div
       className={cn(
-        "w-full h-full relative font-mono text-foreground text-sm min-h-[250px] overflow-hidden focus:border-none focus-visible:border-none focus-visible:outline-none",
+        "w-full h-full relative font-mono text-ink-200 text-sm min-h-[250px] overflow-hidden focus:border-none focus-visible:border-none focus-visible:outline-none",
         className,
       )}
       style={style}
@@ -155,11 +155,11 @@ export function JsonErrorHighlighter({
         })}
       </div>
       {/* Textarea */}
-      <textarea
+        <textarea
         ref={textareaRef}
         className={cn(
-          "absolute inset-0 resize-none bg-transparent border rounded-md text-black dark:text-white focus:overline-none focus:border-neutral-600 focus-visible:border-neutral-600 focus-visible:outline-none",
-          error?.message ? "!border-destructive" : "border-neutral-600",
+          "absolute inset-0 resize-none bg-transparent border rounded-md text-ink-200 focus:overline-none focus:border-moss-500/60 focus-visible:border-moss-500/60 focus-visible:outline-none",
+          error?.message ? "!border-destructive" : "border-neutral-700/80",
         )}
         value={value}
         onChange={onChange}

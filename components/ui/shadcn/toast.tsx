@@ -15,13 +15,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-white group-[.toaster]:text-zinc-950 group-[.toaster]:border-neutral-600 group-[.toaster]:shadow-lg dark:group-[.toaster]:bg-zinc-950 dark:group-[.toaster]:text-zinc-50 dark:group-[.toaster]:border-zinc-800",
+            "group toast group-[.toaster]:bg-surface-ink-900 group-[.toaster]:text-ink-100 group-[.toaster]:border-surface-ink-700/70 group-[.toaster]:shadow-[0_16px_32px_rgba(5,8,15,0.45)]",
           description:
-            "group-[.toast]:text-zinc-500 dark:group-[.toast]:text-zinc-400",
+            "group-[.toast]:text-ink-400",
           actionButton:
-            "group-[.toast]:bg-zinc-900 group-[.toast]:text-zinc-50 dark:group-[.toast]:bg-zinc-50 dark:group-[.toast]:text-zinc-900",
+            "group-[.toast]:bg-surface-ink-800 group-[.toast]:text-ink-100",
           cancelButton:
-            "group-[.toast]:bg-zinc-100 group-[.toast]:text-zinc-500 dark:group-[.toast]:bg-zinc-800 dark:group-[.toast]:text-zinc-400",
+            "group-[.toast]:bg-surface-ink-800 group-[.toast]:text-ink-400",
         },
       }}
       {...props}

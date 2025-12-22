@@ -21,10 +21,10 @@ export default function SidebarQuickInput({ onSubmit, disabled = false }: Sideba
 
   return (
     <div className="w-full">
-      <div className="bg-gray-50 rounded-lg border border-neutral-600">
+      <div className="bg-surface-ink-850/80 rounded-xl border border-neutral-800/70 backdrop-blur">
         <div className="p-3 flex items-center gap-3">
           <input
-            className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
+            className="flex-1 bg-transparent text-sm text-ink-100 placeholder:text-ink-500 focus:outline-none"
             placeholder="Enter a new URL to regenerate..."
             type="text"
             value={url}

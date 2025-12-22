@@ -1653,7 +1653,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           {screenshotError ? (
             <div className="text-center">
               <p className="mb-2">Failed to capture screenshot</p>
-              <p className="text-sm text-gray-500">{screenshotError}</p>
+              <p className="text-sm text-ink-400">{screenshotError}</p>
             </div>
           ) : sandboxData ? (
             <div className="text-muted-foreground">
@@ -3079,7 +3079,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         setShowStyleSelector(hasValidUrl || hasPrompt);
                       }}
                       placeholder="Describe your app idea... (e.g., Build a snake game with neon effects)"
-                      className="min-h-[140px] w-full resize-none rounded-2xl bg-transparent px-6 py-5 pb-16 text-lg text-ink-50 placeholder-ink-400 focus-visible:outline-none transition-all duration-300"
+                      className="min-h-[160px] w-full resize-none rounded-2xl bg-transparent px-6 py-6 pb-16 text-lg text-ink-50 placeholder-ink-400 focus-visible:outline-none transition-all duration-300"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -3096,9 +3096,8 @@ Focus on the key sections and content, making it clean and modern.`;
                       </span>
                       <button
                         type="submit"
-                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-moss-400 text-surface-ink-950 font-medium hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                        className="flex items-center gap-2 h-11 px-6 rounded-full bg-moss-400 text-surface-ink-950 font-semibold hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                         title="Generate"
-                        style={{ minHeight: '48px' }}
                       >
                         <span>Generate</span>
                         <svg
@@ -3161,14 +3160,13 @@ Focus on the key sections and content, making it clean and modern.`;
                         }, 100);
                       }}
                       placeholder="https://example.com"
-                      className="w-full bg-transparent pl-14 pr-28 py-5 text-lg text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
-                      style={{ minHeight: '64px' }}
+                      className="w-full bg-transparent pl-14 pr-28 py-4 text-base text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
+                      style={{ minHeight: '56px' }}
                     />
                     <button
                       type="submit"
-                      className="absolute right-4 flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-ink-700 text-sm font-medium text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                      className="absolute right-4 flex items-center gap-2 h-10 px-5 rounded-full bg-surface-ink-700 text-sm font-semibold text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                       title="Clone Website"
-                      style={{ minHeight: '44px' }}
                     >
                       <span>Clone</span>
                     </button>
@@ -3664,7 +3662,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           <div className="p-8 border-t border-neutral-800 bg-card">
             <div className="relative">
               <Textarea
-                    className="min-h-[80px] pr-16 pl-6 resize-y rounded-xl border border-neutral-800 bg-neutral-800/90 backdrop-blur-xl text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-500/60 focus:border-moss-500 shadow-[0_12px_28px_rgba(7,10,16,0.45)]"
+                className="min-h-[96px] pr-16 pl-5 resize-y rounded-2xl border border-surface-ink-600/70 bg-surface-ink-850/90 backdrop-blur-xl text-ink-100 placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-moss-400/60 focus:border-moss-400 shadow-[0_14px_32px_rgba(7,10,16,0.5)]"
                 placeholder="Continue the conversation..."
                 value={aiChatInput}
                 onChange={(e) => setAiChatInput(e.target.value)}
@@ -3678,7 +3676,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
               />
               <button
                 onClick={() => void sendChatMessage()}
-                className="absolute right-4 bottom-4 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="absolute right-4 bottom-4 flex h-11 w-11 items-center justify-center rounded-2xl text-ink-200 hover:text-moss-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 title="Send message (Enter)"
               >
                     <svg

@@ -383,7 +383,7 @@ export default function ControlPanel({
                 onClick={() => setViewMode('grid')}
                 className={`px-16 py-8 rounded-8 text-label-medium font-medium transition-all ${
                   viewMode === 'grid' 
-                    ? 'bg-accent-black text-white shadow-md' 
+                    ? 'bg-surface-ink-900 text-white shadow-md' 
                     : 'bg-black-alpha-4 text-black-alpha-64 hover:bg-black-alpha-8'
                 }`}
               >
@@ -393,7 +393,7 @@ export default function ControlPanel({
                 onClick={() => setViewMode('chart')}
                 className={`px-16 py-8 rounded-8 text-label-medium font-medium transition-all ${
                   viewMode === 'chart' 
-                    ? 'bg-accent-black text-white shadow-md' 
+                    ? 'bg-surface-ink-900 text-white shadow-md' 
                     : 'bg-black-alpha-4 text-black-alpha-64 hover:bg-black-alpha-8'
                 }`}
               >
@@ -403,7 +403,7 @@ export default function ControlPanel({
                 onClick={() => setViewMode('bars')}
                 className={`px-16 py-8 rounded-8 text-label-medium font-medium transition-all ${
                   viewMode === 'bars' 
-                    ? 'bg-accent-black text-white shadow-md' 
+                    ? 'bg-surface-ink-900 text-white shadow-md' 
                     : 'bg-black-alpha-4 text-black-alpha-64 hover:bg-black-alpha-8'
                 }`}
               >
@@ -476,10 +476,10 @@ export default function ControlPanel({
                               initial={{ opacity: 0, y: 5 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: 5 }}
-                              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-8 w-200 p-8 bg-accent-black text-white text-body-x-small rounded-6 shadow-lg z-50 pointer-events-none"
+                              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-8 w-200 p-8 bg-surface-ink-900 text-white text-body-x-small rounded-6 shadow-lg z-50 pointer-events-none"
                             >
                               {check.tooltip}
-                              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-accent-black" />
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-surface-ink-900" />
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -502,7 +502,7 @@ export default function ControlPanel({
                           <motion.div
                             className={`
                               h-full rounded-full
-                              ${check.status === 'pass' ? 'bg-accent-black' : ''}
+                              ${check.status === 'pass' ? 'bg-surface-ink-900' : ''}
                               ${check.status === 'warning' ? 'bg-heat-100' : ''}
                               ${check.status === 'fail' ? 'bg-heat-200' : ''}
                             `}
@@ -834,7 +834,7 @@ export default function ControlPanel({
               }
             }}
             disabled={isAnalyzingAI}
-            className="px-20 py-10 bg-accent-black hover:bg-black-alpha-80 text-white rounded-8 text-label-medium transition-all disabled:opacity-50"
+            className="px-20 py-10 bg-surface-ink-900 hover:bg-black-alpha-80 text-white rounded-8 text-label-medium transition-all disabled:opacity-50"
           >
               {isAnalyzingAI ? 'Analyzing...' : 'Analyze with AI'}
             </button>

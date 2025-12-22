@@ -1126,8 +1126,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         <div className="absolute inset-0 flex overflow-hidden">
           {/* File Explorer - Hide during edits */}
           {!generationProgress.isEdit && (
-            <div className="w-[250px] border-r border-neutral-600 bg-white flex flex-col flex-shrink-0">
-            <div className="p-4 bg-gray-100 text-gray-900 flex items-center justify-between">
+            <div className="w-[250px] border-r border-surface-ink-700/70 bg-surface-ink-900 flex flex-col flex-shrink-0">
+            <div className="p-4 bg-surface-ink-850 text-ink-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BsFolderFill style={{ width: '16px', height: '16px' }} />
                 <span className="text-sm font-medium">Explorer</span>
@@ -1139,20 +1139,20 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               <div className="text-sm">
                 {/* Root app folder */}
                 <div 
-                  className="flex items-center gap-2 py-0.5 px-3 hover:bg-gray-100 rounded cursor-pointer text-gray-700"
+                  className="flex items-center gap-2 py-0.5 px-3 hover:bg-surface-ink-850 rounded cursor-pointer text-ink-300"
                   onClick={() => toggleFolder('app')}
                 >
                   {expandedFolders.has('app') ? (
-                    <FiChevronDown style={{ width: '16px', height: '16px' }} className="text-gray-600" />
+                    <FiChevronDown style={{ width: '16px', height: '16px' }} className="text-ink-400" />
                   ) : (
-                    <FiChevronRight style={{ width: '16px', height: '16px' }} className="text-gray-600" />
+                    <FiChevronRight style={{ width: '16px', height: '16px' }} className="text-ink-400" />
                   )}
                   {expandedFolders.has('app') ? (
                     <BsFolder2Open style={{ width: '16px', height: '16px' }} className="text-blue-500" />
                   ) : (
                     <BsFolderFill style={{ width: '16px', height: '16px' }} className="text-blue-500" />
                   )}
-                  <span className="font-medium text-gray-800">app</span>
+                  <span className="font-medium text-ink-200">app</span>
                 </div>
                 
                 {expandedFolders.has('app') && (
@@ -1185,20 +1185,20 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         <div key={dir} className="mb-1">
                           {dir && (
                             <div 
-                              className="flex items-center gap-2 py-0.5 px-3 hover:bg-gray-100 rounded cursor-pointer text-gray-700"
+                              className="flex items-center gap-2 py-0.5 px-3 hover:bg-surface-ink-850 rounded cursor-pointer text-ink-300"
                               onClick={() => toggleFolder(dir)}
                             >
                               {expandedFolders.has(dir) ? (
-                                <FiChevronDown style={{ width: '16px', height: '16px' }} className="text-gray-600" />
+                                <FiChevronDown style={{ width: '16px', height: '16px' }} className="text-ink-400" />
                               ) : (
-                                <FiChevronRight style={{ width: '16px', height: '16px' }} className="text-gray-600" />
+                                <FiChevronRight style={{ width: '16px', height: '16px' }} className="text-ink-400" />
                               )}
                               {expandedFolders.has(dir) ? (
                                 <BsFolder2Open style={{ width: '16px', height: '16px' }} className="text-yellow-600" />
                               ) : (
                                 <BsFolderFill style={{ width: '16px', height: '16px' }} className="text-yellow-600" />
                               )}
-                              <span className="text-gray-700">{dir.split('/').pop()}</span>
+                              <span className="text-ink-300">{dir.split('/').pop()}</span>
                             </div>
                           )}
                           {(!dir || expandedFolders.has(dir)) && (
@@ -1213,7 +1213,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                     className={`flex items-center gap-2 py-0.5 px-3 rounded cursor-pointer transition-all ${
                                       isSelected 
                                         ? 'bg-blue-500 text-white' 
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                        : 'text-ink-300 hover:bg-surface-ink-850'
                                     }`}
                                     onClick={() => handleFileClick(fullPath)}
                                   >
@@ -1247,23 +1247,23 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             {generationProgress.isGenerating && (generationProgress.isThinking || generationProgress.thinkingText) && (
               <div className="px-6 pb-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="text-purple-600 font-medium flex items-center gap-2">
+                  <div className="text-moss-400 font-medium flex items-center gap-2">
                     {generationProgress.isThinking ? (
                       <>
-                        <div className="w-3 h-3 bg-purple-600 rounded-full animate-pulse" />
+                        <div className="w-3 h-3 bg-moss-400 rounded-full animate-pulse" />
                         AI is thinking...
                       </>
                     ) : (
                       <>
-                        <span className="text-purple-600">✓</span>
+                        <span className="text-moss-400">✓</span>
                         Thought for {generationProgress.thinkingDuration || 0} seconds
                       </>
                     )}
                   </div>
                 </div>
                 {generationProgress.thinkingText && (
-                  <div className="bg-purple-950 border border-purple-700 rounded-lg p-4 max-h-48 overflow-y-auto scrollbar-hide">
-                    <pre className="text-xs font-mono text-purple-300 whitespace-pre-wrap">
+                  <div className="bg-surface-ink-900 border border-surface-ink-700/70 rounded-xl p-4 max-h-48 overflow-y-auto scrollbar-hide">
+                    <pre className="text-xs font-mono text-ink-200 whitespace-pre-wrap">
                       {generationProgress.thinkingText}
                     </pre>
                   </div>
@@ -1278,7 +1278,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   <button
                     type="button"
                     onClick={() => setIsCodeExpanded(prev => !prev)}
-                    className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-gray-900/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-300 hover:text-white hover:bg-gray-800 hover:border-neutral-600 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500/60"
+                    className="inline-flex items-center gap-2 rounded-full border border-surface-ink-700/70 bg-surface-ink-900/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-300 hover:text-ink-50 hover:bg-surface-ink-800 hover:border-moss-400/40 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60"
                   >
                     {isCodeExpanded ? 'Collapse view' : 'Expand view'}
                   </button>
@@ -1288,22 +1288,22 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 {/* Show selected file if one is selected */}
                 {selectedFile ? (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="bg-black border border-neutral-600 rounded-lg overflow-hidden shadow-sm">
-                      <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
+                    <div className="bg-surface-ink-900 border border-surface-ink-700/70 rounded-lg overflow-hidden shadow-sm">
+                      <div className="px-4 py-2 bg-surface-ink-850 text-white flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {getFileIcon(selectedFile)}
                           <span className="font-mono text-sm">{selectedFile}</span>
                         </div>
                         <button
                           onClick={() => setSelectedFile(null)}
-                          className="hover:bg-black/20 p-1 rounded transition-colors"
+                          className="hover:bg-surface-ink-800/60 p-1 rounded transition-colors"
                         >
                           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>
-                      <div className="relative bg-gray-900 border border-gray-700 rounded">
+                      <div className="relative bg-surface-ink-900 border border-surface-ink-700/70 rounded">
                         <SyntaxHighlighter
                           language={(() => {
                             const ext = selectedFile.split('.').pop()?.toLowerCase();
@@ -1331,7 +1331,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           })()}
                         </SyntaxHighlighter>
                         {!isCodeExpanded && (
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded" />
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded" />
                         )}
                       </div>
                     </div>
@@ -1344,23 +1344,23 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       <div className="text-center">
                         <div className="mb-8 relative">
                           <div className="w-24 h-24 mx-auto">
-                            <div className="absolute inset-0 border-4 border-gray-800 rounded-full"></div>
+                            <div className="absolute inset-0 border-4 border-surface-ink-800/70 rounded-full"></div>
                             <div className="absolute inset-0 border-4 border-green-500 rounded-full animate-spin border-t-transparent"></div>
                           </div>
                         </div>
                         <h3 className="text-xl font-medium text-white mb-2">AI is analyzing your request</h3>
-                        <p className="text-gray-400 text-sm">{generationProgress.status || 'Preparing to generate code...'}</p>
+                        <p className="text-ink-400 text-sm">{generationProgress.status || 'Preparing to generate code...'}</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-black border border-neutral-600 rounded-lg overflow-hidden">
-                      <div className="px-4 py-2 bg-gray-100 text-gray-900 flex items-center justify-between">
+                    <div className="bg-surface-ink-900 border border-surface-ink-700/70 rounded-lg overflow-hidden">
+                      <div className="px-4 py-2 bg-surface-ink-850 text-ink-100 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
                           <span className="font-mono text-sm">Streaming code...</span>
                         </div>
                       </div>
-                      <div className="relative p-4 bg-gray-900 rounded">
+                      <div className="relative p-4 bg-surface-ink-900 rounded">
                         <SyntaxHighlighter
                           language="jsx"
                           style={vscDarkPlus}
@@ -1379,7 +1379,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         </SyntaxHighlighter>
                         <span className="inline-block w-3 h-5 bg-orange-400 ml-1 animate-pulse" />
                         {!isCodeExpanded && (
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded-b" />
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded-b" />
                         )}
                       </div>
                     </div>
@@ -1388,8 +1388,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   <div className="space-y-4">
                     {/* Show current file being generated */}
                     {generationProgress.currentFile && (
-                      <div className="bg-black border-2 border-neutral-500 rounded-lg overflow-hidden shadow-sm">
-                        <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
+                      <div className="bg-surface-ink-900 border-2 border-surface-ink-600/70 rounded-lg overflow-hidden shadow-sm">
+                        <div className="px-4 py-2 bg-surface-ink-850 text-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-5 h-5 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">{generationProgress.currentFile.path}</span>
@@ -1397,13 +1397,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               generationProgress.currentFile.type === 'css' ? 'bg-blue-600 text-white' :
                               generationProgress.currentFile.type === 'javascript' ? 'bg-yellow-600 text-white' :
                               generationProgress.currentFile.type === 'json' ? 'bg-green-600 text-white' :
-                              'bg-gray-200 text-gray-700'
+                              'bg-surface-ink-800 text-ink-300'
                             }`}>
                               {generationProgress.currentFile.type === 'javascript' ? 'JSX' : generationProgress.currentFile.type.toUpperCase()}
                             </span>
                           </div>
                         </div>
-                        <div className="relative bg-gray-900 border border-gray-700 rounded">
+                        <div className="relative bg-surface-ink-900 border border-surface-ink-700/70 rounded">
                           <SyntaxHighlighter
                             language={
                               generationProgress.currentFile.type === 'css' ? 'css' :
@@ -1427,7 +1427,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           </SyntaxHighlighter>
                           <span className="inline-block w-3 h-4 bg-orange-400 ml-4 mb-4 animate-pulse" />
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded" />
                           )}
                         </div>
                       </div>
@@ -1435,8 +1435,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     
                     {/* Show completed files */}
                     {generationProgress.files.map((file, idx) => (
-                      <div key={idx} className="bg-white border border-neutral-600 rounded-lg overflow-hidden">
-                        <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
+                      <div key={idx} className="bg-surface-ink-900 border border-surface-ink-700/70 rounded-lg overflow-hidden">
+                        <div className="px-4 py-2 bg-surface-ink-850 text-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-green-500">✓</span>
                             <span className="font-mono text-sm">{file.path}</span>
@@ -1445,12 +1445,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             file.type === 'css' ? 'bg-blue-600 text-white' :
                             file.type === 'javascript' ? 'bg-yellow-600 text-white' :
                             file.type === 'json' ? 'bg-green-600 text-white' :
-                            'bg-gray-200 text-gray-700'
+                            'bg-surface-ink-800 text-ink-300'
                           }`}>
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
                           </span>
                         </div>
-                        <div className="relative bg-gray-900 border border-gray-700 rounded">
+                        <div className="relative bg-surface-ink-900 border border-surface-ink-700/70 rounded">
                           <SyntaxHighlighter
                             language={
                               file.type === 'css' ? 'css' :
@@ -1474,7 +1474,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             {file.content}
                           </SyntaxHighlighter>
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded" />
                           )}
                         </div>
                       </div>
@@ -1482,14 +1482,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     
                     {/* Show remaining raw stream if there's content after the last file */}
                     {!generationProgress.currentFile && generationProgress.streamedCode.length > 0 && (
-                      <div className="bg-black border border-neutral-600 rounded-lg overflow-hidden">
-                        <div className="px-4 py-2 bg-[#36322F] text-white flex items-center justify-between">
+                      <div className="bg-surface-ink-900 border border-surface-ink-700/70 rounded-lg overflow-hidden">
+                        <div className="px-4 py-2 bg-surface-ink-850 text-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 border-2 border-neutral-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-surface-ink-600/70 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">Processing...</span>
                           </div>
                         </div>
-                        <div className="relative bg-gray-900 border border-gray-700 rounded">
+                        <div className="relative bg-surface-ink-900 border border-surface-ink-700/70 rounded">
                           <SyntaxHighlighter
                             language="jsx"
                             style={vscDarkPlus}
@@ -1519,7 +1519,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             })()}
                           </SyntaxHighlighter>
                           {!isCodeExpanded && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent rounded" />
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/70 to-transparent rounded" />
                           )}
                         </div>
                       </div>
@@ -1532,7 +1532,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             {/* Progress indicator */}
             {generationProgress.components.length > 0 && (
               <div className="mx-6 mb-6">
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-2 bg-surface-ink-800 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-300"
                     style={{
@@ -1554,7 +1554,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       
       if (isInitialGeneration || isNewGenerationWithSandbox) {
         return (
-          <div className="relative w-full h-full bg-gray-900">
+          <div className="relative w-full h-full bg-surface-ink-900">
             {/* Screenshot as background when available */}
             {urlScreenshot && (
               /* eslint-disable-next-line @next/next/no-img-element */
@@ -1573,7 +1573,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             
             {/* Loading overlay - only show when actively processing initial generation */}
             {shouldShowLoadingOverlay && (
-              <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center backdrop-blur-sm">
+              <div className="absolute inset-0 bg-surface-ink-950/80 flex flex-col items-center justify-center backdrop-blur-sm">
                 {/* Loading animation with skeleton */}
                 <div className="text-center max-w-md">
                   {/* Animated skeleton lines */}
@@ -1627,7 +1627,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             
             {/* Package installation overlay - shows when installing packages or applying code */}
             {codeApplicationState.stage && codeApplicationState.stage !== 'complete' && (
-              <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-10">
+              <div className="absolute inset-0 bg-surface-ink-900/95 backdrop-blur-sm flex items-center justify-center z-10">
                 <div className="text-center max-w-md">
                   <div className="mb-6">
                     {/* Animated icon based on stage */}
@@ -1641,7 +1641,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     ) : null}
                   </div>
                   
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-ink-100 mb-2">
                     {codeApplicationState.stage === 'analyzing' && 'Analyzing code...'}
                     {codeApplicationState.stage === 'installing' && 'Installing packages...'}
                     {codeApplicationState.stage === 'applying' && 'Applying changes...'}
@@ -1656,8 +1656,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             key={index}
                             className={`px-2 py-1 text-xs rounded-full transition-all ${
                               codeApplicationState.installedPackages?.includes(pkg)
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-gray-100 text-gray-600'
+                                ? 'bg-moss-400/15 text-moss-400'
+                                : 'bg-surface-ink-850 text-ink-400'
                             }`}
                           >
                             {pkg}
@@ -1672,12 +1672,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   
                   {/* Files being generated */}
                   {codeApplicationState.stage === 'applying' && codeApplicationState.filesGenerated && (
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-ink-400">
                       Creating {codeApplicationState.filesGenerated.length} files...
                     </div>
                   )}
                   
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-sm text-ink-400 mt-2">
                     {codeApplicationState.stage === 'analyzing' && 'Parsing generated code and detecting dependencies...'}
                     {codeApplicationState.stage === 'installing' && 'This may take a moment while npm installs the required packages...'}
                     {codeApplicationState.stage === 'applying' && 'Writing files to your sandbox environment...'}
@@ -1688,9 +1688,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             
             {/* Show a subtle indicator when code is being edited/generated */}
             {generationProgress.isGenerating && generationProgress.isEdit && !codeApplicationState.stage && (
-              <div className="absolute top-4 right-4 inline-flex items-center gap-2 px-3 py-1.5 bg-black/80 backdrop-blur-sm rounded-lg">
-                <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-white text-xs font-medium">Generating code...</span>
+              <div className="absolute top-4 right-4 inline-flex items-center gap-2 px-3 py-1.5 bg-surface-ink-900/80 backdrop-blur-sm rounded-lg">
+                <div className="w-1 h-1 bg-moss-400 rounded-full animate-pulse" />
+                <span className="text-ink-100 text-xs font-medium">Generating code...</span>
               </div>
             )}
             
@@ -1703,7 +1703,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   iframeRef.current.src = newSrc;
                 }
               }}
-              className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-gray-700 p-2 rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
+              className="absolute bottom-4 right-4 bg-surface-ink-900/90 hover:bg-surface-ink-900 text-ink-300 p-2 rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
               title="Refresh sandbox"
             >
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1716,19 +1716,19 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       
       // Default state when no sandbox and no screenshot
       return (
-        <div className="flex items-center justify-center h-full bg-gray-50 text-gray-600 text-lg">
+        <div className="flex items-center justify-center h-full bg-surface-ink-900 text-ink-400 text-lg">
           {screenshotError ? (
             <div className="text-center">
               <p className="mb-2">Failed to capture screenshot</p>
-              <p className="text-sm text-gray-500">{screenshotError}</p>
+              <p className="text-sm text-ink-400">{screenshotError}</p>
             </div>
           ) : sandboxData ? (
-            <div className="text-gray-500">
-              <div className="w-8 h-8 border-2 border-neutral-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <div className="text-ink-400">
+              <div className="w-8 h-8 border-2 border-surface-ink-600/70 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
               <p className="text-sm">Loading preview...</p>
             </div>
           ) : (
-            <div className="text-gray-500 text-center">
+            <div className="text-ink-400 text-center">
               <p className="text-sm">Start chatting to create your first app</p>
             </div>
           )}
@@ -3286,7 +3286,7 @@ Focus on the key sections and content, making it clean and modern.`;
                           href={sourceURL} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-black hover:text-gray-700 truncate max-w-[250px] font-medium"
+                          className="text-ink-100 hover:text-ink-300 truncate max-w-[250px] font-medium"
                           title={sourceURL}
                         >
                           {siteName}
@@ -3296,7 +3296,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       {/* Pinned screenshot */}
                       {screenshot && (
                         <div 
-                          className="w-full rounded-lg overflow-hidden border border-neutral-600 transition-all duration-300"
+                          className="w-full rounded-lg overflow-hidden border border-surface-ink-700/70 transition-all duration-300"
                           style={{ 
                             opacity: sidebarScrolled ? 0 : 1,
                             transform: sidebarScrolled ? 'translateY(-20px)' : 'translateY(0)',
@@ -3341,12 +3341,12 @@ Focus on the key sections and content, making it clean and modern.`;
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className="block">
                       <div className={`block rounded-[10px] px-10 py-6 ${
-                        msg.type === 'user' ? 'bg-[#36322F] text-white ml-auto max-w-[80%]' :
-                        msg.type === 'ai' ? 'bg-gray-100 text-gray-900 mr-auto max-w-[80%]' :
-                        msg.type === 'system' ? 'bg-[#36322F] text-white text-sm' :
-                        msg.type === 'command' ? 'bg-[#36322F] text-white font-mono text-sm' :
+                        msg.type === 'user' ? 'bg-surface-ink-850 text-white ml-auto max-w-[80%]' :
+                        msg.type === 'ai' ? 'bg-surface-ink-850 text-ink-100 mr-auto max-w-[80%]' :
+                        msg.type === 'system' ? 'bg-surface-ink-850 text-white text-sm' :
+                        msg.type === 'command' ? 'bg-surface-ink-850 text-white font-mono text-sm' :
                         msg.type === 'error' ? 'bg-red-900 text-red-100 text-sm border border-red-700' :
-                        'bg-[#36322F] text-white text-sm'
+                        'bg-surface-ink-850 text-white text-sm'
                       }`}>
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
@@ -3354,7 +3354,7 @@ Focus on the key sections and content, making it clean and modern.`;
                           msg.metadata?.commandType === 'input' ? 'text-blue-400' :
                           msg.metadata?.commandType === 'error' ? 'text-red-400' :
                           msg.metadata?.commandType === 'success' ? 'text-green-400' :
-                          'text-gray-400'
+                          'text-ink-400'
                         }`}>
                           {msg.metadata?.commandType === 'input' ? '$' : '>'}
                         </span>
@@ -3382,8 +3382,8 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show applied files if this is an apply success message */}
                       {msg.metadata?.appliedFiles && msg.metadata.appliedFiles.length > 0 && (
-                    <div className="mt-8 ml-6 inline-block bg-gray-100 rounded-[10px] p-5">
-                      <div className="text-xs font-medium mb-3 text-gray-700">
+                    <div className="mt-8 ml-6 inline-block bg-surface-ink-850 rounded-[10px] p-5">
+                      <div className="text-xs font-medium mb-3 text-ink-300">
                         {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
                       </div>
                       <div className="flex flex-wrap items-start gap-2">
@@ -3397,7 +3397,7 @@ Focus on the key sections and content, making it clean and modern.`;
                           return (
                             <div
                               key={`applied-${fileIdx}`}
-                              className="inline-flex items-center gap-3 px-6 py-4 bg-[#36322F] text-white rounded-xl text-xs animate-fade-in-up"
+                              className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-850 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                               style={{ animationDelay: `${fileIdx * 30}ms` }}
                             >
                               <span
@@ -3405,7 +3405,7 @@ Focus on the key sections and content, making it clean and modern.`;
                                   fileType === 'css' ? 'bg-blue-400' :
                                   fileType === 'javascript' ? 'bg-yellow-400' :
                                   fileType === 'json' ? 'bg-green-400' :
-                                  'bg-gray-400'
+                                  'bg-surface-ink-600'
                                 }`}
                                 style={{ width: '4px', height: '4px' }}
                               />
@@ -3419,13 +3419,13 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                       {/* Show generated files for completion messages - but only if no appliedFiles already shown */}
                       {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
-                    <div className="mt-8 ml-6 inline-block bg-gray-100 rounded-[10px] p-5">
-                      <div className="text-xs font-medium mb-3 text-gray-700">Generated Files:</div>
+                    <div className="mt-8 ml-6 inline-block bg-surface-ink-850 rounded-[10px] p-5">
+                      <div className="text-xs font-medium mb-3 text-ink-300">Generated Files:</div>
                       <div className="flex flex-wrap items-start gap-1">
                         {generationProgress.files.map((file, fileIdx) => (
                           <div
                             key={`complete-${fileIdx}`}
-                            className="inline-flex items-center gap-3 px-6 py-4 bg-[#36322F] text-white rounded-xl text-xs animate-fade-in-up"
+                            className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-850 text-ink-100 rounded-xl text-xs animate-fade-in-up"
                             style={{ animationDelay: `${fileIdx * 30}ms` }}
                           >
                             <span
@@ -3433,7 +3433,7 @@ Focus on the key sections and content, making it clean and modern.`;
                                 file.type === 'css' ? 'bg-blue-400' :
                                 file.type === 'javascript' ? 'bg-yellow-400' :
                                 file.type === 'json' ? 'bg-green-400' :
-                                'bg-gray-400'
+                                'bg-surface-ink-600'
                               }`}
                               style={{ width: '4px', height: '4px' }}
                             />
@@ -3456,8 +3456,8 @@ Focus on the key sections and content, making it clean and modern.`;
             
             {/* File generation progress - inline display (during generation) */}
             {generationProgress.isGenerating && (
-              <div className="inline-block bg-gray-100 rounded-lg p-3">
-                <div className="text-sm font-medium mb-2 text-gray-700">
+              <div className="inline-block bg-surface-ink-850 rounded-lg p-3">
+                <div className="text-sm font-medium mb-2 text-ink-300">
                   {generationProgress.status}
                 </div>
                 <div className="flex flex-wrap items-start gap-1">
@@ -3465,7 +3465,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   {generationProgress.files.map((file, idx) => (
                     <div
                       key={`file-${idx}`}
-                      className="inline-flex items-center gap-3 px-6 py-4 bg-[#36322F] text-white rounded-xl text-xs animate-fade-in-up"
+                      className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-850 text-white rounded-xl text-xs animate-fade-in-up"
                       style={{ animationDelay: `${idx * 30}ms` }}
                     >
                       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3477,7 +3477,7 @@ Focus on the key sections and content, making it clean and modern.`;
                   
                   {/* Show current file being generated */}
                   {generationProgress.currentFile && (
-                    <div className="flex items-center gap-1 px-2 py-1 bg-[#36322F]/70 text-white rounded-[10px] text-xs animate-pulse"
+                    <div className="flex items-center gap-1 px-2 py-1 bg-surface-ink-850/70 text-white rounded-[10px] text-xs animate-pulse"
                       style={{ animationDelay: `${generationProgress.files.length * 30}ms` }}>
                       <div className="w-5 h-5 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
                       {generationProgress.currentFile.path.split('/').pop()}
@@ -3497,11 +3497,11 @@ Focus on the key sections and content, making it clean and modern.`;
                     <div className="flex items-center gap-2 mb-2">
                       <div className="flex items-center gap-1">
                         <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-xs font-medium text-gray-600">AI Response Stream</span>
+                        <span className="text-xs font-medium text-ink-400">AI Response Stream</span>
                       </div>
-                      <div className="flex-1 h-px bg-gradient-to-r from-gray-300 to-transparent" />
+                      <div className="flex-1 h-px bg-gradient-to-r from-surface-ink-700 to-transparent" />
                     </div>
-                    <div className="relative bg-gray-900 border border-gray-700 rounded scrollbar-hide">
+                    <div className="relative bg-surface-ink-900 border border-surface-ink-700/70 rounded scrollbar-hide">
                       <SyntaxHighlighter
                         language="jsx"
                         style={vscDarkPlus}
@@ -3524,7 +3524,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         })()}
                       </SyntaxHighlighter>
                       <span className="inline-block w-3 h-4 bg-orange-400 ml-3 mb-3 animate-pulse" />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent rounded-b" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface-ink-900 via-surface-ink-900/60 to-transparent rounded-b" />
                     </div>
                   </motion.div>
                 )}

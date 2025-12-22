@@ -59,12 +59,12 @@ export default function Tabs({
         {styles.width !== 0 && (
           <motion.div
             animate={styles}
-            className="absolute top-12 left-0 z-[2] inset-y-12 bg-white-alpha-72 rounded-full backdrop-blur-4"
+            className="absolute top-12 left-0 z-[2] inset-y-12 bg-surface-ink-800/80 rounded-full backdrop-blur-4"
             initial={styles}
             ref={backgroundRef}
             style={{
               boxShadow:
-                "0px 24px 32px -12px rgba(0, 0, 0, 0.03), 0px 16px 24px -8px rgba(0, 0, 0, 0.03), 0px 8px 16px -4px rgba(0, 0, 0, 0.03), 0px 0px 0px 1px rgba(0, 0, 0, 0.03)",
+                "0px 24px 40px -12px rgba(5, 8, 15, 0.45), 0px 0px 0px 1px rgba(31, 41, 55, 0.6)",
             }}
             transition={{
               type: "spring",
@@ -85,8 +85,8 @@ export default function Tabs({
               className={cn(
                 "py-12 px-24 flex gap-4 justify-center items-center w-full relative z-[3] transition-colors",
                 activeTab === tab.value
-                  ? "text-accent-black"
-                  : "text-black-alpha-64 hover:text-black-alpha-88 hover:before:opacity-100",
+                  ? "text-ink-100"
+                  : "text-ink-400 hover:text-ink-100 hover:before:opacity-100",
                 "inside-border before:border-border-faint before:opacity-0 rounded-full before:scale-[0.98] hover:before:scale-100",
                 itemButtonClassName,
               )}

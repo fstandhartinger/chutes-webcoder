@@ -28,33 +28,33 @@ export default function WebBrowser({
   return (
     <main className="relative w-full h-full flex items-center justify-center bg-transparent">
       <div
-        className={`w-full h-full max-w-[95vw] max-h-[85vh] min-w-full sm:min-w-[700px] rounded-2xl shadow-lg border border-gray-100 bg-white overflow-hidden flex flex-col transform-gpu ${
+        className={`w-full h-full max-w-[95vw] max-h-[85vh] min-w-full sm:min-w-[700px] rounded-2xl shadow-lg border border-surface-ink-700/70 bg-surface-ink-900 overflow-hidden flex flex-col transform-gpu ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         } transition-all duration-300 ease-out`}
       >
         {/* macOS-style top bar with loading indicator */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-zinc-50 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-surface-ink-700/70 bg-surface-ink-850 flex-shrink-0">
           <div className="flex gap-2">
             <div
               className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                isLoading ? "bg-yellow-500" : "bg-red-500"
+                isLoading ? "bg-moss-400" : "bg-heat-100"
               }`}
             />
             <div
               className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                isLoading ? "bg-yellow-500" : "bg-yellow-500"
+                isLoading ? "bg-moss-400" : "bg-moss-400"
               }`}
             />
             <div
               className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                isLoading ? "bg-yellow-500" : "bg-green-500"
+                isLoading ? "bg-moss-400" : "bg-moss-500"
               }`}
             />
           </div>
 
           <div className="flex items-center gap-2">
             {/* Spinner */}
-            <div className="browser-spinner animate-spin w-5 h-5 border-2 border-neutral-500 border-t-neutral-600 rounded-full" />
+            <div className="browser-spinner animate-spin w-5 h-5 border-2 border-surface-ink-600 border-t-moss-400 rounded-full" />
           </div>
         </div>
 

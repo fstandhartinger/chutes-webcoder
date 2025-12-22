@@ -45,27 +45,25 @@ export function CapsuleButton({
 
   const variants = {
     primary: [
-      "bg-heat-100 text-white",
-      "hover:bg-heat-200",
+      "bg-moss-400 text-surface-ink-950",
+      "hover:bg-moss-500",
       "active:scale-[0.98]",
-      "shadow-[0_1px_2px_rgba(0,0,0,0.05)]",
-      "hover:shadow-[0_4px_12px_rgba(250,93,25,0.25)]",
+      "shadow-[0_12px_28px_rgba(99,210,151,0.25)]",
     ],
     secondary: [
-      "bg-black text-white",
-      "hover:bg-black/90",
+      "bg-surface-ink-800 text-ink-100 border border-surface-ink-700/70",
+      "hover:bg-surface-ink-700",
       "active:scale-[0.98]",
-      "shadow-[0_1px_2px_rgba(0,0,0,0.05)]",
-      "hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+      "shadow-[0_10px_24px_rgba(5,8,15,0.35)]",
     ],
     tertiary: [
-      "bg-white text-black border border-black-alpha-8",
-      "hover:bg-black-alpha-4 hover:border-black-alpha-12",
+      "bg-surface-ink-900 text-ink-100 border border-surface-ink-700/70",
+      "hover:bg-surface-ink-800 hover:border-surface-ink-600/70",
       "active:scale-[0.98]",
     ],
     ghost: [
-      "bg-transparent text-black-alpha-60",
-      "hover:text-black hover:bg-black-alpha-4",
+      "bg-transparent text-ink-400",
+      "hover:text-ink-100 hover:bg-surface-ink-800/70",
       "active:scale-[0.98]",
     ],
   };

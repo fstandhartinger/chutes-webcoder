@@ -26,23 +26,23 @@ export default function Button({
         "text-label-medium lg-max:[&_svg]:size-24",
         `button-${variant} group/button`,
         {
-          "rounded-8 p-6": size === "default",
-          "rounded-10 p-8 gap-2": size === "large",
+          "rounded-full p-6": size === "default",
+          "rounded-full p-8 gap-2": size === "large",
 
-          "text-accent-white active:[scale:0.995]": variant === "primary",
-          "text-accent-black active:[scale:0.99] active:bg-black-alpha-7": [
+          "text-surface-ink-950 active:[scale:0.995]": variant === "primary",
+          "text-ink-100 active:[scale:0.99] active:bg-surface-ink-700/70": [
             "secondary",
             "tertiary",
             "playground",
           ].includes(variant),
-          "bg-black-alpha-4 hover:bg-black-alpha-6": variant === "secondary",
-          "hover:bg-black-alpha-4": variant === "tertiary",
+          "bg-surface-ink-800/80 border border-surface-ink-600/70 hover:bg-surface-ink-700": variant === "secondary",
+          "hover:bg-surface-ink-800/70": variant === "tertiary",
         },
         variant === "playground" && [
-          "inside-border before:border-black-alpha-4",
+          "inside-border before:border-surface-ink-600/70",
           disabled
-            ? "before:opacity-0 bg-black-alpha-4 text-black-alpha-24"
-            : "hover:bg-black-alpha-4 hover:before:opacity-0 active:before:opacity-0",
+            ? "before:opacity-0 bg-surface-ink-800/60 text-ink-500"
+            : "hover:bg-surface-ink-800/70 hover:before:opacity-0 active:before:opacity-0",
         ],
       )}
       disabled={disabled}
