@@ -17,18 +17,18 @@ export default function HeroInput() {
   return (
     <div className="max-w-552 mx-auto w-full z-[11] lg:z-[2] rounded-20 lg:-mt-76">
       <div
-        className="overlay bg-accent-white"
+        className="overlay bg-surface-ink-900/90 border border-surface-ink-700/60 backdrop-blur-xl"
         style={{
           boxShadow:
-            "0px 0px 44px 0px rgba(0, 0, 0, 0.02), 0px 88px 56px -20px rgba(0, 0, 0, 0.03), 0px 56px 56px -20px rgba(0, 0, 0, 0.02), 0px 32px 32px -20px rgba(0, 0, 0, 0.03), 0px 16px 24px -12px rgba(0, 0, 0, 0.03), 0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 0px 0px 10px #F9F9F9",
+            "0px 24px 80px rgba(5, 8, 15, 0.55), 0px 0px 0px 1px rgba(31, 41, 55, 0.6)",
         }}
       />
 
-      <label className="p-16 flex gap-8 items-center w-full relative border-b border-black-alpha-5">
+      <label className="p-16 flex gap-8 items-center w-full relative border-b border-surface-ink-700/60">
         <Globe />
 
         <input
-          className="w-full bg-transparent text-body-input text-accent-black placeholder:text-black-alpha-48"
+          className="w-full bg-transparent text-body-input text-ink-100 placeholder:text-ink-500"
           placeholder="https://example.com"
           type="text"
           value={url}

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import "../styles/inside-border-fix.css";
 
 /* Tomato Grotesk font from CDN */
 @font-face {
@@ -47,6 +48,9 @@
 
 /* CSS Variables for Chutes Design System */
 :root {
+  --container-width: 1280px;
+  --container-width-padding: 1280px;
+
   /* Heat colors */
   --heat-4: #fa5d190a;
   --heat-8: #fa5d1914;
@@ -56,6 +60,7 @@
   --heat-40: #fa5d1966;
   --heat-90: #fa5d19e6;
   --heat-100: #fa5d19ff;
+  --heat-200: #ff6600ff;
 
   /* Ink colors */
   --ink-50: #f9fafbff;
@@ -105,6 +110,41 @@
   /* Foreground colors */
   --foreground: #f3f4f6ff;
   --muted-foreground: #9ca3afff;
+
+  /* Legacy fire tokens mapped to Chutes dark theme */
+  --accent-black: var(--ink-100);
+  --accent-white: #ffffff;
+  --foreground-dimmer: rgba(243, 244, 246, 0.72);
+  --background-base: var(--surface-ink-950);
+  --background-lighter: var(--surface-ink-850);
+
+  --border-faint: #1f2937;
+  --border-muted: #243047;
+  --border-loud: #2b3a52;
+
+  --black-alpha-1: rgba(255, 255, 255, 0.01);
+  --black-alpha-2: rgba(255, 255, 255, 0.02);
+  --black-alpha-3: rgba(255, 255, 255, 0.03);
+  --black-alpha-4: rgba(255, 255, 255, 0.04);
+  --black-alpha-5: rgba(255, 255, 255, 0.05);
+  --black-alpha-6: rgba(255, 255, 255, 0.06);
+  --black-alpha-7: rgba(255, 255, 255, 0.07);
+  --black-alpha-8: rgba(255, 255, 255, 0.08);
+  --black-alpha-10: rgba(255, 255, 255, 0.1);
+  --black-alpha-12: rgba(255, 255, 255, 0.12);
+  --black-alpha-16: rgba(255, 255, 255, 0.16);
+  --black-alpha-20: rgba(255, 255, 255, 0.2);
+  --black-alpha-24: rgba(255, 255, 255, 0.24);
+  --black-alpha-32: rgba(255, 255, 255, 0.32);
+  --black-alpha-40: rgba(255, 255, 255, 0.4);
+  --black-alpha-48: rgba(255, 255, 255, 0.48);
+  --black-alpha-56: rgba(255, 255, 255, 0.56);
+  --black-alpha-64: rgba(255, 255, 255, 0.64);
+  --black-alpha-72: rgba(255, 255, 255, 0.72);
+  --black-alpha-88: rgba(255, 255, 255, 0.88);
+
+  --white-alpha-56: rgba(255, 255, 255, 0.56);
+  --white-alpha-72: rgba(255, 255, 255, 0.72);
 }
 
 
@@ -224,27 +264,27 @@
 /* Theme configuration for Tailwind CSS v4 */
 /* Default to a Chutes-like dark theme with holographic accents */
 @theme {
-  --color-background: var(--surface-ink-950-base);
-  --color-foreground: var(--ink-50-base);
-  --color-card: var(--surface-ink-850-base);
-  --color-card-foreground: var(--ink-50-base);
-  --color-popover: var(--surface-ink-850-base);
-  --color-popover-foreground: var(--ink-50-base);
+  --color-background: var(--surface-ink-950);
+  --color-foreground: var(--ink-50);
+  --color-card: var(--surface-ink-850);
+  --color-card-foreground: var(--ink-50);
+  --color-popover: var(--surface-ink-850);
+  --color-popover-foreground: var(--ink-50);
 
-  --color-primary: var(--moss-500-base);
-  --color-primary-foreground: var(--surface-ink-950-base);
-  --color-secondary: var(--surface-ink-750-base);
-  --color-secondary-foreground: var(--ink-100-base);
-  --color-muted: var(--surface-ink-750-base);
-  --color-muted-foreground: var(--ink-400-base);
-  --color-accent: var(--moss-400-base);
-  --color-accent-foreground: var(--surface-ink-950-base);
-  --color-destructive: var(--heat-100-base);
-  --color-destructive-foreground: var(--surface-ink-950-base);
+  --color-primary: var(--moss-500);
+  --color-primary-foreground: var(--surface-ink-950);
+  --color-secondary: var(--surface-ink-750);
+  --color-secondary-foreground: var(--ink-100);
+  --color-muted: var(--surface-ink-750);
+  --color-muted-foreground: var(--ink-400);
+  --color-accent: var(--moss-400);
+  --color-accent-foreground: var(--surface-ink-950);
+  --color-destructive: var(--heat-100);
+  --color-destructive-foreground: var(--surface-ink-950);
 
-  --color-border: var(--surface-ink-600-base);
-  --color-input: var(--surface-ink-600-base);
-  --color-ring: var(--moss-400-base);
+  --color-border: var(--surface-ink-600);
+  --color-input: var(--surface-ink-600);
+  --color-ring: var(--moss-400);
 
   --radius: 0.75rem;
 
@@ -319,6 +359,7 @@
   body {
     background-color: theme('colors.background');
     color: theme('colors.foreground');
+    font-family: 'Tomato Grotesk', Inter, system-ui, sans-serif;
     font-feature-settings: "ss01" on, "cv11" on;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -401,6 +442,14 @@
   .animate-fade-in-up {
     opacity: 0;
     animation: fadeInUp 0.5s ease-out forwards;
+  }
+
+  .cmw-container {
+    max-width: min(calc(100% - 32px), var(--container-width));
+    padding-left: 16px;
+    padding-right: 16px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* Additional animation utilities */

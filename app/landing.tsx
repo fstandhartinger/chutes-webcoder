@@ -25,7 +25,7 @@ import FirecrawlLogo from "@/components/FirecrawlLogo";
 export default function LandingPage() {
   return (
     <HeaderProvider>
-      <div className="min-h-screen bg-background-base">
+      <div className="min-h-screen bg-surface-ink-950 text-ink-100">
         {/* Header/Navigation Section */}
         <HeaderDropdownWrapper />
 

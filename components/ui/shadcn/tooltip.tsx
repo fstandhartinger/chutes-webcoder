@@ -87,7 +87,7 @@ export default function Tooltip({
                   },
                 }}
                 className={cn(
-                  "py-10 px-16 rounded-12 max-w-248 absolute w-max text-body-medium text-accent-white bg-black-alpha-64 backdrop-blur-[6px] z-[121]",
+                  "py-10 px-16 rounded-12 max-w-248 absolute w-max text-body-medium text-ink-100 bg-surface-ink-900/90 border border-surface-ink-700/70 backdrop-blur-[6px] z-[121]",
                   className,
                 )}
                 dangerouslySetInnerHTML={{ __html: props.description }}
@@ -101,7 +101,7 @@ export default function Tooltip({
                 key={nanoid()}
                 style={{
                   boxShadow:
-                    "0px 16px 24px -8px rgba(0, 0, 0, 0.06), 0px 8px 16px -4px rgba(0, 0, 0, 0.06)",
+                    "0px 16px 32px -8px rgba(5, 8, 15, 0.45), 0px 8px 16px -4px rgba(5, 8, 15, 0.35)",
                   bottom: `calc(100% - ${offset}px)`,
                 }}
                 transition={{

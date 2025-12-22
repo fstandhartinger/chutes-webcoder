@@ -23,7 +23,7 @@ export default function BlinkingContainer({
     width: CELL_SIZE,
     height: CELL_SIZE,
     radius: 0,
-    color: 0xededed,
+    color: 0x243047,
     type: "container",
   });
 
@@ -35,12 +35,12 @@ export default function BlinkingContainer({
   animatedRect.graphic.addChild(
     new Graphics()
       .rect(0, 0, CELL_SIZE, CELL_SIZE)
-      .fill({ color: "#EDEDED", alpha: 0 }),
+      .fill({ color: "#243047", alpha: 0 }),
   );
 
   const blinkLayer = new Graphics()
     .rect(0, 0, CELL_SIZE, CELL_SIZE)
-    .fill({ color: "#F9F9F9" });
+    .fill({ color: "#3b4a63" });
 
   blinkLayer.zIndex = 1;
   blinkLayer.alpha = 0;

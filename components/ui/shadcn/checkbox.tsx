@@ -19,12 +19,12 @@ export default function Checkbox({
         className={cn(
           "w-full h-full rounded-3 group inside-border relative transition-all",
           checked
-            ? "bg-heat-100 group-hover:bg-[#FA4500] before:border-transparent"
-            : "bg-black-alpha-3 group-hover:bg-black-alpha-6 before:border-black-alpha-10 group-hover:before:border-black-alpha-40",
+            ? "bg-moss-400 group-hover:bg-moss-500 before:border-transparent"
+            : "bg-surface-ink-800/70 group-hover:bg-surface-ink-700 before:border-surface-ink-600/70 group-hover:before:border-surface-ink-500/80",
         )}
         style={{
           boxShadow: checked
-            ? "0px 2px 4px 0px rgba(255, 77, 0, 0.12), 0px 1px 1px 0px rgba(255, 77, 0, 0.12), 0px 0.5px 0.5px 0px rgba(255, 77, 0, 0.16), 0px 0.25px 0.25px 0px rgba(255, 77, 0, 0.20)"
+            ? "0px 2px 4px 0px rgba(99, 210, 151, 0.18), 0px 1px 1px 0px rgba(99, 210, 151, 0.16), 0px 0.5px 0.5px 0px rgba(99, 210, 151, 0.18)"
             : "",
         }}
       >

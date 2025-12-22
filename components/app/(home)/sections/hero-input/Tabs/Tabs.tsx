@@ -71,18 +71,18 @@ export default function HeroInputTabs(props: {
 
   return (
     <div
-      className="bg-black-alpha-4 flex items-center rounded-10 p-2 relative lg-max:hidden"
+      className="bg-surface-ink-800/80 border border-surface-ink-700/60 flex items-center rounded-12 p-2 relative lg-max:hidden"
       style={{
         boxShadow:
-          "0px 6px 12px 0px rgba(0, 0, 0, 0.02) inset, 0px 0.75px 0.75px 0px rgba(0, 0, 0, 0.02) inset, 0px 0.25px 0.25px 0px rgba(0, 0, 0, 0.04) inset",
+          "0px 6px 16px 0px rgba(5, 8, 15, 0.3) inset, 0px 1px 2px 0px rgba(5, 8, 15, 0.3) inset",
       }}
     >
       <div
-        className="absolute top-2 left-2 h-32 bg-accent-white rounded-8 w-89"
+        className="absolute top-2 left-2 h-32 bg-surface-ink-900 rounded-10 w-89"
         ref={backgroundRef}
         style={{
           boxShadow:
-            "0px 6px 12px -3px rgba(0, 0, 0, 0.04), 0px 3px 6px -1px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 0.5px 0.5px 0px rgba(0, 0, 0, 0.06)",
+            "0px 6px 18px -4px rgba(5, 8, 15, 0.45), 0px 1px 2px 0px rgba(5, 8, 15, 0.3)",
         }}
       />
 
@@ -96,7 +96,7 @@ export default function HeroInputTabs(props: {
                   "opacity-0",
               )}
             >
-              <div className="w-1 h-12 bg-black-alpha-5" />
+              <div className="w-1 h-12 bg-surface-ink-700/60" />
             </div>
           )}
 
@@ -104,8 +104,8 @@ export default function HeroInputTabs(props: {
             className={cn(
               "text-label-medium p-6 relative transition-all group flex items-center",
               tab.value === props.tab
-                ? "text-accent-black"
-                : "text-black-alpha-56",
+                ? "text-ink-100"
+                : "text-ink-400",
               !tab.new && "pr-4",
             )}
             key={tab.value}

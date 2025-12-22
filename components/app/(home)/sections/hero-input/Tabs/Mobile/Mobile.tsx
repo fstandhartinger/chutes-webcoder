@@ -37,7 +37,7 @@ export default function HeroInputTabsMobile(props: {
   return (
     <>
       <button
-        className="py-8 px-10 flex items-center rounded-10 inside-border before:border-black-alpha-4 relative lg:hidden gap-4"
+        className="py-8 px-10 flex items-center rounded-12 inside-border before:border-surface-ink-600/70 bg-surface-ink-800/80 relative lg:hidden gap-4"
         ref={ref}
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -46,7 +46,7 @@ export default function HeroInputTabsMobile(props: {
         <svg
           className={cn(
             "transition-all duration-200",
-            isOpen ? "rotate-180 text-accent-black" : "text-black-alpha-48",
+            isOpen ? "rotate-180 text-ink-100" : "text-ink-500",
           )}
           fill="none"
           height="24"
@@ -77,13 +77,13 @@ export default function HeroInputTabsMobile(props: {
             }}
           >
             <div
-              className="mx-auto w-full p-4 max-w-366 rounded-16 bg-accent-white"
+              className="mx-auto w-full p-4 max-w-366 rounded-16 bg-surface-ink-900 border border-surface-ink-700/70"
               style={{
                 boxShadow:
-                  "0 32px 40px 6px rgba(0, 0, 0, 0.02), 0 12px 32px 0 rgba(0, 0, 0, 0.02), 0 24px 32px -8px rgba(0, 0, 0, 0.02), 0 8px 16px -2px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.04)",
+                  "0 24px 40px rgba(5, 8, 15, 0.45), 0 0 0 1px rgba(31, 41, 55, 0.6)",
               }}
             >
-              <div className="py-10 px-12 text-label-small text-black-alpha-48">
+              <div className="py-10 px-12 text-label-small text-ink-400">
                 Output
               </div>
 
@@ -110,7 +110,7 @@ function MenuItems(props: {
   return (
     <div className="relative">
       <div
-        className="absolute top-0 opacity-0 left-0 bg-black-alpha-4 rounded-12 w-full pointer-events-none"
+        className="absolute top-0 opacity-0 left-0 bg-surface-ink-800/80 rounded-12 w-full pointer-events-none"
         ref={backgroundRef}
       />
 

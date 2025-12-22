@@ -219,26 +219,26 @@ export default function BuilderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background-base">
+    <div className="min-h-screen bg-surface-ink-950 text-ink-100">
       <div className="flex h-screen">
         {/* Sidebar */}
-        <div className="w-80 bg-white border-r border-border-faint p-24 flex flex-col">
-          <h2 className="text-title-small font-semibold mb-16">Building Your Website</h2>
+        <div className="w-80 bg-surface-ink-900/90 border-r border-surface-ink-700/70 p-8 flex flex-col">
+          <h2 className="text-title-small font-semibold mb-12">Building Your Website</h2>
           
           <div className="space-y-12 flex-1">
             <div>
-              <div className="text-label-small text-black-alpha-56 mb-4">Target URL</div>
-              <div className="text-body-medium text-accent-black truncate">{targetUrl}</div>
+              <div className="text-label-small text-ink-400 mb-2">Target URL</div>
+              <div className="text-body-medium text-ink-100 truncate">{targetUrl}</div>
             </div>
             
             <div>
-              <div className="text-label-small text-black-alpha-56 mb-4">Style</div>
-              <div className="text-body-medium text-accent-black capitalize">{selectedStyle}</div>
+              <div className="text-label-small text-ink-400 mb-2">Style</div>
+              <div className="text-body-medium text-ink-100 capitalize">{selectedStyle}</div>
             </div>
             
             <div>
-              <div className="text-label-small text-black-alpha-56 mb-4">Status</div>
-              <div className="text-body-medium text-heat-100">{progress}</div>
+              <div className="text-label-small text-ink-400 mb-2">Status</div>
+              <div className="text-body-medium text-moss-400">{progress}</div>
             </div>
           </div>
           
@@ -246,7 +246,7 @@ export default function BuilderPage() {
             {!isLoading && (
               <button
                 onClick={downloadCode}
-                className="w-full py-12 px-16 bg-heat-100 hover:bg-heat-200 text-white rounded-10 text-label-medium transition-all"
+                className="w-full h-11 px-4 bg-moss-400 hover:bg-moss-500 text-surface-ink-950 rounded-full text-label-medium transition-all shadow-[0_12px_28px_rgba(99,210,151,0.25)]"
               >
                 Download Code
               </button>
@@ -254,7 +254,7 @@ export default function BuilderPage() {
             
             <button
               onClick={() => router.push('/')}
-              className="w-full py-12 px-16 bg-black-alpha-4 hover:bg-black-alpha-6 rounded-10 text-label-medium transition-all"
+              className="w-full h-11 px-4 bg-surface-ink-800 hover:bg-surface-ink-700 rounded-full text-label-medium text-ink-100 transition-all border border-surface-ink-700/70"
             >
               Start Over
             </button>
@@ -262,12 +262,12 @@ export default function BuilderPage() {
         </div>
         
         {/* Preview */}
-        <div className="flex-1 bg-gray-50">
+        <div className="flex-1 bg-surface-ink-950">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <div className="w-48 h-48 border-4 border-heat-100 border-t-transparent rounded-full animate-spin mb-16 mx-auto"></div>
-                <p className="text-body-large text-black-alpha-56">{progress}</p>
+                <div className="w-14 h-14 border-2 border-moss-400 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
+                <p className="text-body-large text-ink-400">{progress}</p>
               </div>
             </div>
           ) : (

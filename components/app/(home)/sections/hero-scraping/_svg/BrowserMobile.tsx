@@ -73,7 +73,7 @@ export default function BrowserMobile(props: React.SVGProps<SVGSVGElement>) {
         </mask>
         <path
           d="M304 112V111H12V112V113H304V112Z"
-          fill="#EDEDED"
+          fill="var(--border-faint)"
           mask="url(#path-10-inside-2_2254_6088)"
         />
         <rect

@@ -15,7 +15,7 @@ export default function CenterStar({
         fill="var(--heat-100)"
         fillOpacity="1"
       />
-      <circle cx="23.5" cy="23.5" r="23" stroke="#EDEDED" strokeOpacity="1" />
+      <circle cx="23.5" cy="23.5" r="23" stroke="var(--border-faint)" strokeOpacity="1" />
     </svg>
   );
 }

@@ -10,6 +10,13 @@ import {
 } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
+  // Get the app base URL from environment or request headers
+  // This is needed because request.url may be the internal service URL (e.g., localhost:10000)
+  const getAppBaseUrl = () => {
+    return process.env.NEXT_PUBLIC_APP_URL || 
+      `https://${request.headers.get('host') || 'chutes-webcoder.onrender.com'}`;
+  };
+  
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
@@ -17,17 +24,19 @@ export async function GET(request: NextRequest) {
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
     
+    const appBaseUrl = getAppBaseUrl();
+    
     // Handle OAuth errors
     if (error) {
       console.error('[auth/callback] OAuth error:', error, errorDescription);
       return NextResponse.redirect(
-        new URL(`/?authError=${encodeURIComponent(errorDescription || error)}`, request.url)
+        new URL(`/?authError=${encodeURIComponent(errorDescription || error)}`, appBaseUrl)
       );
     }
     
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL('/?authError=Missing+code+or+state', request.url)
+        new URL('/?authError=Missing+code+or+state', appBaseUrl)
       );
     }
     
@@ -37,7 +46,7 @@ export async function GET(request: NextRequest) {
     
     if (!authStateCookie) {
       return NextResponse.redirect(
-        new URL('/?authError=Auth+state+expired', request.url)
+        new URL('/?authError=Auth+state+expired', appBaseUrl)
       );
     }
     
@@ -46,14 +55,14 @@ export async function GET(request: NextRequest) {
       authState = JSON.parse(authStateCookie.value);
     } catch (e) {
       return NextResponse.redirect(
-        new URL('/?authError=Invalid+auth+state', request.url)
+        new URL('/?authError=Invalid+auth+state', appBaseUrl)
       );
     }
     
     // Verify state matches
     if (authState.state !== state) {
       return NextResponse.redirect(
-        new URL('/?authError=State+mismatch', request.url)
+        new URL('/?authError=State+mismatch', appBaseUrl)
       );
     }
     
@@ -85,20 +94,25 @@ export async function GET(request: NextRequest) {
     });
     
     // Determine redirect URL
-    let redirectUrl = authState.returnTo || '/';
+    let redirectPath = authState.returnTo || '/';
     
     // If there was a pending request, add it as a query param so the client can resume
     if (authState.pendingRequest) {
       const pendingParam = encodeURIComponent(JSON.stringify(authState.pendingRequest));
-      const separator = redirectUrl.includes('?') ? '&' : '?';
-      redirectUrl = `${redirectUrl}${separator}pendingRequest=${pendingParam}`;
+      const separator = redirectPath.includes('?') ? '&' : '?';
+      redirectPath = `${redirectPath}${separator}pendingRequest=${pendingParam}`;
     }
     
-    return NextResponse.redirect(new URL(redirectUrl, request.url));
+    const redirectUrl = new URL(redirectPath, appBaseUrl);
+    console.log('[auth/callback] Redirecting to:', redirectUrl.toString());
+    
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error('[auth/callback] Error:', error);
+    const errorBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+      `https://${request.headers.get('host') || 'chutes-webcoder.onrender.com'}`;
     return NextResponse.redirect(
-      new URL(`/?authError=${encodeURIComponent((error as Error).message)}`, request.url)
+      new URL(`/?authError=${encodeURIComponent((error as Error).message)}`, errorBaseUrl)
     );
   }
 }

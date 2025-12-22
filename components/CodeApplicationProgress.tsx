@@ -25,7 +25,7 @@ export default function CodeApplicationProgress({ state }: CodeApplicationProgre
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3 }}
-        className="inline-block bg-[hsl(240_8%_10%)] rounded-[10px] p-3 mt-2 border border-border"
+        className="inline-block bg-surface-ink-800/90 rounded-2xl p-3 mt-2 border border-surface-ink-700/70 shadow-[0_12px_28px_rgba(5,8,15,0.4)]"
       >
         <div className="flex items-center gap-3">
           {/* Rotating loading indicator */}
@@ -50,7 +50,7 @@ export default function CodeApplicationProgress({ state }: CodeApplicationProgre
           </motion.div>
 
           {/* Simple loading text */}
-          <div className="text-sm font-medium text-white">
+          <div className="text-sm font-medium text-ink-100">
             {state.stage === 'waiting_preview' || state.stage === 'complete'
               ? 'Preparing preview…'
               : 'Applying to sandbox...'}

@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import ConsoleCapture from "./components/ConsoleCapture";
 import { AuthProvider } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/Header";
 import { Toaster } from "sonner";
-
-const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-grotesk" });
 
 export const metadata: Metadata = {
   title: "Chutes Webcoder",
@@ -28,12 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`dark ${grotesk.variable}`}>
-      <body className={`${grotesk.className} antialiased bg-surface-ink-950 text-ink-50`}>
+    <html lang="en" className="dark">
+      <body className="font-sans antialiased bg-surface-ink-950 text-ink-50">
         <AuthProvider>
           <ConsoleCapture />
           <Header />
-          <main className="pt-14">
+          <main className="pt-16">
             <Suspense fallback={<div />}>{children}</Suspense>
           </main>
           <Toaster 

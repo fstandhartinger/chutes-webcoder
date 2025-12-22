@@ -28,9 +28,7 @@ const Button = forwardRef<HTMLButtonElement, Props>(
 
     // Focus ring adapts to light/dark variants
     const focusRing =
-      variant === "primary" || variant === "destructive"
-        ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
-        : "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black";
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-ink-950";
 
     return (
       <button
@@ -60,43 +58,42 @@ const Button = forwardRef<HTMLButtonElement, Props>(
 
           // Variant + interactive nuances
           variant === "primary" && [
-            "text-accent-white",
+            "text-surface-ink-950",
             // Hover/active only when interactive
-            !isNonInteractive &&
-              "hover:bg-[color:var(--heat-90)] active:[scale:0.995]",
+            !isNonInteractive && "hover:bg-moss-500 active:[scale:0.995]",
             // Disabled: dim a bit, no hover, dim overlay bg layer if present
             "disabled:opacity-80",
             "disabled:[&_.button-background]:opacity-70",
           ],
 
           ["secondary", "tertiary", "playground"].includes(variant) && [
-            "text-accent-black",
+            "text-ink-100",
             !isNonInteractive && "active:[scale:0.99] active:bg-black-alpha-7",
           ],
 
           variant === "secondary" && [
-            "bg-black-alpha-4",
-            !isNonInteractive && "hover:bg-black-alpha-6",
+            "bg-surface-ink-800/80 border border-surface-ink-600/70",
+            !isNonInteractive && "hover:bg-surface-ink-700",
             // Disabled: lighter fill + muted text, no hover
-            "disabled:bg-black-alpha-3",
-            "disabled:text-black-alpha-48",
-            "disabled:hover:bg-black-alpha-3",
+            "disabled:bg-surface-ink-800/40",
+            "disabled:text-ink-500",
+            "disabled:hover:bg-surface-ink-800/40",
           ],
 
           variant === "tertiary" && [
-            !isNonInteractive && "hover:bg-black-alpha-4",
+            !isNonInteractive && "hover:bg-surface-ink-800/70",
             // Disabled: no hover background, text muted
-            "disabled:text-black-alpha-48",
+            "disabled:text-ink-500",
             "disabled:hover:bg-transparent",
           ],
 
           variant === "destructive" && [
-            "bg-red-600 text-accent-white",
-            !isNonInteractive && "hover:bg-red-700 active:scale-[0.98]",
+            "bg-heat-100 text-surface-ink-950",
+            !isNonInteractive && "hover:bg-heat-90 active:scale-[0.98]",
             // Disabled: keep red but softer; soften text slightly
-            "disabled:bg-red-600/70",
+            "disabled:bg-heat-100/70",
             "disabled:text-white-alpha-72",
-            "disabled:hover:bg-red-600/70",
+            "disabled:hover:bg-heat-100/70",
           ],
 
           variant === "playground" && [

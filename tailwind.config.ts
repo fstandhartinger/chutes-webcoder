@@ -75,8 +75,8 @@ const themeConfig: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "var(--font-inter)", ...defaultTheme.fontFamily.sans],
-        mono: ["var(--font-geist-mono)", ...defaultTheme.fontFamily.mono],
+        sans: ["\"Tomato Grotesk\"", "Inter", ...defaultTheme.fontFamily.sans],
+        mono: [...defaultTheme.fontFamily.mono],
         ascii: ["var(--font-roboto-mono)", ...defaultTheme.fontFamily.mono]
       },
       fontSize: {

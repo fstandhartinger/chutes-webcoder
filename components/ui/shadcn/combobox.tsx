@@ -43,11 +43,11 @@ export default function Combobox({
     <div className={cn("w-full", className)} ref={ref}>
       <button
         className={cn(
-          "relative bg-accent-white flex w-full gap-4 rounded-8 p-6 pl-10",
-          "inside-border before:border-black-alpha-8 hover:before:border-black-alpha-12 hover:bg-black-alpha-2",
-          "text-body-medium",
+          "relative bg-surface-ink-850 text-ink-100 flex w-full gap-4 rounded-10 p-6 pl-10",
+          "inside-border before:border-surface-ink-600/70 hover:before:border-surface-ink-500/80 hover:bg-surface-ink-800",
+          "text-body-medium shadow-[0_10px_24px_rgba(5,8,15,0.35)]",
           isOpen &&
-            "!bg-accent-white before:!border-heat-100 before:!border-[1.25px]",
+            "!bg-surface-ink-850 before:!border-moss-400 before:!border-[1.25px]",
         )}
         type="button"
         onClick={(e) => {
@@ -56,7 +56,7 @@ export default function Combobox({
           setBounds(ref.current?.getBoundingClientRect() ?? null);
         }}
       >
-        <div className={cn("flex-1", !selected && "text-black-alpha-40")}>
+        <div className={cn("flex-1", !selected && "text-ink-500")}>
           {selected?.label || placeholder}
         </div>
 
@@ -70,11 +70,11 @@ export default function Combobox({
         >
           <path
             d="M7 8.5L10 11.5L13 8.5"
-            stroke="#262626"
+            stroke="currentColor"
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeOpacity="0.56"
             strokeWidth="1.25"
+            className="text-ink-400"
           />
         </motion.svg>
       </button>
@@ -84,7 +84,7 @@ export default function Combobox({
           {isOpen && bounds && (
             <motion.div
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              className="fixed bg-accent-white rounded-12 z-[401]"
+              className="fixed bg-surface-ink-900 border border-surface-ink-700/70 rounded-12 z-[401]"
               exit={{ opacity: 0, y: 0, filter: "blur(4px)" }}
               initial={{ opacity: 0, y: -12, filter: "blur(4px)" }}
               style={{
@@ -92,7 +92,7 @@ export default function Combobox({
                 left: bounds.left,
                 width: bounds.width,
                 boxShadow:
-                  "0px 32px 40px 6px rgba(0, 0, 0, 0.02), 0px 12px 32px 0px rgba(0, 0, 0, 0.02), 0px 24px 32px -8px rgba(0, 0, 0, 0.02), 0px 8px 16px -2px rgba(0, 0, 0, 0.02), 0px 0px 0px 1px rgba(0, 0, 0, 0.04)",
+                  "0px 32px 60px rgba(5, 8, 15, 0.45), 0px 0px 0px 1px rgba(31, 41, 55, 0.6)",
               }}
               transition={{ duration: 0.2 }}
             >
@@ -125,7 +125,7 @@ const Items = ({
   return (
     <div className="relative">
       <div
-        className="absolute top-0 opacity-0 left-0 bg-black-alpha-4 rounded-8 w-full h-32 pointer-events-none"
+        className="absolute top-0 opacity-0 left-0 bg-surface-ink-800/80 rounded-8 w-full h-32 pointer-events-none"
         ref={backgroundRef}
       />
 

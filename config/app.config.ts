@@ -51,24 +51,27 @@ export const appConfig = {
   // AI Model Configuration
   ai: {
     // Default AI model
-    defaultModel: 'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
+    defaultModel: 'deepseek-ai/DeepSeek-V3.2-TEE',
     
     // Available models
     availableModels: [
-      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
-      'chutes/zai-org/GLM-4.6-turbo',
+      'deepseek-ai/DeepSeek-V3.2-TEE',
+      'zai-org/GLM-4.6-TEE',
+      'MiniMaxAI/MiniMax-M2',
     ],
     
     // Model display names
     modelDisplayNames: {
-      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder 480B',
-      'chutes/zai-org/GLM-4.6-turbo': 'GLM 4.6 Turbo',
+      'deepseek-ai/DeepSeek-V3.2-TEE': 'DeepSeek V3.2',
+      'zai-org/GLM-4.6-TEE': 'GLM 4.6',
+      'MiniMaxAI/MiniMax-M2': 'MiniMax M2',
     } as Record<string, string>,
     
     // Model API configuration to help downstream helpers pick the right SDK
     modelApiConfig: {
-      'chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': { provider: 'chutes' },
-      'chutes/zai-org/GLM-4.6-turbo': { provider: 'chutes' },
+      'deepseek-ai/DeepSeek-V3.2-TEE': { provider: 'chutes' },
+      'zai-org/GLM-4.6-TEE': { provider: 'chutes' },
+      'MiniMaxAI/MiniMax-M2': { provider: 'chutes' },
     },
     
     // Temperature settings for non-reasoning models

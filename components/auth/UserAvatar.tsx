@@ -45,7 +45,7 @@ export function UserAvatar() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="w-9 h-9 rounded-full bg-surface-ink-700 animate-pulse" />
+      <div className="w-10 h-10 rounded-full bg-surface-ink-700 animate-pulse" />
     );
   }
 
@@ -54,7 +54,7 @@ export function UserAvatar() {
     return (
       <button
         onClick={() => login(window.location.pathname)}
-        className="flex items-center gap-2 px-4 py-2 rounded-full bg-moss-400 text-surface-ink-950 font-medium text-sm hover:bg-moss-500 transition-colors"
+        className="flex items-center gap-2 h-10 px-4 rounded-full bg-moss-400 text-surface-ink-950 font-semibold text-sm tracking-tight hover:bg-moss-500 transition-colors"
       >
         <User className="w-4 h-4" />
         <span>Sign in</span>
@@ -85,9 +85,9 @@ export function UserAvatar() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 p-1 pr-2 rounded-full
-          bg-surface-ink-700 hover:bg-surface-ink-600
-          border border-surface-ink-600 hover:border-surface-ink-500
+          flex items-center gap-2 h-10 pl-1 pr-3 rounded-full
+          bg-surface-ink-800/90 hover:bg-surface-ink-700
+          border border-surface-ink-600/70 hover:border-surface-ink-500/80
           transition-all duration-200
           ${isOpen ? 'ring-2 ring-moss-400/30' : ''}
         `}
@@ -96,7 +96,7 @@ export function UserAvatar() {
       >
         <div
           className={`
-            w-7 h-7 rounded-full flex items-center justify-center
+            w-8 h-8 rounded-full flex items-center justify-center
             ${avatarColor} text-surface-ink-950 text-xs font-semibold
           `}
         >
@@ -119,8 +119,8 @@ export function UserAvatar() {
             transition={{ duration: 0.15 }}
             className="
               absolute right-0 mt-2 w-56
-              bg-surface-ink-800 border border-surface-ink-600
-              rounded-xl shadow-lg overflow-hidden
+              bg-surface-ink-850 border border-surface-ink-600/70
+              rounded-2xl shadow-[0_16px_40px_rgba(5,8,15,0.45)] overflow-hidden
               z-50
             "
           >
