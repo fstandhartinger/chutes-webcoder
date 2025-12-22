@@ -1345,6 +1345,10 @@ It's better to have 3 complete files than 10 incomplete files.`
         // Use custom fetch for Chutes since Vercel AI SDK calls wrong endpoint (/v1/responses instead of /v1/chat/completions)
         if (isChutes && chutesApiKey) {
           console.log('[generate-ai-code-stream] Using custom Chutes streaming implementation');
+          console.log('[generate-ai-code-stream] Chutes URL:', `${chutesBaseUrl}/chat/completions`);
+          console.log('[generate-ai-code-stream] Chutes model:', actualModel);
+          console.log('[generate-ai-code-stream] Has API key:', !!chutesApiKey, 'Key prefix:', chutesApiKey?.substring(0, 8));
+          console.log('[generate-ai-code-stream] Messages count:', streamOptions.messages.length);
           
           const response = await fetch(`${chutesBaseUrl}/chat/completions`, {
             method: 'POST',
@@ -1361,8 +1365,11 @@ It's better to have 3 complete files than 10 incomplete files.`
             }),
           });
           
+          console.log('[generate-ai-code-stream] Chutes response status:', response.status, response.statusText);
+          
           if (!response.ok) {
             const errorText = await response.text();
+            console.error('[generate-ai-code-stream] Chutes API error:', errorText);
             throw new Error(`Chutes API error: ${response.status} - ${errorText}`);
           }
           
@@ -1371,21 +1378,37 @@ It's better to have 3 complete files than 10 incomplete files.`
           const decoder = new TextDecoder();
           let buffer = '';
           let generatedCode = '';
+          let chunkCount = 0;
+          
+          console.log('[generate-ai-code-stream] Starting to read Chutes stream...');
           
           if (reader) {
             try {
               while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+                if (done) {
+                  console.log('[generate-ai-code-stream] Chutes stream done. Total chunks:', chunkCount, 'Generated code length:', generatedCode.length);
+                  break;
+                }
                 
-                buffer += decoder.decode(value, { stream: true });
+                chunkCount++;
+                const rawChunk = decoder.decode(value, { stream: true });
+                buffer += rawChunk;
+                
+                if (chunkCount <= 5) {
+                  console.log('[generate-ai-code-stream] Chutes chunk', chunkCount, ':', rawChunk.substring(0, 300));
+                }
+                
                 const lines = buffer.split('\n');
                 buffer = lines.pop() || '';
                 
                 for (const line of lines) {
                   if (line.startsWith('data: ')) {
                     const data = line.slice(6);
-                    if (data === '[DONE]') continue;
+                    if (data === '[DONE]') {
+                      console.log('[generate-ai-code-stream] Received [DONE] signal');
+                      continue;
+                    }
                     
                     try {
                       const parsed = JSON.parse(data);
@@ -1396,10 +1419,15 @@ It's better to have 3 complete files than 10 incomplete files.`
                         process.stdout.write(content);
                       }
                     } catch (e) {
-                      // Skip malformed JSON
+                      console.warn('[generate-ai-code-stream] Failed to parse Chutes data:', data.substring(0, 100));
                     }
                   }
                 }
+              }
+              
+              console.log('[generate-ai-code-stream] Sending complete. Generated code length:', generatedCode.length);
+              if (generatedCode.length === 0) {
+                console.error('[generate-ai-code-stream] WARNING: Generated code is empty!');
               }
               
               // Send completion
