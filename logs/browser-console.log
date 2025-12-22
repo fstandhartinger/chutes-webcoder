@@ -78,3 +78,17 @@
 2025-12-22T18:51:08.196Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
 2025-12-22T18:51:08.196Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
 2025-12-22T18:51:08.196Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-12-22T19:11:36.856Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-12-22T19:11:37.125Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 369ms
+2025-12-22T19:11:37.260Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-12-22T19:11:37.329Z | LOG | http://localhost:3000/ | [home] Cleared old conversation data on mount
+2025-12-22T19:11:37.329Z | LOG | http://localhost:3000/ | [createSandbox] Starting sandbox creation... fromHomeScreen= | true
+2025-12-22T19:11:37.329Z | LOG | http://localhost:3000/ | [home] No sandbox in URL, creating new sandbox automatically...
+2025-12-22T19:11:37.630Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 475ms
+2025-12-22T19:12:06.913Z | LOG | http://localhost:3000/ | [createSandbox] Response data: | {"success":true,"sandboxId":"it4v1kcck75tr21agtpk7","url":"https://5173-it4v1kcck75tr21agtpk7.e2b.app","provider":"e2b","message":"Sandbox created and Vite React app initialized"}
+2025-12-22T19:12:06.914Z | LOG | http://localhost:3000/ | [createSandbox] SUCCESS sandboxId= | it4v1kcck75tr21agtpk7 | url= | https://5173-it4v1kcck75tr21agtpk7.e2b.app
+2025-12-22T19:12:06.914Z | LOG | http://localhost:3000/ | [createSandbox] Suppressing URL push during active generation
+2025-12-22T19:12:08.915Z | LOG | http://localhost:3000/ | [createSandbox] Ensuring Vite server is running...
+2025-12-22T19:12:09.021Z | LOG | http://localhost:3000/ | [Fast Refresh] rebuilding
+2025-12-22T19:12:09.130Z | LOG | http://localhost:3000/ | [Fast Refresh] done in 209ms
+2025-12-22T19:12:21.386Z | LOG | http://localhost:3000/ | [createSandbox] Vite server started successfully

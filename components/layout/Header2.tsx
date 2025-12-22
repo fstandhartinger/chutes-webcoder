@@ -5,7 +5,7 @@ import { UserAvatar2 } from '@/components/auth/UserAvatar2';
 
 export function Header2() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-neutral-950/95 backdrop-blur-md border-b border-neutral-800">
+    <header className="fixed top-0 left-0 right-0 z-[60] h-16 bg-neutral-950/95 backdrop-blur-md border-b border-neutral-800">
       <div className="flex h-full w-full items-center justify-between px-6">
         {/* Logo */}
         <Link 

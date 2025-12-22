@@ -3035,7 +3035,7 @@ Focus on the key sections and content, making it clean and modern.`;
   return (
     <div className="relative font-sans bg-neutral-950 text-white h-[calc(100svh-var(--app-header-height))] md:h-[calc(100vh-var(--app-header-height))] flex flex-col overflow-hidden">
       {showHomeScreen && (
-        <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`fixed inset-0 pt-16 z-40 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
           <div className="absolute inset-0 overflow-hidden bg-neutral-950">
             <div className="absolute left-0 right-0 h-3/5 bottom-[-10%]">
               <ParticleWave className="absolute inset-0 opacity-30" />
