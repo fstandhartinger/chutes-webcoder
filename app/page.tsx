@@ -1817,7 +1817,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       console.log('[chat] Sending context to AI:');
       console.log('[chat] - sandboxId:', fullContext.sandboxId);
       console.log('[chat] - isEdit:', conversationContext.appliedCode.length > 0);
+      console.log('[chat] - model:', aiModel);
+      console.log('[chat] - prompt:', message.substring(0, 100));
       
+      console.log('[chat] Making fetch request to /api/generate-ai-code-stream...');
       const response = await fetch('/api/generate-ai-code-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1829,8 +1832,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         })
       });
       
+      console.log('[chat] Fetch response received:', response.status, response.statusText);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('[chat] API error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
       const reader = response.body?.getReader();
@@ -1839,18 +1846,31 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       let explanation = '';
       let aggregatedStream = '';
       
+      console.log('[chat] Starting to read stream...');
+      let chunkCount = 0;
+      
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            console.log('[chat] Stream complete. Total chunks:', chunkCount);
+            break;
+          }
           
+          chunkCount++;
           const chunk = decoder.decode(value);
+          if (chunkCount <= 3) {
+            console.log('[chat] Chunk', chunkCount, ':', chunk.substring(0, 200));
+          }
           const lines = chunk.split('\n');
           
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
+                if (chunkCount <= 3) {
+                  console.log('[chat] Parsed data type:', data.type);
+                }
                 
                 if (data.type === 'status') {
           setGenerationProgress(prev => ({ ...prev, status: data.message }));
@@ -3337,44 +3357,46 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       
       {!showHomeScreen && (
       <>
-      {/* Combined Workspace Header - Single row with all controls */}
-      <div className="bg-neutral-900 px-4 h-14 border-b border-neutral-800 flex items-center justify-between">
-        {/* Left: Logo only */}
-        <div className="flex items-center">
+      {/* Combined Workspace Header - Aligned with content below */}
+      <div className="bg-neutral-900 h-14 border-b border-neutral-800 flex">
+        {/* Left section: Logo - matches chat panel width (420px on md+) */}
+        <div className="flex items-center px-4 w-full md:w-[420px] md:border-r border-neutral-800">
           <Link href="/" className="hover:opacity-90 transition-opacity" title="Back to home">
             <ChutesLogo className="w-7 h-7" />
           </Link>
         </div>
         
-        {/* Center: Code/Preview Toggle */}
-        <div className="hidden md:flex relative bg-neutral-800 border border-neutral-700 rounded-xl p-1">
-          <div 
-            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-emerald-500/20 rounded-lg transition-all duration-200 ease-out ${
-              activeTab === 'generation' ? 'left-1' : 'left-[calc(50%+2px)]'
-            }`}
-          />
-          <button
-            onClick={() => setActiveTab('generation')}
-            className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
-              activeTab === 'generation' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
-            }`}
-          >
-            <Code2 className="w-4 h-4" />
-            <span>Code</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('preview')}
-            className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
-              activeTab === 'preview' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
-            }`}
-          >
-            <Eye className="w-4 h-4" />
-            <span>Preview</span>
-          </button>
-        </div>
-        
-        {/* Right: Model Selector, Download, Status, Avatar */}
-        <div className="flex items-center gap-2">
+        {/* Right section: All controls - above the code/preview area */}
+        <div className="hidden md:flex flex-1 items-center justify-between px-4">
+          {/* Left: Code/Preview Toggle */}
+          <div className="flex relative bg-neutral-800 border border-neutral-700 rounded-xl p-1">
+            <div 
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-emerald-500/20 rounded-lg transition-all duration-200 ease-out ${
+                activeTab === 'generation' ? 'left-1' : 'left-[calc(50%+2px)]'
+              }`}
+            />
+            <button
+              onClick={() => setActiveTab('generation')}
+              className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
+                activeTab === 'generation' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
+              }`}
+            >
+              <Code2 className="w-4 h-4" />
+              <span>Code</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
+                activeTab === 'preview' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
+              }`}
+            >
+              <Eye className="w-4 h-4" />
+              <span>Preview</span>
+            </button>
+          </div>
+          
+          {/* Right: Model Selector, Download, Status, Avatar */}
+          <div className="flex items-center gap-2">
           {/* Model Selector */}
           <div className="hidden lg:block">
             <select
@@ -3423,6 +3445,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           
           {/* User Avatar */}
           <UserAvatar2 />
+          </div>
         </div>
       </div>
 
