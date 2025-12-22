@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import {
   getSession,
@@ -8,7 +8,7 @@ import {
   SESSION_COOKIE_NAME,
 } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const session = getSession(sessionCookie.value);
     
     if (!session) {
-      // Cookie exists but session not found - clear cookie
+      // Cookie exists but session data is invalid - clear cookie
       cookieStore.delete(SESSION_COOKIE_NAME);
       return NextResponse.json({ user: null });
     }
@@ -30,7 +30,15 @@ export async function GET(request: NextRequest) {
       try {
         console.log('[auth/me] Refreshing tokens...');
         const newTokens = await refreshAccessToken(session.tokens.refreshToken);
-        updateSessionTokens(sessionCookie.value, newTokens);
+        // Update session with new tokens and set updated cookie
+        const newCookieValue = updateSessionTokens(sessionCookie.value, newTokens);
+        cookieStore.set(SESSION_COOKIE_NAME, newCookieValue, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          path: '/',
+        });
         session.tokens = newTokens;
       } catch (e) {
         console.error('[auth/me] Token refresh failed:', e);

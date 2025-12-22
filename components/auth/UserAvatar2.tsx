@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, User, ChevronDown } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 
 export function UserAvatar2() {
   const { user, isAuthenticated, isLoading, login, logout } = useAuth();
@@ -37,7 +37,7 @@ export function UserAvatar2() {
   };
 
   if (isLoading) {
-    return <div className="w-9 h-9 rounded-full bg-neutral-800 animate-pulse" />;
+    return <div className="w-10 h-10 rounded-full bg-neutral-800 animate-pulse" />;
   }
 
   if (!isAuthenticated) {
@@ -68,23 +68,19 @@ export function UserAvatar2() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 h-10 pl-1 pr-3 rounded-xl
-          bg-neutral-800 hover:bg-neutral-700
-          border border-neutral-700 hover:border-neutral-600
+          w-10 h-10 rounded-full
+          border-2 border-neutral-600 hover:border-neutral-500
           transition-all duration-200
-          ${isOpen ? 'ring-2 ring-emerald-500/40' : ''}
+          ${isOpen ? 'ring-2 ring-emerald-500/40 ring-offset-2 ring-offset-neutral-950' : ''}
         `}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center ${avatarColor} text-white text-sm font-bold`}
+          className={`w-full h-full rounded-full flex items-center justify-center ${avatarColor} text-white text-sm font-bold`}
         >
           {initials}
         </div>
-        <ChevronDown
-          className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        />
       </button>
 
       <AnimatePresence>
@@ -98,7 +94,7 @@ export function UserAvatar2() {
           >
             <div className="px-4 py-3 border-b border-neutral-800">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${avatarColor} text-white text-sm font-bold`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${avatarColor} text-white text-sm font-bold`}>
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">

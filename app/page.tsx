@@ -3300,11 +3300,15 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       {!showHomeScreen && (
       <>
       <div className="bg-neutral-900 px-4 h-14 border-b border-neutral-800 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white hover:opacity-90 cursor-pointer transition-all shadow-lg shadow-emerald-500/20">
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            {/* Chutes Logo */}
+            <svg className="w-7 h-7" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="#10b981"/>
+              <path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#chutes_logo_grad)"/>
+              <defs><linearGradient id="chutes_logo_grad" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="#10b981"/><stop offset="1" stopColor="#059669"/></linearGradient></defs>
             </svg>
+            <span className="text-base font-bold text-white">Chutes <span className="text-emerald-400">Webcoder</span></span>
           </Link>
         </div>
         <div className="flex items-center gap-3">
@@ -3335,23 +3339,6 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
               })}
             </select>
           </div>
-          <button
-            onClick={() => createSandbox()}
-            title="Create new sandbox"
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-          <button
-            onClick={reapplyLastGeneration}
-            title="Re-apply last generation"
-            disabled={!conversationContext.lastGeneratedCode || !sandboxData}
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Clipboard className="w-5 h-5" />
-          </button>
           <button
             onClick={downloadZip}
             disabled={!sandboxData}
@@ -3704,37 +3691,37 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
         <div className={`${isMobilePortraitLayout ? (mobileTab !== 'chat' ? 'flex' : 'hidden') : 'flex'} flex-1 flex-col overflow-hidden min-h-0 bg-[#171717] bg-opacity-95 backdrop-blur-lg`}>
           <div className="px-4 sm:px-6 py-4 bg-[#171717] bg-opacity-90 backdrop-blur border-b border-[#262626]/70 flex justify-between items-center">
             <div className="flex items-center gap-4 text-[#a3a3a3]">
-              <div className="hidden md:flex relative bg-[#262626] bg-opacity-80 backdrop-blur-xl border border-[#262626]/50 rounded-2xl p-1 shadow-[0_8px_32px_rgba(7,10,16,0.3)]">
+              <div className="hidden md:flex relative bg-neutral-800 border border-neutral-700 rounded-xl p-1">
                 {/* Animated background indicator */}
                 <div 
-                  className={`absolute top-1 bottom-1 w-[calc(50%-2px)] bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 backdrop-blur-sm rounded-xl transition-all duration-300 ease-out ${
+                  className={`absolute top-1 bottom-1 w-[calc(50%-2px)] bg-emerald-500/20 rounded-lg transition-all duration-200 ease-out ${
                     activeTab === 'generation' ? 'left-1' : 'left-[calc(50%+1px)]'
                   }`}
                 />
                 <button
                   onClick={() => setActiveTab('generation')}
-                  className={`relative z-10 flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 text-base font-medium ${
+                  className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
                     activeTab === 'generation'
-                      ? 'text-emerald-500 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
-                      : 'text-[#a3a3a3] hover:text-[#d4d4d4] hover:bg-[#404040]'
+                      ? 'text-emerald-400'
+                      : 'text-neutral-400 hover:text-neutral-200'
                   }`}
                   title="Code Editor"
                 >
-                  <svg className="w-4 h-4" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '16px', height: '16px' }}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
                   <span>Code</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('preview')}
-                  className={`relative z-10 flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 text-base font-medium ${
+                  className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
                     activeTab === 'preview'
-                      ? 'text-emerald-500 shadow-[0_4px_16px_rgba(99,210,151,0.2)]'
-                      : 'text-[#a3a3a3] hover:text-[#d4d4d4] hover:bg-[#404040]'
+                      ? 'text-emerald-400'
+                      : 'text-neutral-400 hover:text-neutral-200'
                   }`}
                   title="Live Preview"
                 >
-                  <svg className="w-4 h-4" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '16px', height: '16px' }}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>

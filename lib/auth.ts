@@ -212,29 +212,71 @@ export async function revokeToken(token: string): Promise<void> {
   });
 }
 
-// In-memory session store (for development - use Redis/DB in production)
-const sessionStore = new Map<string, AuthSession>();
+// Cookie-based session storage (serverless-compatible)
+// Sessions are stored directly in the cookie as encrypted/encoded JSON
 
+const SESSION_SECRET = process.env.SESSION_SECRET || 'chutes-webcoder-default-secret-change-in-production';
+
+// Simple encryption for session data
+function encryptSession(session: AuthSession): string {
+  const data = JSON.stringify(session);
+  // Create a simple signature using HMAC
+  const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+  hmac.update(data);
+  const signature = hmac.digest('base64url');
+  // Encode the data as base64
+  const encodedData = Buffer.from(data).toString('base64url');
+  return `${encodedData}.${signature}`;
+}
+
+function decryptSession(cookieValue: string): AuthSession | null {
+  try {
+    const parts = cookieValue.split('.');
+    if (parts.length !== 2) return null;
+    
+    const [encodedData, signature] = parts;
+    const data = Buffer.from(encodedData, 'base64url').toString('utf-8');
+    
+    // Verify signature
+    const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+    hmac.update(data);
+    const expectedSignature = hmac.digest('base64url');
+    
+    if (signature !== expectedSignature) {
+      console.error('[auth] Session signature verification failed');
+      return null;
+    }
+    
+    return JSON.parse(data) as AuthSession;
+  } catch (e) {
+    console.error('[auth] Failed to decrypt session:', e);
+    return null;
+  }
+}
+
+// Create a session cookie value from session data
 export function createSession(session: AuthSession): string {
-  const sessionId = crypto.randomBytes(32).toString('hex');
-  sessionStore.set(sessionId, session);
-  return sessionId;
+  return encryptSession(session);
 }
 
-export function getSession(sessionId: string): AuthSession | null {
-  return sessionStore.get(sessionId) || null;
+// Get session from cookie value
+export function getSession(cookieValue: string): AuthSession | null {
+  return decryptSession(cookieValue);
 }
 
-export function deleteSession(sessionId: string): void {
-  sessionStore.delete(sessionId);
+// Delete session - just returns empty string (actual deletion is done by removing cookie)
+export function deleteSession(_cookieValue: string): void {
+  // No-op - cookie deletion is handled by the route
 }
 
-export function updateSessionTokens(sessionId: string, tokens: AuthTokens): void {
-  const session = sessionStore.get(sessionId);
+// Update session tokens and return new cookie value
+export function updateSessionTokens(cookieValue: string, tokens: AuthTokens): string {
+  const session = getSession(cookieValue);
   if (session) {
     session.tokens = tokens;
-    sessionStore.set(sessionId, session);
+    return encryptSession(session);
   }
+  return cookieValue;
 }
 
 // Check if tokens need refresh (5 min buffer)
