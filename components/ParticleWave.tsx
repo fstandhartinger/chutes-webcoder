@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 type ParticleWaveProps = {
   className?: string;
@@ -41,7 +41,7 @@ export default function ParticleWave({ className, maxDevicePixelRatio = 1.5 }: P
   const paletteRef = useRef<string[]>([]);
   const jitterRef = useRef<Float32Array | null>(null);
 
-  const pickPalette = () => {
+  const pickPalette = useCallback(() => {
     // Uniform opacity/brightness across X: generate HSL with fixed lightness
     // and saturation. Vary only the hue from deep purple → magenta.
     const steps = 40;
@@ -60,9 +60,9 @@ export default function ParticleWave({ className, maxDevicePixelRatio = 1.5 }: P
     const jit = new Float32Array(steps);
     for (let i = 0; i < steps; i++) jit[i] = Math.random();
     jitterRef.current = jit;
-  };
+  }, []);
 
-  const createGrid = (ctx: CanvasRenderingContext2D) => {
+  const createGrid = useCallback((ctx: CanvasRenderingContext2D) => {
     const canvas = ctx.canvas;
 
     const cssWidth = canvas.clientWidth;
@@ -116,7 +116,7 @@ export default function ParticleWave({ className, maxDevicePixelRatio = 1.5 }: P
       baseRadius,
       amplitude: Math.max(8, cssHeight * 0.08),
     };
-  };
+  }, [maxDevicePixelRatio]);
 
   const drawFrame = (ctx: CanvasRenderingContext2D, t: number) => {
     const grid = gridRef.current;
@@ -290,7 +290,7 @@ export default function ParticleWave({ className, maxDevicePixelRatio = 1.5 }: P
       mql.removeEventListener?.('change', handleMQ);
       observerRef.current?.disconnect();
     };
-  }, [maxDevicePixelRatio]);
+  }, [createGrid, pickPalette]);
 
   return (
     <div className={[
@@ -301,5 +301,4 @@ export default function ParticleWave({ className, maxDevicePixelRatio = 1.5 }: P
     </div>
   );
 }
-
 

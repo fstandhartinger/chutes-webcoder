@@ -1148,9 +1148,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     <FiChevronRight style={{ width: '16px', height: '16px' }} className="text-ink-400" />
                   )}
                   {expandedFolders.has('app') ? (
-                    <BsFolder2Open style={{ width: '16px', height: '16px' }} className="text-blue-500" />
+                    <BsFolder2Open style={{ width: '16px', height: '16px' }} className="text-moss-400" />
                   ) : (
-                    <BsFolderFill style={{ width: '16px', height: '16px' }} className="text-blue-500" />
+                    <BsFolderFill style={{ width: '16px', height: '16px' }} className="text-moss-400" />
                   )}
                   <span className="font-medium text-ink-200">app</span>
                 </div>
@@ -1210,9 +1210,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                 return (
                                   <div 
                                     key={fullPath} 
-                                    className={`flex items-center gap-2 py-0.5 px-3 rounded cursor-pointer transition-all ${
+                                    className={`flex items-center gap-2 py-0.5 px-3 rounded border border-transparent cursor-pointer transition-all ${
                                       isSelected 
-                                        ? 'bg-blue-500 text-white' 
+                                        ? 'bg-moss-500/20 text-ink-50 border-moss-500/40' 
                                         : 'text-ink-300 hover:bg-surface-ink-850'
                                     }`}
                                     onClick={() => handleFileClick(fullPath)}
@@ -1222,7 +1222,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                       {fileInfo.name}
                                       {fileInfo.edited && (
                                         <span className={`text-[10px] px-1 rounded ${
-                                          isSelected ? 'bg-blue-400' : 'bg-orange-500 text-white'
+                                          isSelected ? 'bg-moss-400 text-surface-ink-950' : 'bg-heat-100 text-surface-ink-950'
                                         }`}>✓</span>
                                       )}
                                     </span>
@@ -1345,7 +1345,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         <div className="mb-8 relative">
                           <div className="w-24 h-24 mx-auto">
                             <div className="absolute inset-0 border-4 border-surface-ink-800/70 rounded-full"></div>
-                            <div className="absolute inset-0 border-4 border-green-500 rounded-full animate-spin border-t-transparent"></div>
+                            <div className="absolute inset-0 border-4 border-moss-500 rounded-full animate-spin border-t-transparent"></div>
                           </div>
                         </div>
                         <h3 className="text-xl font-medium text-white mb-2">AI is analyzing your request</h3>
@@ -1356,7 +1356,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     <div className="bg-surface-ink-900 border border-surface-ink-700/70 rounded-lg overflow-hidden">
                       <div className="px-4 py-2 bg-surface-ink-850 text-ink-100 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-heat-100 border-t-transparent rounded-full animate-spin" />
                           <span className="font-mono text-sm">Streaming code...</span>
                         </div>
                       </div>
@@ -1394,9 +1394,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                             <div className="w-5 h-5 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
                             <span className="font-mono text-sm">{generationProgress.currentFile.path}</span>
                             <span className={`px-2 py-0.5 text-xs rounded ${
-                              generationProgress.currentFile.type === 'css' ? 'bg-blue-600 text-white' :
-                              generationProgress.currentFile.type === 'javascript' ? 'bg-yellow-600 text-white' :
-                              generationProgress.currentFile.type === 'json' ? 'bg-green-600 text-white' :
+                              generationProgress.currentFile.type === 'css' ? 'bg-heat-100 text-surface-ink-950' :
+                              generationProgress.currentFile.type === 'javascript' ? 'bg-moss-500 text-surface-ink-950' :
+                              generationProgress.currentFile.type === 'json' ? 'bg-surface-ink-700 text-ink-100' :
                               'bg-surface-ink-800 text-ink-300'
                             }`}>
                               {generationProgress.currentFile.type === 'javascript' ? 'JSX' : generationProgress.currentFile.type.toUpperCase()}
@@ -1438,13 +1438,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       <div key={idx} className="bg-surface-ink-900 border border-surface-ink-700/70 rounded-lg overflow-hidden">
                         <div className="px-4 py-2 bg-surface-ink-850 text-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="text-green-500">✓</span>
+                            <span className="text-moss-400">✓</span>
                             <span className="font-mono text-sm">{file.path}</span>
                           </div>
                           <span className={`px-2 py-0.5 text-xs rounded ${
-                            file.type === 'css' ? 'bg-blue-600 text-white' :
-                            file.type === 'javascript' ? 'bg-yellow-600 text-white' :
-                            file.type === 'json' ? 'bg-green-600 text-white' :
+                            file.type === 'css' ? 'bg-heat-100 text-surface-ink-950' :
+                            file.type === 'javascript' ? 'bg-moss-500 text-surface-ink-950' :
+                            file.type === 'json' ? 'bg-surface-ink-700 text-ink-100' :
                             'bg-surface-ink-800 text-ink-300'
                           }`}>
                             {file.type === 'javascript' ? 'JSX' : file.type.toUpperCase()}
@@ -2263,9 +2263,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     if (ext === 'jsx' || ext === 'js') {
       return <SiJavascript size={FILE_ICON_SIZE} className="shrink-0 text-yellow-500" aria-hidden="true" />;
     } else if (ext === 'tsx' || ext === 'ts') {
-      return <SiReact size={FILE_ICON_SIZE} className="shrink-0 text-blue-500" aria-hidden="true" />;
+      return <SiReact size={FILE_ICON_SIZE} className="shrink-0 text-moss-400" aria-hidden="true" />;
     } else if (ext === 'css') {
-      return <SiCss3 size={FILE_ICON_SIZE} className="shrink-0 text-blue-500" aria-hidden="true" />;
+      return <SiCss3 size={FILE_ICON_SIZE} className="shrink-0 text-heat-100" aria-hidden="true" />;
     } else if (ext === 'json') {
       return <SiJson size={FILE_ICON_SIZE} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
     } else {
@@ -3110,17 +3110,16 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-      <div className="font-sans bg-surface-ink-950 text-ink-50 h-screen flex flex-col">
+      <div className="font-sans bg-surface-ink-950 text-ink-50 h-[calc(100svh-var(--app-header-height))] md:h-[calc(100vh-var(--app-header-height))] min-h-[calc(100svh-var(--app-header-height))] flex flex-col overflow-hidden">
       {/* Dark Mode Header */}
-      <div className="bg-surface-ink-900 py-3 px-4 border-b border-neutral-800 flex items-center justify-between">
+      <div className="bg-surface-ink-900/95 px-6 h-16 border-b border-neutral-800 flex items-center justify-between">
         {/* Chutes Logo */}
         <Link
           href="/"
           className="flex items-center gap-3 text-ink-100 hover:text-moss-400 transition-colors"
         >
           <svg
-            width="32"
-            height="32"
+            className="h-10 w-10"
             viewBox="0 0 62 41"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -3134,7 +3133,7 @@ Focus on the key sections and content, making it clean and modern.`;
               </linearGradient>
             </defs>
           </svg>
-          <span className="text-sm font-semibold tracking-wide">Chutes Webcoder</span>
+          <span className="text-base font-semibold tracking-tight">Chutes Webcoder</span>
         </Link>
 
         {/* Right side controls */}
@@ -3144,10 +3143,10 @@ Focus on the key sections and content, making it clean and modern.`;
             {/* Subtle glow effect on hover */}
             <div className="absolute -inset-0.5 bg-gradient-to-r from-moss-500/0 via-moss-400/20 to-moss-500/0 rounded-full opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300" />
             
-            <div className="relative flex items-center gap-2 px-4 py-1.5 bg-surface-ink-850 backdrop-blur-sm border border-neutral-700 rounded-full hover:border-moss-500/30 transition-all duration-200">
+            <div className="relative flex min-w-[240px] items-center gap-3 px-5 h-10 bg-surface-ink-850 backdrop-blur-sm border border-neutral-700 rounded-full hover:border-moss-500/30 transition-all duration-200">
               {/* AI Icon */}
               <svg 
-                className="w-3.5 h-3.5 text-moss-400" 
+                className="w-4 h-4 text-moss-400" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke="currentColor" 
@@ -3160,7 +3159,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <circle cx="16" cy="14" r="1.5" fill="currentColor" />
               </svg>
               
-              <span className="text-xs text-ink-400 font-medium">Model</span>
+              <span className="text-[11px] text-ink-400 font-medium uppercase tracking-[0.18em]">Model</span>
               
               <select
                 value={aiModel}
@@ -3174,11 +3173,11 @@ Focus on the key sections and content, making it clean and modern.`;
                   }
                   router.push(`/generation?${params.toString()}`);
                 }}
-                className="appearance-none bg-transparent text-sm text-ink-100 font-medium cursor-pointer focus:outline-none pr-5"
+                className="min-w-[160px] appearance-none bg-transparent text-sm text-ink-100 font-medium cursor-pointer focus:outline-none pr-8"
                 style={{ 
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2363d297' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 0 center',
+                  backgroundPosition: 'right 4px center',
                   backgroundSize: '16px'
                 }}
               >
@@ -3198,30 +3197,30 @@ Focus on the key sections and content, making it clean and modern.`;
           {/* Action Buttons - Rounded to match pill design */}
           <button
             onClick={() => createSandbox()}
-            className="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30"
+            className="h-10 w-10 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30"
             title="Create new sandbox"
           >
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
           <button
             onClick={reapplyLastGeneration}
-            className="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-ink-300 disabled:hover:border-neutral-700"
+            className="h-10 w-10 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-ink-300 disabled:hover:border-neutral-700"
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
           >
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
           <button
             onClick={downloadZip}
             disabled={!sandboxData}
-            className="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-ink-300 disabled:hover:border-neutral-700"
+            className="h-10 w-10 flex items-center justify-center rounded-full transition-all duration-200 bg-surface-ink-850 border border-neutral-700 text-ink-300 hover:text-moss-400 hover:border-moss-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-ink-300 disabled:hover:border-neutral-700"
             title="Download your Vite app as ZIP"
           >
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </button>
@@ -3351,9 +3350,9 @@ Focus on the key sections and content, making it clean and modern.`;
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
                         <span className={`text-xs ${
-                          msg.metadata?.commandType === 'input' ? 'text-blue-400' :
+                          msg.metadata?.commandType === 'input' ? 'text-moss-400' :
                           msg.metadata?.commandType === 'error' ? 'text-red-400' :
-                          msg.metadata?.commandType === 'success' ? 'text-green-400' :
+                          msg.metadata?.commandType === 'success' ? 'text-moss-400' :
                           'text-ink-400'
                         }`}>
                           {msg.metadata?.commandType === 'input' ? '$' : '>'}
@@ -3402,9 +3401,9 @@ Focus on the key sections and content, making it clean and modern.`;
                             >
                               <span
                                 className={`inline-block rounded-full ${
-                                  fileType === 'css' ? 'bg-blue-400' :
-                                  fileType === 'javascript' ? 'bg-yellow-400' :
-                                  fileType === 'json' ? 'bg-green-400' :
+                                  fileType === 'css' ? 'bg-heat-100' :
+                                  fileType === 'javascript' ? 'bg-moss-500' :
+                                  fileType === 'json' ? 'bg-surface-ink-600' :
                                   'bg-surface-ink-600'
                                 }`}
                                 style={{ width: '4px', height: '4px' }}
@@ -3430,9 +3429,9 @@ Focus on the key sections and content, making it clean and modern.`;
                           >
                             <span
                               className={`inline-block rounded-full ${
-                                file.type === 'css' ? 'bg-blue-400' :
-                                file.type === 'javascript' ? 'bg-yellow-400' :
-                                file.type === 'json' ? 'bg-green-400' :
+                                file.type === 'css' ? 'bg-heat-100' :
+                                file.type === 'javascript' ? 'bg-moss-500' :
+                                file.type === 'json' ? 'bg-surface-ink-600' :
                                 'bg-surface-ink-600'
                               }`}
                               style={{ width: '4px', height: '4px' }}
@@ -3545,13 +3544,13 @@ Focus on the key sections and content, making it clean and modern.`;
 
         {/* Right Panel - Preview or Generation (2/3 of remaining width) */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-3 pt-4 pb-4 bg-surface-ink-850 bg-opacity-90 border-b border-neutral-800/70 flex justify-between items-center">
+          <div className="px-5 py-4 min-h-[64px] bg-surface-ink-850 bg-opacity-90 border-b border-neutral-800/70 flex justify-between items-center">
             <div className="flex items-center gap-2">
               {/* Toggle-style Code/View switcher */}
-              <div className="inline-flex bg-surface-ink-800 border border-neutral-800/70 rounded-lg p-1 opacity-90">
+              <div className="inline-flex bg-surface-ink-800 border border-neutral-800/70 rounded-full p-1 opacity-90">
                 <button
                   onClick={() => setActiveTab('generation')}
-                  className={`px-4 py-2 rounded-lg transition-all text-sm font-medium ${
+                  className={`h-10 px-5 rounded-full transition-all text-sm font-medium ${
                     activeTab === 'generation' 
                       ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]' 
                       : 'bg-transparent text-ink-300 hover:text-ink-100'
@@ -3566,7 +3565,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 </button>
                 <button
                   onClick={() => setActiveTab('preview')}
-                  className={`px-4 py-2 rounded-lg transition-all text-sm font-medium ${
+                  className={`h-10 px-5 rounded-full transition-all text-sm font-medium ${
                     activeTab === 'preview' 
                       ? 'bg-moss-500 text-surface-ink-950 shadow-[0_8px_24px_rgba(99,210,151,0.25)]' 
                       : 'bg-transparent text-ink-300 hover:text-ink-100'
@@ -3607,8 +3606,8 @@ Focus on the key sections and content, making it clean and modern.`;
               )}
 
               {sandboxData && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-800/70 bg-surface-ink-800 bg-opacity-80 text-xs font-medium text-ink-200">
-                  <div className="w-1 h-1 bg-moss-500 rounded-full" />
+                <div className="inline-flex items-center gap-2 h-9 px-4 rounded-full border border-neutral-800/70 bg-surface-ink-800 bg-opacity-80 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-200">
+                  <div className="w-2 h-2 bg-moss-500 rounded-full shadow-[0_0_10px_rgba(99,210,151,0.4)]" />
                   Sandbox active
                 </div>
               )}
@@ -3619,9 +3618,9 @@ Focus on the key sections and content, making it clean and modern.`;
                   target="_blank" 
                   rel="noopener noreferrer"
                   title="Open in new tab"
-                  className="p-2 rounded-lg border border-neutral-800/70 text-ink-200 hover:text-ink-50 hover:bg-surface-ink-750 transition-all"
+                  className="h-10 w-10 flex items-center justify-center rounded-full border border-neutral-800/70 text-ink-200 hover:text-ink-50 hover:bg-surface-ink-750 transition-all"
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '24px', height: '24px' }}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                 </a>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import NextImage from 'next/image';
 import { appConfig } from '@/config/app.config';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -121,6 +122,9 @@ function AISandboxPageContent() {
   const sandboxRecreationCountRef = useRef<number>(0);
   const isMountedRef = useRef<boolean>(true);
   const streamAbortRef = useRef<AbortController | null>(null);
+  const createSandboxRef = useRef<((fromHomeScreen?: boolean, suppressUrlPush?: boolean) => Promise<any>) | null>(null);
+  const sendChatMessageRef = useRef<((message: string, isEdit?: boolean) => Promise<void>) | null>(null);
+  const captureUrlScreenshotRef = useRef<((url: string) => Promise<void>) | null>(null);
 
   useEffect(() => {
     return () => {
@@ -263,8 +267,13 @@ function AISandboxPageContent() {
     prevIsGeneratingRef.current = generationProgress.isGenerating;
   }, [generationProgress.isGenerating, isMobilePortraitLayout]);
 
+  const initialSetupRef = useRef(false);
+
   // Clear old conversation data on component mount and create/restore sandbox
   useEffect(() => {
+    if (initialSetupRef.current) return;
+    initialSetupRef.current = true;
+
     const initializePage = async () => {
       // Clear old conversation
       try {
@@ -288,21 +297,21 @@ function AISandboxPageContent() {
         try {
           // For now, just create a new sandbox - you could enhance this to actually restore
           // the specific sandbox if your backend supports it
-          await createSandbox(true, true);
+          await createSandboxRef.current?.(true, true);
         } catch (error) {
           console.error('[ai-sandbox] Failed to restore sandbox:', error);
           // Create new sandbox on error
-          await createSandbox(true, true);
+          await createSandboxRef.current?.(true, true);
         }
       } else {
         // Automatically create new sandbox
         console.log('[home] No sandbox in URL, creating new sandbox automatically...');
-        await createSandbox(true, true);
+        await createSandboxRef.current?.(true, true);
       }
     };
     
     initializePage();
-  }, []); // Run only on mount
+  }, [searchParams]);
   
   // Handle pending request after successful auth
   // This is a ref to track if we've processed the pending request
@@ -321,7 +330,7 @@ function AISandboxPageContent() {
         
         // Small delay to ensure state is updated
         setTimeout(() => {
-          void sendChatMessage(pendingRequest.payload.prompt);
+          void sendChatMessageRef.current?.(pendingRequest.payload.prompt);
           clearPendingRequest();
           toast.success(`Welcome back, ${user?.username}! Continuing with your request...`);
         }, 300);
@@ -355,9 +364,36 @@ function AISandboxPageContent() {
         screenshotUrl = 'https://' + screenshotUrl;
       }
       // Avoid triggering if unmounted during state changes
-      if (isMountedRef.current) captureUrlScreenshot(screenshotUrl);
+      if (isMountedRef.current) captureUrlScreenshotRef.current?.(screenshotUrl);
     }
-  }, [showHomeScreen, homeUrlInput]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showHomeScreen, homeUrlInput, urlScreenshot, isCapturingScreenshot]);
+
+  const updateStatus = useCallback((text: string, active: boolean) => {
+    setStatus({ text, active });
+  }, []);
+
+  const checkSandboxStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/sandbox-status');
+      const data = await response.json();
+      
+      if (data.active && data.healthy && data.sandboxData) {
+        setSandboxData(data.sandboxData);
+        updateStatus('Sandbox active', true);
+      } else if (data.active && !data.healthy) {
+        // Sandbox exists but not responding
+        updateStatus('Sandbox not responding', false);
+        // Optionally try to create a new one
+      } else {
+        setSandboxData(null);
+        updateStatus('No sandbox', false);
+      }
+    } catch (error) {
+      console.error('Failed to check sandbox status:', error);
+      setSandboxData(null);
+      updateStatus('Error', false);
+    }
+  }, [updateStatus]);
 
 
   useEffect(() => {
@@ -371,7 +407,7 @@ function AISandboxPageContent() {
     
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [checkSandboxStatus]);
 
   useEffect(() => {
     if (chatMessagesRef.current) {
@@ -452,11 +488,6 @@ function AISandboxPageContent() {
       setMobileTab('preview');
     }
   }, [iframeLoaded, isMobilePortraitLayout]);
-
-
-  const updateStatus = (text: string, active: boolean) => {
-    setStatus({ text, active });
-  };
 
   const log = (message: string, type: 'info' | 'error' | 'command' = 'info') => {
     _setResponseArea(prev => [...prev, `[${type}] ${message}`]);
@@ -568,29 +599,6 @@ function AISandboxPageContent() {
     }
   };
 
-  const checkSandboxStatus = async () => {
-    try {
-      const response = await fetch('/api/sandbox-status');
-      const data = await response.json();
-      
-      if (data.active && data.healthy && data.sandboxData) {
-        setSandboxData(data.sandboxData);
-        updateStatus('Sandbox active', true);
-      } else if (data.active && !data.healthy) {
-        // Sandbox exists but not responding
-        updateStatus('Sandbox not responding', false);
-        // Optionally try to create a new one
-      } else {
-        setSandboxData(null);
-        updateStatus('No sandbox', false);
-      }
-    } catch (error) {
-      console.error('Failed to check sandbox status:', error);
-      setSandboxData(null);
-      updateStatus('Error', false);
-    }
-  };
-
   const createSandbox = async (fromHomeScreen = false, suppressUrlPush = false) => {
     if (creatingSandboxRef.current) {
       console.log('[createSandbox] Reusing in-flight creation promise');
@@ -683,6 +691,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
     return creatingSandboxRef.current;
   };
+  createSandboxRef.current = createSandbox;
 
   const displayStructure = (structure: any) => {
     if (typeof structure === 'object') {
@@ -1153,9 +1162,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     <FiChevronRight className="w-5 h-5 text-muted-foreground" />
                   )}
                   {expandedFolders.has('app') ? (
-                    <BsFolder2Open className="w-5 h-5 text-blue-500" />
+                    <BsFolder2Open className="w-5 h-5 text-moss-400" />
                   ) : (
-                    <BsFolderFill className="w-5 h-5 text-blue-500" />
+                    <BsFolderFill className="w-5 h-5 text-moss-400" />
                   )}
                   <span className="font-medium text-foreground">app</span>
                 </div>
@@ -1228,7 +1237,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                       {fileInfo.name}
                                       {fileInfo.edited && (
                                         <span className={`text-[10px] px-1.5 rounded ${
-                                        isSelected ? 'bg-blue-500' : 'bg-primary text-primary-foreground'
+                                        isSelected ? 'bg-moss-400 text-surface-ink-950' : 'bg-heat-100 text-surface-ink-950'
                                         }`}>✓</span>
                                       )}
                                     </span>
@@ -1253,23 +1262,23 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             {generationProgress.isGenerating && (generationProgress.isThinking || generationProgress.thinkingText) && (
               <div className="px-6 pb-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="text-purple-600 font-medium flex items-center gap-2">
+                  <div className="text-moss-400 font-medium flex items-center gap-2">
                     {generationProgress.isThinking ? (
                       <>
-                        <div className="w-1 h-1 bg-purple-600 rounded-full animate-pulse" />
+                        <div className="w-1 h-1 bg-moss-400 rounded-full animate-pulse" />
                         AI is thinking...
                       </>
                     ) : (
                       <>
-                        <span className="text-purple-600">✓</span>
+                        <span className="text-moss-400">✓</span>
                         Thought for {generationProgress.thinkingDuration || 0} seconds
                       </>
                     )}
                   </div>
                 </div>
                 {generationProgress.thinkingText && (
-                  <div className="bg-purple-950 border border-purple-700 rounded-2xl p-4 max-h-48 overflow-y-auto scrollbar-hide">
-                    <pre className="text-xs font-mono text-purple-300 whitespace-pre-wrap">
+                  <div className="bg-surface-ink-900 border border-surface-ink-700/70 rounded-2xl p-4 max-h-48 overflow-y-auto scrollbar-hide">
+                    <pre className="text-xs font-mono text-ink-300 whitespace-pre-wrap">
                       {generationProgress.thinkingText}
                     </pre>
                   </div>
@@ -1557,11 +1566,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       // Show screenshot when we have one and (loading OR generating OR no sandbox yet)
       if (urlScreenshot && (loading || generationProgress.isGenerating || !sandboxData?.url || isPreparingDesign)) {
         return (
-          <div className="absolute inset-0 w-full h-full bg-surface-ink-900">
-            <img 
-              src={urlScreenshot} 
-              alt="Website preview" 
-              className="w-full h-full object-contain"
+          <div className="absolute inset-0 w-full h-full bg-surface-ink-900 relative">
+            <NextImage
+              src={urlScreenshot}
+              alt="Website preview"
+              fill
+              className="object-contain"
+              unoptimized
+              sizes="100vw"
             />
             {(generationProgress.isGenerating || isPreparingDesign) && (
               <div className="absolute inset-0 bg-surface-ink-950 bg-opacity-60 backdrop-blur-sm flex items-center justify-center">
@@ -2122,6 +2134,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       setActiveTab('preview');
     }
   };
+  sendChatMessageRef.current = sendChatMessage;
 
 
   const downloadZip = async () => {
@@ -2216,9 +2229,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     if (ext === 'jsx' || ext === 'js') {
       return <SiJavascript size={FILE_ICON_SIZE} className="shrink-0 text-yellow-500" aria-hidden="true" />;
     } else if (ext === 'tsx' || ext === 'ts') {
-      return <SiReact size={FILE_ICON_SIZE} className="shrink-0 text-blue-500" aria-hidden="true" />;
+      return <SiReact size={FILE_ICON_SIZE} className="shrink-0 text-moss-400" aria-hidden="true" />;
     } else if (ext === 'css') {
-      return <SiCss3 size={FILE_ICON_SIZE} className="shrink-0 text-blue-500" aria-hidden="true" />;
+      return <SiCss3 size={FILE_ICON_SIZE} className="shrink-0 text-heat-100" aria-hidden="true" />;
     } else if (ext === 'json') {
       return <SiJson size={FILE_ICON_SIZE} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
     } else {
@@ -2594,6 +2607,7 @@ Focus on the key sections and content, making it clean and modern while preservi
       if (isMountedRef.current) setIsCapturingScreenshot(false);
     }
   };
+  captureUrlScreenshotRef.current = captureUrlScreenshot;
 
   const handleHomeScreenSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -3013,11 +3027,11 @@ Focus on the key sections and content, making it clean and modern.`;
   };
 
   return (
-    <div className="relative font-sans bg-surface-ink-950 text-ink-50 h-[100svh] md:h-screen flex flex-col overflow-hidden">
+    <div className="relative font-sans bg-surface-ink-950 text-ink-50 h-[calc(100svh-var(--app-header-height))] md:h-[calc(100vh-var(--app-header-height))] min-h-[calc(100svh-var(--app-header-height))] flex flex-col overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-surface-ink-950 via-surface-ink-850 to-surface-ink-800" />
       <div className="pointer-events-none absolute -z-10 -left-24 -top-16 h-80 w-80 rounded-full bg-moss-500/15 blur-3xl" />
       <div className="pointer-events-none absolute -z-10 right-[-22%] top-6 h-96 w-96 rounded-full bg-heat-90/12 blur-[88px]" />
-      <div className="pointer-events-none absolute -z-10 left-1/2 bottom-[-18%] h-80 w-[32rem] -translate-x-1/2 rotate-6 bg-gradient-to-r from-moss-400/10 via-blue-500/10 to-heat-90/14 blur-[96px]" />
+      <div className="pointer-events-none absolute -z-10 left-1/2 bottom-[-18%] h-80 w-[32rem] -translate-x-1/2 rotate-6 bg-gradient-to-r from-moss-400/10 via-moss-500/10 to-heat-90/14 blur-[96px]" />
       {showHomeScreen && (
         <div className={`fixed inset-0 z-50 transition-opacity duration-500 ${homeScreenFading ? 'opacity-0' : 'opacity-100'}`}>
           <div className="absolute inset-0 overflow-hidden bg-surface-ink-900 bg-opacity-95">
@@ -3079,7 +3093,7 @@ Focus on the key sections and content, making it clean and modern.`;
                         setShowStyleSelector(hasValidUrl || hasPrompt);
                       }}
                       placeholder="Describe your app idea... (e.g., Build a snake game with neon effects)"
-                      className="min-h-[160px] w-full resize-none rounded-2xl bg-transparent px-6 py-6 pb-16 text-lg text-ink-50 placeholder-ink-400 focus-visible:outline-none transition-all duration-300"
+                      className="min-h-[180px] w-full resize-none rounded-2xl bg-transparent px-7 py-6 pb-16 text-lg text-ink-50 placeholder-ink-400 focus-visible:outline-none transition-all duration-300"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -3090,13 +3104,13 @@ Focus on the key sections and content, making it clean and modern.`;
                       }}
                     />
                     {/* Bottom action bar */}
-                    <div className="absolute bottom-4 left-6 right-4 flex items-center justify-between">
+                    <div className="absolute bottom-5 left-7 right-6 flex items-center justify-between">
                       <span className="text-sm text-ink-500 select-none">
                         Enter to send
                       </span>
                       <button
                         type="submit"
-                        className="flex items-center gap-2 h-11 px-6 rounded-full bg-moss-400 text-surface-ink-950 font-semibold hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                        className="flex items-center gap-2 h-12 px-7 rounded-full bg-moss-400 text-surface-ink-950 font-semibold hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                         title="Generate"
                       >
                         <span>Generate</span>
@@ -3144,7 +3158,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-heat-100/20 via-heat-100/10 to-heat-100/20 rounded-xl blur opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500" />
                   <div className="relative flex items-center bg-surface-ink-900/90 backdrop-blur-xl rounded-2xl border border-surface-ink-600/50 shadow-[0_16px_48px_rgba(0,0,0,0.4)]">
-                    <ExternalLink className="absolute left-5 w-5 h-5 text-ink-500" />
+                    <ExternalLink className="absolute left-6 w-6 h-6 text-ink-400" />
                     <input
                       type="text"
                       value={homeUrlInput}
@@ -3160,12 +3174,11 @@ Focus on the key sections and content, making it clean and modern.`;
                         }, 100);
                       }}
                       placeholder="https://example.com"
-                      className="w-full bg-transparent pl-14 pr-28 py-4 text-base text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
-                      style={{ minHeight: '56px' }}
+                      className="w-full bg-transparent pl-16 pr-32 py-4 min-h-[60px] text-base text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
                     />
                     <button
                       type="submit"
-                      className="absolute right-4 flex items-center gap-2 h-10 px-5 rounded-full bg-surface-ink-700 text-sm font-semibold text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                      className="absolute right-4 flex items-center gap-2 h-12 px-6 rounded-full bg-surface-ink-700 text-sm font-semibold text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                       title="Clone Website"
                     >
                       <span>Clone</span>
@@ -3186,8 +3199,8 @@ Focus on the key sections and content, making it clean and modern.`;
                     {/* Subtle glow effect on hover */}
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-moss-500/0 via-moss-400/20 to-moss-500/0 rounded-full opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300" />
                     
-                    <div className="relative flex items-center gap-2 px-4 py-2 bg-surface-ink-850 bg-opacity-80 backdrop-blur-sm border border-ink-700 border-opacity-50 rounded-full hover:border-moss-500/30 transition-all duration-200">
-                      <span className="text-xs text-ink-400 font-medium">Model</span>
+                    <div className="relative flex min-w-[260px] items-center gap-3 px-5 h-11 bg-surface-ink-850 bg-opacity-80 backdrop-blur-sm border border-ink-700 border-opacity-50 rounded-full hover:border-moss-500/30 transition-all duration-200">
+                      <span className="text-[11px] text-ink-400 font-medium uppercase tracking-[0.18em]">Model</span>
                       
                       <select
                         value={aiModel}
@@ -3201,12 +3214,12 @@ Focus on the key sections and content, making it clean and modern.`;
                           }
                           router.push(`/?${params.toString()}`);
                         }}
-                        className="appearance-none bg-transparent text-sm text-ink-100 font-medium cursor-pointer focus:outline-none pr-8"
+                        className="min-w-[160px] appearance-none bg-transparent text-sm text-ink-100 font-medium cursor-pointer focus:outline-none pr-10"
                         style={{ 
                           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2363d297' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
                           backgroundRepeat: 'no-repeat',
-                          backgroundPosition: 'right 4px center',
-                          backgroundSize: '14px'
+                          backgroundPosition: 'right 6px center',
+                          backgroundSize: '16px'
                         }}
                       >
                         {appConfig.ai.availableModels.map(model => {
@@ -3298,10 +3311,10 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       
       {!showHomeScreen && (
       <>
-      <div className="bg-surface-ink-850 bg-opacity-90 backdrop-blur-lg px-8 py-8 border-b border-neutral-800/80 flex items-center justify-between">
+      <div className="bg-surface-ink-850 bg-opacity-90 backdrop-blur-lg px-8 py-4 min-h-[72px] border-b border-neutral-800/80 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="h-16 w-16 text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
-            <svg className="h-16 w-16" width="64" height="64" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
+          <Link href="/" className="h-12 w-12 text-ink-100 hover:text-moss-400 cursor-pointer transition-colors">
+            <svg className="h-12 w-12" width="48" height="48" viewBox="0 0 62 41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M38.01 39.6943C37.1263 41.1364 35.2525 41.4057 34.0442 40.2642L28.6738 35.1904C27.4656 34.049 27.4843 32.0273 28.7133 30.9115L34.1258 25.9979C40.1431 20.5352 48.069 18.406 55.6129 20.2255L59.6853 21.2078C59.8306 21.2428 59.9654 21.3165 60.0771 21.422C60.6663 21.9787 60.3364 23.0194 59.552 23.078L59.465 23.0845C52.0153 23.6409 45.1812 27.9913 40.9759 34.8542L38.01 39.6943Z" fill="currentColor"></path><path d="M15.296 36.5912C14.1726 37.8368 12.2763 37.7221 11.2913 36.349L0.547139 21.3709C-0.432786 20.0048 -0.0547272 18.0273 1.34794 17.1822L22.7709 4.27482C29.6029 0.158495 37.7319 -0.277291 44.8086 3.0934L60.3492 10.4956C60.5897 10.6101 60.7997 10.7872 60.9599 11.0106C61.8149 12.2025 60.8991 13.9056 59.5058 13.7148L50.2478 12.4467C42.8554 11.4342 35.4143 14.2848 30.1165 20.1587L15.296 36.5912Z" fill="url(#paint0_linear_10244_130)"></path><defs><linearGradient id="paint0_linear_10244_130" x1="33.8526" y1="0.173618" x2="25.5505" y2="41.4493" gradientUnits="userSpaceOnUse"><stop stopColor="currentColor"></stop><stop offset="1" stopColor="currentColor"></stop></linearGradient></defs></svg>
           </Link>
         </div>
         <div className="flex items-center gap-4">
@@ -3319,8 +3332,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="px-3 py-1 text-sm bg-surface-ink-800 text-ink-100 border border-neutral-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
-              style={{ height: '32px', minHeight: '32px', maxHeight: '32px', boxSizing: 'border-box' }}
+              className="min-w-[200px] h-10 px-4 text-sm bg-surface-ink-800 text-ink-100 border border-neutral-800 rounded-full focus:outline-none focus:ring-2 focus:ring-moss-500/70 focus:border-moss-500 hover:border-moss-400 transition-colors opacity-90 font-medium"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3337,10 +3349,9 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             variant="code"
             onClick={() => createSandbox()}
             title="Create new sandbox"
-            className="cursor-pointer"
-            style={{ width: '32px', height: '32px' }}
+            className="cursor-pointer h-10 w-10 p-0"
           >
-            <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '24px', height: '24px' }}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Button>
@@ -3349,26 +3360,24 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             onClick={reapplyLastGeneration}
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
-            className="cursor-pointer"
-            style={{ width: '32px', height: '32px' }}
+            className="cursor-pointer h-10 w-10 p-0"
           >
-            <Clipboard className="w-6 h-6" style={{ width: '24px', height: '24px' }} />
+            <Clipboard className="w-5 h-5" />
           </Button>
           <Button
             variant="code"
             onClick={downloadZip}
             disabled={!sandboxData}
             title="Download your Vite app as ZIP"
-            className="cursor-pointer"
-            style={{ width: '32px', height: '32px' }}
+            className="cursor-pointer h-10 w-10 p-0"
           >
-            <svg className="w-6 h-6" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '24px', height: '24px' }}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </Button>
-          <div className="inline-flex items-center gap-2 bg-surface-ink-700 text-ink-100 px-3 py-1 rounded-xl text-sm font-medium shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-neutral-800/70 h-8">
+          <div className="inline-flex items-center gap-2 bg-surface-ink-700 text-ink-100 px-4 h-9 rounded-full text-xs font-semibold uppercase tracking-[0.18em] shadow-[inset_0_-2px_0_rgba(12,18,28,0.6),0_1px_8px_rgba(7,10,16,0.6)] border border-neutral-800/70">
             <span id="status-text">{status.text}</span>
-            <div className={`w-4 h-4 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
+            <div className={`w-2.5 h-2.5 rounded-full ${status.active ? 'bg-moss-500' : 'bg-surface-ink-600'}`} />
           </div>
         </div>
       </div>
@@ -3416,12 +3425,16 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   
                   return (
                     <div key={idx} className="flex items-center gap-2 text-sm">
-                      <img 
-                        src={favicon} 
+                      <NextImage
+                        src={favicon}
                         alt={siteName}
+                        width={20}
+                        height={20}
                         className="w-5 h-5 rounded"
+                        unoptimized
                         onError={(e) => {
-                          e.currentTarget.src = `https://www.google.com/s2/favicons?domain=${new URL(sourceURL).hostname}&sz=32`;
+                          const img = e.currentTarget as HTMLImageElement;
+                          img.src = `https://www.google.com/s2/favicons?domain=${new URL(sourceURL).hostname}&sz=32`;
                         }}
                       />
                 <a 

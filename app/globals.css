@@ -50,6 +50,7 @@
 :root {
   --container-width: 1280px;
   --container-width-padding: 1280px;
+  --app-header-height: 72px;
 
   /* Heat colors */
   --heat-4: #fa5d190a;

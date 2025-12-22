@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function LivePreviewFrame({
   sessionId,
@@ -29,9 +29,14 @@ export default function LivePreviewFrame({
     y: number;
   }>({ x: 980, y: 54 });
   const [isIdle, setIsIdle] = useState(false);
+  const isIdleRef = useRef(false);
+
+  useEffect(() => {
+    isIdleRef.current = isIdle;
+  }, [isIdle]);
 
   // Function to start the random idle movement sequence
-  const scheduleNextIdleMove = () => {
+  const scheduleNextIdleMove = useCallback(() => {
     if (idleMoveTimerRef.current) {
       clearTimeout(idleMoveTimerRef.current);
     }
@@ -49,7 +54,7 @@ export default function LivePreviewFrame({
         scheduleNextIdleMove(); // Schedule the next one
       }
     }, randomDelay);
-  };
+  }, [isIdle]);
 
   // Effect to handle starting/stopping idle movement sequence
   useEffect(() => {
@@ -66,7 +71,7 @@ export default function LivePreviewFrame({
         clearTimeout(idleMoveTimerRef.current);
       }
     };
-  }, [isIdle]);
+  }, [isIdle, scheduleNextIdleMove]);
 
   // Main Animation effect (runs continuously)
   useEffect(() => {
@@ -122,9 +127,9 @@ export default function LivePreviewFrame({
         clearTimeout(idleStartTimerRef.current);
       }
     };
-  }, [targetPosition]); // Re-run main loop logic if targetPosition changes
+  }, [targetPosition, isIdle]); // Re-run main loop logic if targetPosition changes
 
-  const cleanupConnection = () => {
+  const cleanupConnection = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
@@ -142,15 +147,15 @@ export default function LivePreviewFrame({
     setTargetPosition({ x: 0, y: 0 });
     setIsIdle(false);
     initialPositionSetRef.current = false;
-  };
+  }, []);
 
   useEffect(() => {
     if (onScrapeComplete) {
       cleanupConnection();
     }
-  }, [onScrapeComplete]);
+  }, [onScrapeComplete, cleanupConnection]);
 
-  const connect = () => {
+  const connect = useCallback(() => {
     setIsConnecting(true);
     // Clear any existing connection
     if (wsRef.current) {
@@ -199,7 +204,7 @@ export default function LivePreviewFrame({
               clearTimeout(idleStartTimerRef.current);
               idleStartTimerRef.current = null;
             }
-            if (isIdle) {
+            if (isIdleRef.current) {
               setIsIdle(false);
               // idleMoveTimerRef is cleared by the isIdle effect cleanup
             }
@@ -270,7 +275,7 @@ export default function LivePreviewFrame({
       console.error("Failed to create connection");
       setIsConnecting(false);
     }
-  };
+  }, [sessionId]);
 
   useEffect(() => {
     // Only connect if we have a sessionId
@@ -289,7 +294,7 @@ export default function LivePreviewFrame({
         cleanupConnection();
       };
     }
-  }, [sessionId]); // Re-run effect when sessionId changes
+  }, [connect, cleanupConnection, sessionId]); // Re-run effect when sessionId changes
 
   return (
     <div
@@ -323,9 +328,11 @@ export default function LivePreviewFrame({
       ) : null}
 
       {/* Preview image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imgRef}
         id="live-frame"
+        alt=""
         onLoad={() => {
           setImageLoaded(true);
           if (onScrapeComplete) onScrapeComplete();

@@ -45,7 +45,7 @@ export function UserAvatar() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="w-10 h-10 rounded-full bg-surface-ink-700 animate-pulse" />
+      <div className="w-11 h-11 rounded-full bg-surface-ink-700 animate-pulse" />
     );
   }
 
@@ -54,9 +54,9 @@ export function UserAvatar() {
     return (
       <button
         onClick={() => login(window.location.pathname)}
-        className="flex items-center gap-2 h-10 px-4 rounded-full bg-moss-400 text-surface-ink-950 font-semibold text-sm tracking-tight hover:bg-moss-500 transition-colors"
+        className="flex items-center gap-2 h-11 px-5 rounded-full bg-moss-400 text-surface-ink-950 font-semibold text-sm tracking-tight hover:bg-moss-500 transition-colors"
       >
-        <User className="w-4 h-4" />
+        <User className="w-5 h-5" />
         <span>Sign in</span>
       </button>
     );
@@ -73,10 +73,10 @@ export function UserAvatar() {
     : 0;
   const avatarColors = [
     'bg-moss-400',
-    'bg-purple-500',
-    'bg-blue-500',
+    'bg-moss-500',
     'bg-heat-100',
-    'bg-pink-500',
+    'bg-surface-ink-600',
+    'bg-surface-ink-700',
   ];
   const avatarColor = avatarColors[colorIndex];
 
@@ -85,7 +85,7 @@ export function UserAvatar() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 h-10 pl-1 pr-3 rounded-full
+          flex items-center gap-2 h-11 pl-1.5 pr-3.5 rounded-full
           bg-surface-ink-800/90 hover:bg-surface-ink-700
           border border-surface-ink-600/70 hover:border-surface-ink-500/80
           transition-all duration-200
@@ -96,8 +96,8 @@ export function UserAvatar() {
       >
         <div
           className={`
-            w-8 h-8 rounded-full flex items-center justify-center
-            ${avatarColor} text-surface-ink-950 text-xs font-semibold
+            w-9 h-9 rounded-full flex items-center justify-center
+            ${avatarColor} text-surface-ink-950 text-sm font-semibold
           `}
         >
           {initials}
@@ -129,7 +129,7 @@ export function UserAvatar() {
               <div className="flex items-center gap-3">
                 <div
                   className={`
-                    w-10 h-10 rounded-full flex items-center justify-center
+                    w-11 h-11 rounded-full flex items-center justify-center
                     ${avatarColor} text-surface-ink-950 text-sm font-semibold
                   `}
                 >

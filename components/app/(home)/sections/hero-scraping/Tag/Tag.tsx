@@ -16,6 +16,7 @@ export default function HeroScrapingTag({
   useEffect(() => {
     let progress = 0;
     let increaseProgress = -10;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     const animate = () => {
       increaseProgress = (increaseProgress + 1) % 5;
@@ -34,11 +35,14 @@ export default function HeroScrapingTag({
       setValue(encryptText(label, progress, { randomizeChance: 0 }));
 
       const interval = 40 + progress * 20;
-      setTimeout(animate, interval);
+      timeoutId = setTimeout(animate, interval);
     };
 
     animate();
-  }, []);
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [label]);
 
   return (
     <motion.div

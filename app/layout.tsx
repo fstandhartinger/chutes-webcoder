@@ -30,7 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <ConsoleCapture />
           <Header />
-          <main className="pt-16">
+          <main className="pt-[var(--app-header-height)]">
             <Suspense fallback={<div />}>{children}</Suspense>
           </main>
           <Toaster 

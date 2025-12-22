@@ -53,14 +53,10 @@ export default function HeroInput({
   };
 
   return (
-    <div className={`max-w-552 mx-auto w-full relative z-[11] rounded-20 ${className}`}>
-      <div
-        className=""
-      />
-
+    <div className={`max-w-552 mx-auto w-full relative z-[11] rounded-2xl border border-surface-ink-700/70 bg-surface-ink-900/70 shadow-[0_18px_40px_rgba(5,8,15,0.45)] ${className}`}>
       <div className="relative">
-        <label className="p-16 flex gap-8 items-start w-full relative border-b border-black-alpha-5">
-          <div className="mt-2 flex-shrink-0">
+        <label className="px-5 py-4 flex gap-4 items-start w-full relative border-b border-surface-ink-700/60">
+          <div className="mt-1 flex-shrink-0 text-ink-400">
             {showSearchFeatures ? (
               isURLInput ? (
                 // Link icon for URLs
@@ -70,7 +66,7 @@ export default function HeroInput({
                   viewBox="0 0 20 20" 
                   fill="none" 
                   xmlns="http://www.w3.org/2000/svg"
-                  className="opacity-40"
+                  className="w-5 h-5"
                 >
                   <path d="M9 11L11 9M11 9L15 5M11 9L5 15M15 5L13 3M15 5L17 7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M7 13L5 15L3 13" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
@@ -84,7 +80,7 @@ export default function HeroInput({
                   viewBox="0 0 20 20" 
                   fill="none" 
                   xmlns="http://www.w3.org/2000/svg"
-                  className="opacity-40"
+                  className="w-5 h-5"
                 >
                   <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M12.5 12.5L16.5 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -98,7 +94,7 @@ export default function HeroInput({
                 viewBox="0 0 20 20" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
-                className="opacity-40"
+                className="w-5 h-5"
               >
                 <circle cx="10" cy="10" r="9.5" stroke="currentColor"/>
                 <path d="M10 2C10 5.5 10 14.5 10 18" stroke="currentColor" strokeLinecap="round"/>
@@ -111,7 +107,7 @@ export default function HeroInput({
 
           <textarea
             ref={textareaRef}
-            className="w-full bg-transparent text-body-input text-accent-black placeholder:text-black-alpha-48 resize-none outline-none min-h-[24px] leading-6"
+            className="w-full bg-transparent text-base text-ink-100 placeholder:text-ink-500 resize-none outline-none min-h-[32px] leading-relaxed"
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -131,23 +127,22 @@ export default function HeroInput({
           />
         </label>
 
-        <div className="p-10 flex justify-end items-center relative">
+        <div className="px-5 py-4 flex justify-end items-center relative">
           <button
             onClick={onSubmit}
             disabled={!value.trim()}
             className={`
-              button relative rounded-10 px-8 py-8 text-label-medium font-medium
-              flex items-center justify-center gap-6
+              relative rounded-full h-11 px-6 text-sm font-semibold
+              flex items-center justify-center gap-3 transition-all duration-200
               ${value.trim() 
-                ? 'button-primary text-accent-white active:scale-[0.995]' 
-                : 'bg-black-alpha-4 text-black-alpha-24 cursor-not-allowed'
+                ? 'bg-moss-400 text-surface-ink-950 hover:bg-moss-500' 
+                : 'bg-surface-ink-800 text-ink-500 cursor-not-allowed'
               }
             `}
           >
-            {value.trim() && <div className="button-background absolute inset-0 rounded-10 pointer-events-none" />}
             {value.trim() ? (
               <>
-                <span className="px-6 relative">Re-imagine Site</span>
+                <span className="relative">Re-imagine Site</span>
                 <svg
                   width="16"
                   height="16"
@@ -155,7 +150,6 @@ export default function HeroInput({
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4 shrink-0"
-                  style={{ width: '16px', height: '16px' }}
                   aria-hidden="true"
                 >
                   <path d="M3 8H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -163,7 +157,7 @@ export default function HeroInput({
                 </svg>
               </>
             ) : (
-              <div className="w-60 flex items-center justify-center">
+              <div className="w-40 flex items-center justify-center">
                 <svg
                   width="16"
                   height="16"
@@ -171,7 +165,6 @@ export default function HeroInput({
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4 shrink-0"
-                  style={{ width: '16px', height: '16px' }}
                   aria-hidden="true"
                 >
                   <path d="M3 8H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -185,18 +178,18 @@ export default function HeroInput({
 
       {/* Animated tiles for search results */}
       {showTiles && (
-        <div className="mt-16 grid grid-cols-3 gap-12 px-16">
+        <div className="mt-6 grid grid-cols-3 gap-4 px-5 pb-5">
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="tile-animation relative aspect-[4/3] bg-black-alpha-4 rounded-12 overflow-hidden"
+              className="tile-animation relative aspect-[4/3] bg-surface-ink-800/70 rounded-xl overflow-hidden"
               style={{
                 animationDelay: `${index * 100}ms`
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-black-alpha-4 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-br from-surface-ink-700/60 to-transparent" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 bg-black-alpha-8 rounded-full animate-pulse" />
+                <div className="w-8 h-8 bg-surface-ink-700/80 rounded-full animate-pulse" />
               </div>
             </div>
           ))}
