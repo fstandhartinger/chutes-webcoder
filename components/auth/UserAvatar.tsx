@@ -45,7 +45,7 @@ export function UserAvatar() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="w-11 h-11 rounded-full bg-surface-ink-700 animate-pulse" />
+      <div className="w-8 h-8 rounded-full bg-[#21262d] animate-pulse" />
     );
   }
 
@@ -54,9 +54,9 @@ export function UserAvatar() {
     return (
       <button
         onClick={() => login(window.location.pathname)}
-        className="flex items-center gap-2 h-11 px-5 rounded-full bg-moss-400 text-surface-ink-950 font-semibold text-sm tracking-tight hover:bg-moss-500 transition-colors"
+        className="flex items-center gap-2 h-8 px-4 rounded-md bg-moss-400 text-[#0d1117] font-medium text-sm hover:bg-moss-500 transition-colors"
       >
-        <User className="w-5 h-5" />
+        <User className="w-4 h-4" />
         <span>Sign in</span>
       </button>
     );
@@ -75,8 +75,8 @@ export function UserAvatar() {
     'bg-moss-400',
     'bg-moss-500',
     'bg-heat-100',
-    'bg-surface-ink-600',
-    'bg-surface-ink-700',
+    'bg-[#388bfd]',
+    'bg-[#a371f7]',
   ];
   const avatarColor = avatarColors[colorIndex];
 
@@ -85,10 +85,10 @@ export function UserAvatar() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 h-11 pl-1.5 pr-3.5 rounded-full
-          bg-surface-ink-800/90 hover:bg-surface-ink-700
-          border border-surface-ink-600/70 hover:border-surface-ink-500/80
-          transition-all duration-200
+          flex items-center gap-1.5 h-8 pl-0.5 pr-2 rounded-full
+          bg-[#21262d] hover:bg-[#30363d]
+          border border-[#30363d] hover:border-[#484f58]
+          transition-all duration-150
           ${isOpen ? 'ring-2 ring-moss-400/30' : ''}
         `}
         aria-expanded={isOpen}
@@ -96,15 +96,15 @@ export function UserAvatar() {
       >
         <div
           className={`
-            w-9 h-9 rounded-full flex items-center justify-center
-            ${avatarColor} text-surface-ink-950 text-sm font-semibold
+            w-7 h-7 rounded-full flex items-center justify-center
+            ${avatarColor} text-[#0d1117] text-xs font-semibold
           `}
         >
           {initials}
         </div>
         <ChevronDown
           className={`
-            w-4 h-4 text-ink-400 transition-transform duration-200
+            w-3.5 h-3.5 text-[#8b949e] transition-transform duration-150
             ${isOpen ? 'rotate-180' : ''}
           `}
         />
@@ -113,33 +113,33 @@ export function UserAvatar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.1 }}
             className="
-              absolute right-0 mt-2 w-56
-              bg-surface-ink-850 border border-surface-ink-600/70
-              rounded-2xl shadow-[0_16px_40px_rgba(5,8,15,0.45)] overflow-hidden
+              absolute right-0 mt-1.5 w-52
+              bg-[#161b22] border border-[#30363d]
+              rounded-lg shadow-lg overflow-hidden
               z-50
             "
           >
             {/* User info section */}
-            <div className="px-4 py-3 border-b border-surface-ink-700">
-              <div className="flex items-center gap-3">
+            <div className="px-3 py-2.5 border-b border-[#21262d]">
+              <div className="flex items-center gap-2.5">
                 <div
                   className={`
-                    w-11 h-11 rounded-full flex items-center justify-center
-                    ${avatarColor} text-surface-ink-950 text-sm font-semibold
+                    w-8 h-8 rounded-full flex items-center justify-center
+                    ${avatarColor} text-[#0d1117] text-xs font-semibold
                   `}
                 >
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-ink-100 truncate">
+                  <p className="text-sm font-medium text-[#e6edf3] truncate">
                     {user?.username}
                   </p>
-                  <p className="text-xs text-ink-400">
+                  <p className="text-xs text-[#8b949e]">
                     Chutes Account
                   </p>
                 </div>
@@ -147,15 +147,15 @@ export function UserAvatar() {
             </div>
 
             {/* Menu items */}
-            <div className="py-2">
+            <div className="py-1">
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
                 className="
-                  w-full px-4 py-2.5 flex items-center gap-3
-                  text-sm text-ink-200 hover:text-ink-50
-                  hover:bg-surface-ink-700
-                  transition-colors duration-150
+                  w-full px-3 py-2 flex items-center gap-2.5
+                  text-sm text-[#c9d1d9] hover:text-[#e6edf3]
+                  hover:bg-[#21262d]
+                  transition-colors duration-100
                   disabled:opacity-50
                 "
               >

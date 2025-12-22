@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="font-sans antialiased bg-surface-ink-950 text-ink-50">
+      <body className="font-sans antialiased bg-[#0d1117] text-[#e6edf3]">
         <AuthProvider>
           <ConsoleCapture />
           <Header />
@@ -36,7 +36,7 @@ export default function RootLayout({
           <Toaster 
             position="bottom-right"
             toastOptions={{
-              className: 'bg-surface-ink-800 text-ink-100 border border-surface-ink-600',
+              className: 'bg-[#161b22] text-[#e6edf3] border border-[#30363d]',
             }}
           />
         </AuthProvider>
