@@ -66,6 +66,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
 - `config/app.config.ts` lists all sandbox and model settings. The default model is `chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8`, but the upstream presets (GPT‑5, Claude Sonnet 4, Gemini 2.0 Flash, Kimi K2) remain available.
 - Switching between Sandy, Vercel, and E2B sandboxes is a matter of flipping `SANDBOX_PROVIDER` and providing the appropriate credentials.
+- Sandy preview URLs are derived from `SANDY_HOST_SUFFIX` (and `NEXT_PUBLIC_SANDBOX_HOST_SUFFIX` for the UI).
 - GitHub integration and the new “Builder” experience follow the upstream conventions—set `GITHUB_TOKEN`, `NEXTAUTH_SECRET`, etc., if you adopt those workflows.
 
 ## Scripts
