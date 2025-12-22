@@ -3112,7 +3112,7 @@ Focus on the key sections and content, making it clean and modern.`;
                     </span>
                     <button
                       type="submit"
-                      className="flex items-center gap-2 h-12 px-6 rounded-xl bg-emerald-500 text-white font-semibold text-base hover:bg-emerald-600 active:scale-[0.98] transition-all shadow-lg shadow-emerald-500/25"
+                      className="flex items-center gap-2 h-48 px-24 rounded-xl bg-emerald-500 text-white font-semibold text-base hover:bg-emerald-600 active:scale-[0.98] transition-all shadow-lg shadow-emerald-500/25"
                       title="Generate"
                     >
                       <span>Generate</span>
@@ -3153,7 +3153,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
               >
                 <div className="relative flex items-center bg-neutral-900 rounded-2xl border border-neutral-700 shadow-lg">
-                  <ExternalLink className="absolute left-5 w-5 h-5 text-neutral-500" />
+                  <ExternalLink className="absolute left-20 w-20 h-20 text-neutral-500" />
                   <input
                     type="text"
                     value={homeUrlInput}
@@ -3169,11 +3169,11 @@ Focus on the key sections and content, making it clean and modern.`;
                       }, 100);
                     }}
                     placeholder="https://example.com"
-                    className="w-full h-14 bg-transparent pl-14 pr-28 text-base text-white placeholder-neutral-500 focus-visible:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-2xl"
+                    className="w-full h-56 bg-transparent pl-56 pr-112 text-base text-white placeholder-neutral-500 focus-visible:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-2xl"
                   />
                   <button
                     type="submit"
-                    className="absolute right-3 flex items-center h-10 px-5 rounded-xl bg-neutral-800 text-sm font-semibold text-white hover:bg-neutral-700 active:scale-[0.98] transition-all border border-neutral-700"
+                    className="absolute right-12 flex items-center h-40 px-20 rounded-xl bg-neutral-800 text-sm font-semibold text-white hover:bg-neutral-700 active:scale-[0.98] transition-all border border-neutral-700"
                     title="Clone Website"
                   >
                     Clone
@@ -3189,7 +3189,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 transition={{ duration: 0.4, ease: 'easeOut', delay: 0.6 }}
               >
                 <div className="flex items-center justify-center">
-                  <div className="flex items-center gap-3 px-5 h-12 bg-neutral-900 border border-neutral-700 rounded-xl shadow-lg">
+                  <div className="flex items-center gap-12 px-20 h-48 bg-neutral-900 border border-neutral-700 rounded-xl shadow-lg">
                     <span className="text-sm text-neutral-400 font-medium">Model:</span>
                     <select
                       value={aiModel}
@@ -3299,15 +3299,15 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       
       {!showHomeScreen && (
       <>
-      <div className="bg-neutral-900 px-4 h-14 border-b border-neutral-800 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white hover:opacity-90 cursor-pointer transition-all shadow-lg shadow-emerald-500/20">
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+      <div className="bg-neutral-900 px-16 h-56 border-b border-neutral-800 flex items-center justify-between">
+        <div className="flex items-center gap-16">
+          <Link href="/" className="flex items-center justify-center w-40 h-40 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white hover:opacity-90 cursor-pointer transition-all shadow-lg shadow-emerald-500/20">
+            <svg className="w-20 h-20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           </Link>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-12">
           <div className="hidden md:block">
             <label className="sr-only">AI Model</label>
             <select
@@ -3322,7 +3322,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 }
                 router.push(`/?${params.toString()}`);
               }}
-              className="h-10 px-4 text-sm bg-neutral-800 text-white border border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 hover:border-neutral-600 transition-colors font-medium"
+              className="h-40 px-16 text-sm bg-neutral-800 text-white border border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 hover:border-neutral-600 transition-colors font-medium"
             >
               {appConfig.ai.availableModels.map(model => {
                 const displayName = (appConfig.ai.modelDisplayNames as Record<string, string>)[model] || model;
@@ -3338,9 +3338,9 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           <button
             onClick={() => createSandbox()}
             title="Create new sandbox"
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors"
+            className="flex items-center justify-center w-40 h-40 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-20 h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
@@ -3348,23 +3348,23 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             onClick={reapplyLastGeneration}
             title="Re-apply last generation"
             disabled={!conversationContext.lastGeneratedCode || !sandboxData}
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center w-40 h-40 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Clipboard className="w-5 h-5" />
+            <Clipboard className="w-20 h-20" />
           </button>
           <button
             onClick={downloadZip}
             disabled={!sandboxData}
             title="Download your Vite app as ZIP"
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center w-40 h-40 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-20 h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
           </button>
-          <div className="flex items-center gap-2 bg-neutral-800 text-white px-4 h-10 rounded-xl text-sm font-medium border border-neutral-700">
+          <div className="flex items-center gap-8 bg-neutral-800 text-white px-16 h-40 rounded-xl text-sm font-medium border border-neutral-700">
             <span id="status-text">{status.text}</span>
-            <div className={`w-2.5 h-2.5 rounded-full ${status.active ? 'bg-emerald-400' : 'bg-neutral-600'}`} />
+            <div className={`w-10 h-10 rounded-full ${status.active ? 'bg-emerald-400' : 'bg-neutral-600'}`} />
           </div>
         </div>
       </div>
