@@ -3096,7 +3096,7 @@ Focus on the key sections and content, making it clean and modern.`;
                       </span>
                       <button
                         type="submit"
-                        className="flex h-10 items-center gap-2 px-5 rounded-xl bg-moss-400 text-surface-ink-950 font-medium hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                        className="flex h-12 items-center gap-2 px-6 rounded-xl bg-moss-400 text-surface-ink-950 font-medium hover:bg-moss-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                         title="Generate"
                       >
                         <span>Generate</span>
@@ -3122,13 +3122,13 @@ Focus on the key sections and content, making it clean and modern.`;
               </motion.form>
 
               <motion.div 
-                className="relative my-10 flex items-center justify-center"
+                className="relative my-16 flex items-center justify-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
               >
                 <div className="h-px w-full max-w-4xl bg-gradient-to-r from-transparent via-surface-ink-600/50 to-transparent" />
-                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-900 border border-surface-ink-700 px-6 py-2 text-sm uppercase tracking-[0.15em] text-ink-400">
+                <span className="absolute inline-flex items-center justify-center rounded-full bg-surface-ink-900 border border-surface-ink-700 px-6 py-3 text-sm uppercase tracking-[0.15em] text-ink-400">
                   or clone a website
                 </span>
               </motion.div>
@@ -3159,11 +3159,11 @@ Focus on the key sections and content, making it clean and modern.`;
                         }, 100);
                       }}
                       placeholder="https://example.com"
-                      className="h-14 w-full bg-transparent pl-12 pr-32 text-lg text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
+                      className="h-16 w-full bg-transparent pl-12 pr-36 text-lg text-ink-50 placeholder-ink-500 focus-visible:outline-none transition-all duration-300"
                     />
                     <button
                       type="submit"
-                      className="absolute right-3 flex h-9 items-center gap-2 px-4 rounded-lg bg-surface-ink-700 text-sm text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
+                      className="absolute right-3 flex h-11 items-center gap-2 px-5 rounded-lg bg-surface-ink-700 text-sm text-ink-200 hover:bg-surface-ink-600 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss-400/60 transition-all duration-200 cursor-pointer"
                       title="Clone Website"
                     >
                       <span>Clone</span>
@@ -3199,12 +3199,12 @@ Focus on the key sections and content, making it clean and modern.`;
                           }
                           router.push(`/?${params.toString()}`);
                         }}
-                        className="appearance-none bg-transparent text-sm text-ink-100 font-medium cursor-pointer focus:outline-none pr-5"
+                        className="appearance-none bg-transparent text-sm text-ink-100 font-medium cursor-pointer focus:outline-none pr-8"
                         style={{ 
                           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2363d297' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
                           backgroundRepeat: 'no-repeat',
-                          backgroundPosition: 'right 0 center',
-                          backgroundSize: '16px'
+                          backgroundPosition: 'right 4px center',
+                          backgroundSize: '14px'
                         }}
                       >
                         {appConfig.ai.availableModels.map(model => {
