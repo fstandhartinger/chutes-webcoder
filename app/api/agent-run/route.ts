@@ -85,8 +85,9 @@ const AGENTS = {
     buildCommand: (prompt: string, model: string) => [
       'opencode',
       'run',
-      '--model', `openai/${model}`,
-      '--yes',  // Auto-approve actions
+      '-m', `openai/${model}`,
+      '--yes',
+      '--',
       prompt
     ],
   },
