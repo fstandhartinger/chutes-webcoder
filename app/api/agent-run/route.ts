@@ -70,6 +70,26 @@ const AGENTS = {
       '--message', prompt
     ],
   },
+  'opencode': {
+    name: 'OpenCode',
+    command: 'opencode',
+    setupEnv: (model: string, apiKey: string) => ({
+      // OpenCode uses OpenAI-compatible providers via config
+      OPENAI_API_KEY: apiKey,
+      OPENAI_BASE_URL: 'https://llm.chutes.ai/v1',
+      // Suppress interactive prompts
+      NO_COLOR: '1',
+      TERM: 'dumb',
+      CI: '1', // Non-interactive mode
+    }),
+    buildCommand: (prompt: string, model: string) => [
+      'opencode',
+      'run',
+      '--model', `openai/${model}`,
+      '--yes',  // Auto-approve actions
+      prompt
+    ],
+  },
 } as const;
 
 type AgentType = keyof typeof AGENTS;
