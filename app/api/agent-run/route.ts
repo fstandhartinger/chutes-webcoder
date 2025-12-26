@@ -10,6 +10,7 @@ const AGENTS = {
     name: 'Claude Code',
     command: 'claude',
     setupEnv: (model: string, apiKey: string) => ({
+      // Use claude.chutes.ai proxy which translates Anthropic Messages API to Chutes models
       ANTHROPIC_BASE_URL: 'https://claude.chutes.ai',
       ANTHROPIC_AUTH_TOKEN: apiKey,
       ANTHROPIC_API_KEY: apiKey,
@@ -21,6 +22,9 @@ const AGENTS = {
       ANTHROPIC_SMALL_FAST_MODEL: model,
       API_TIMEOUT_MS: '600000',
       CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
+      // Suppress colors for cleaner output
+      NO_COLOR: '1',
+      TERM: 'dumb',
     }),
     buildCommand: (prompt: string, _model: string) => [
       'claude', '-p', prompt,
@@ -246,6 +250,21 @@ export async function POST(request: NextRequest) {
         { error: 'sandboxId is required' },
         { status: 400 }
       );
+    }
+    
+    // Verify sandbox exists before proceeding
+    try {
+      await sandyRequest<{ sandboxId: string }>(`/api/sandboxes/${sandboxId}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+        return NextResponse.json(
+          { error: `Sandbox ${sandboxId} not found. Please create a new sandbox.` },
+          { status: 404 }
+        );
+      }
+      // Re-throw other errors
+      throw error;
     }
     
     // Get API key
