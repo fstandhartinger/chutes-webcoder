@@ -144,19 +144,22 @@ async function startBackgroundCommand(
   command: string,
   env: Record<string, string> = {},
   outputFile: string = '/tmp/agent_output.log',
-  pidFile: string = '/tmp/agent.pid'
+  pidFile: string = '/tmp/agent.pid',
+  doneFile: string = '/tmp/agent.done'
 ): Promise<void> {
   // Start the command in background, redirecting all output to file
-  const bgCommand = `nohup sh -c '${command.replace(/'/g, "'\\''")}' > ${outputFile} 2>&1 & echo $! > ${pidFile}`;
+  // Write the exit code to done file when finished
+  const bgCommand = `rm -f ${doneFile}; nohup sh -c '${command.replace(/'/g, "'\\''")};echo $? > ${doneFile}' > ${outputFile} 2>&1 & echo $! > ${pidFile}`;
   await execInSandbox(sandboxId, bgCommand, env, 10000);
 }
 
 // Check if background process is still running
-async function isProcessRunning(sandboxId: string, pidFile: string = '/tmp/agent.pid'): Promise<boolean> {
+async function isProcessRunning(sandboxId: string, doneFile: string = '/tmp/agent.done'): Promise<boolean> {
   try {
+    // Check if the done file exists - if it does, the process has finished
     const result = await execInSandbox(
       sandboxId,
-      `if [ -f ${pidFile} ]; then kill -0 $(cat ${pidFile}) 2>/dev/null && echo "running" || echo "stopped"; else echo "stopped"; fi`,
+      `test -f ${doneFile} && echo "done" || echo "running"`,
       {},
       5000
     );
@@ -191,16 +194,16 @@ async function readOutputFromOffset(
 }
 
 // Get exit code of completed process
-async function getExitCode(sandboxId: string, pidFile: string = '/tmp/agent.pid'): Promise<number> {
+async function getExitCode(sandboxId: string, doneFile: string = '/tmp/agent.done'): Promise<number> {
   try {
-    // Wait for the process and get its exit code
+    // Read the exit code from the done file
     const result = await execInSandbox(
       sandboxId,
-      `wait $(cat ${pidFile} 2>/dev/null) 2>/dev/null; echo $?`,
+      `cat ${doneFile} 2>/dev/null || echo "1"`,
       {},
       5000
     );
-    return parseInt(result.stdout.trim()) || 1;
+    return parseInt(result.stdout.trim()) || 0;
   } catch {
     return 1;
   }
@@ -272,6 +275,7 @@ export async function POST(request: NextRequest) {
     (async () => {
       const outputFile = '/tmp/agent_output.log';
       const pidFile = '/tmp/agent.pid';
+      const doneFile = '/tmp/agent.done';
       let lastSentContent = '';
       
       try {
@@ -281,7 +285,7 @@ export async function POST(request: NextRequest) {
         const env = agentConfig.setupEnv(model, apiKey);
         
         // Clean up any previous output files
-        await execInSandbox(sandboxId, `rm -f ${outputFile} ${pidFile}`, {}, 5000).catch(() => {});
+        await execInSandbox(sandboxId, `rm -f ${outputFile} ${pidFile} ${doneFile}`, {}, 5000).catch(() => {});
         
         // For Codex, create config.toml before running
         if (agent === 'codex') {
@@ -333,7 +337,7 @@ CONFIGEOF`,
         console.log(`[agent-run] Environment:`, Object.keys(env));
         
         // Start the command in background
-        await startBackgroundCommand(sandboxId, command, env, outputFile, pidFile);
+        await startBackgroundCommand(sandboxId, command, env, outputFile, pidFile, doneFile);
         
         // Poll for output and stream it
         let offset = 0;
@@ -347,8 +351,8 @@ CONFIGEOF`,
           await new Promise(resolve => setTimeout(resolve, pollInterval));
           pollCount++;
           
-          // Check if process is still running
-          running = await isProcessRunning(sandboxId, pidFile);
+          // Check if process is still running (check done file)
+          running = await isProcessRunning(sandboxId, doneFile);
           
           // Read new output
           const { content, newOffset } = await readOutputFromOffset(sandboxId, outputFile, offset);
@@ -407,7 +411,7 @@ CONFIGEOF`,
         }
         
         // Get exit code
-        const exitCode = await getExitCode(sandboxId, pidFile);
+        const exitCode = await getExitCode(sandboxId, doneFile);
         
         await sendEvent({ 
           type: 'complete', 
