@@ -19,8 +19,8 @@ import { parseArgs } from 'util';
 // Configuration
 const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrender.com';
 
-// Test prompt - simple and fast (minimal for quick testing)
-const TEST_PROMPT = 'Create a file called hello.txt containing "Hello from AI Agent"';
+// Test prompt - creates a simple file to verify agent functionality
+const TEST_PROMPT = 'Create a file called game.tsx with a simple React component that displays "Hello from AI" as a heading';
 
 // All agents and models
 const ALL_AGENTS = ['claude-code', 'codex', 'aider'] as const;
