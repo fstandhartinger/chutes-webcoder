@@ -25,6 +25,7 @@ const AGENTS = {
     buildCommand: (prompt: string) => [
       'claude', '-p', prompt,
       '--output-format', 'stream-json',
+      '--verbose',
       '--allowedTools', 'Read,Write,Edit,Bash',
       '--permission-mode', 'acceptEdits'
     ],
