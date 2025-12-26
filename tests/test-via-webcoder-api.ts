@@ -23,12 +23,13 @@ const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrend
 const TEST_PROMPT = 'Create a file called game.tsx with a simple React component that displays "Tic Tac Toe Game" as a heading and a 3x3 grid of buttons.';
 
 // All agents and models
-const ALL_AGENTS = ['claude-code', 'aider'] as const;
+const ALL_AGENTS = ['claude-code', 'codex', 'aider'] as const;
 const ALL_MODELS = [
   'zai-org/GLM-4.7-TEE',
   'deepseek-ai/DeepSeek-V3.2-TEE',
   'MiniMaxAI/MiniMax-M2',
   'XiaomiMiMo/MiMo-V2-Flash',
+  'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
 ] as const;
 
 type Agent = typeof ALL_AGENTS[number];

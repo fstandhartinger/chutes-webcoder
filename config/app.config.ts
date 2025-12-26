@@ -79,6 +79,7 @@ export const appConfig = {
       'deepseek-ai/DeepSeek-V3.2-TEE',
       'MiniMaxAI/MiniMax-M2',
       'XiaomiMiMo/MiMo-V2-Flash',
+      'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8', // Best for Codex agent
     ],
     
     // Model display names
@@ -87,6 +88,7 @@ export const appConfig = {
       'deepseek-ai/DeepSeek-V3.2-TEE': 'DeepSeek V3.2',
       'MiniMaxAI/MiniMax-M2': 'MiniMax M2',
       'XiaomiMiMo/MiMo-V2-Flash': 'MiMo V2 Flash',
+      'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': 'Qwen3 Coder 480B',
     } as Record<string, string>,
     
     // Model API configuration to help downstream helpers pick the right SDK
@@ -95,6 +97,7 @@ export const appConfig = {
       'deepseek-ai/DeepSeek-V3.2-TEE': { provider: 'chutes' },
       'MiniMaxAI/MiniMax-M2': { provider: 'chutes' },
       'XiaomiMiMo/MiMo-V2-Flash': { provider: 'chutes' },
+      'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8': { provider: 'chutes' },
     },
     
     // Temperature settings for non-reasoning models

@@ -34,12 +34,18 @@ const AGENTS = {
     name: 'OpenAI Codex',
     command: 'codex',
     setupEnv: (model: string, apiKey: string) => ({
+      // Use the Chutes Responses proxy for Codex
       OPENAI_API_KEY: apiKey,
-      OPENAI_BASE_URL: 'https://llm.chutes.ai/v1',
+      OPENAI_BASE_URL: 'https://responses.chutes.ai/v1',
+      // Also set these for compatibility
+      MY_PROVIDER_API_KEY: apiKey,
       CODEX_MODEL: model,
+      // Suppress interactive prompts
+      NO_COLOR: '1',
+      TERM: 'dumb',
     }),
     buildCommand: (prompt: string) => [
-      'codex', 'exec', '--full-auto', prompt
+      'codex', 'exec', '--full-auto', '--quiet', prompt
     ],
   },
   'aider': {
