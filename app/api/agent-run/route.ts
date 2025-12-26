@@ -255,6 +255,41 @@ CONFIGEOF`,
           console.log('[agent-run] Created Codex config.toml');
         }
         
+        // For OpenCode, create opencode.json config before running
+        if (agent === 'opencode') {
+          const opencodeConfig = JSON.stringify({
+            "$schema": "https://opencode.ai/config.json",
+            "provider": {
+              "openai": {
+                "name": "Chutes AI",
+                "options": {
+                  "baseURL": "https://llm.chutes.ai/v1"
+                },
+                "models": {
+                  [model]: {
+                    "name": model
+                  }
+                }
+              }
+            },
+            "permission": {
+              "edit": "allow",
+              "bash": "allow",
+              "read": "allow",
+              "write": "allow"
+            }
+          }, null, 2);
+          await execInSandbox(
+            sandboxId,
+            `mkdir -p /root/.config/opencode && cat > /workspace/opencode.json << 'CONFIGEOF'
+${opencodeConfig}
+CONFIGEOF`,
+            env,
+            10000
+          );
+          console.log('[agent-run] Created OpenCode opencode.json config');
+        }
+        
         // Build command
         const commandParts = agentConfig.buildCommand(prompt, model);
         const command = commandParts.map(part => 
