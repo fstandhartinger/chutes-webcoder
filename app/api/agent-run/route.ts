@@ -77,17 +77,17 @@ const AGENTS = {
       // OpenCode uses OpenAI-compatible providers via config
       OPENAI_API_KEY: apiKey,
       OPENAI_BASE_URL: 'https://llm.chutes.ai/v1',
+      // Set default model
+      OPENCODE_MODEL: `openai/${model}`,
       // Suppress interactive prompts
       NO_COLOR: '1',
       TERM: 'dumb',
       CI: '1', // Non-interactive mode
     }),
-    buildCommand: (prompt: string, model: string) => [
+    buildCommand: (prompt: string, _model: string) => [
       'opencode',
       'run',
-      '-m', `openai/${model}`,
       '--yes',
-      '--',
       prompt
     ],
   },
