@@ -121,36 +121,8 @@ async function execInSandbox(
   });
 }
 
-// Write Claude settings.json to sandbox
-async function setupClaudeConfig(
-  sandboxId: string,
-  model: string,
-  apiKey: string
-): Promise<void> {
-  const settings = {
-    model,
-    alwaysThinkingEnabled: true,
-    env: {
-      ANTHROPIC_AUTH_TOKEN: apiKey,
-      ANTHROPIC_BASE_URL: 'https://claude.chutes.ai',
-      API_TIMEOUT_MS: '600000',
-      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
-      ANTHROPIC_DEFAULT_HAIKU_MODEL: model,
-      ANTHROPIC_DEFAULT_SONNET_MODEL: model,
-      ANTHROPIC_DEFAULT_OPUS_MODEL: model,
-      CLAUDE_CODE_SUBAGENT_MODEL: model,
-      ANTHROPIC_SMALL_FAST_MODEL: model,
-    },
-  };
-  
-  await sandyRequest(`/api/sandboxes/${sandboxId}/files/write`, {
-    method: 'POST',
-    body: JSON.stringify({
-      path: '/root/.claude/settings.json',
-      content: JSON.stringify(settings, null, 2),
-    }),
-  });
-}
+// Setup Claude config via environment variables (settings.json not needed when using env vars)
+// Claude Code reads from ANTHROPIC_* env vars which we pass directly to exec
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
@@ -207,13 +179,7 @@ export async function POST(request: NextRequest) {
       try {
         await sendEvent({ type: 'status', message: `Starting ${agentConfig.name}...` });
         
-        // For Claude Code, write settings.json first
-        if (agent === 'claude-code') {
-          await sendEvent({ type: 'status', message: 'Configuring Claude Code for Chutes...' });
-          await setupClaudeConfig(sandboxId, model, apiKey);
-        }
-        
-        // Build environment variables
+        // Build environment variables (Claude Code reads from ANTHROPIC_* env vars)
         const env = agentConfig.setupEnv(model, apiKey);
         
         // Build command
