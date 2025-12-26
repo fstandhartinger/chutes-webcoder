@@ -45,9 +45,11 @@ export class SandyProvider extends SandboxProvider {
     return raw.startsWith('.') ? raw : `.${raw}`;
   }
 
-  private resolveAllowedHosts(): string[] {
-    const hostSuffix = this.resolveHostSuffix();
-    return [hostSuffix, 'localhost', '127.0.0.1'];
+  private resolveAllowedHosts(): true {
+    // Allow all hosts for sandbox environments
+    // This is safe for sandboxed containers and avoids issues with
+    // various host names like host.docker.internal, etc.
+    return true;
   }
 
   private async request<T>(
@@ -236,7 +238,6 @@ export class SandyProvider extends SandboxProvider {
   }
 
   async setupViteApp(): Promise<void> {
-    const allowedHosts = this.resolveAllowedHosts();
     const packageJson = {
       name: 'sandbox-app',
       version: '1.0.0',
@@ -269,7 +270,7 @@ export default defineConfig({
     port: ${appConfig.sandy.vitePort},
     strictPort: true,
     hmr: false,
-    allowedHosts: ${JSON.stringify(allowedHosts)}
+    allowedHosts: true
   }
 })`;
 

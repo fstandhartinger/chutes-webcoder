@@ -71,31 +71,28 @@ export const appConfig = {
   // AI Model Configuration
   ai: {
     // Default AI model
-    defaultModel: 'deepseek-ai/DeepSeek-V3.2-TEE',
+    defaultModel: 'zai-org/GLM-4.7-TEE',
     
     // Available models
     availableModels: [
-      'deepseek-ai/DeepSeek-V3.2-TEE',
-      'zai-org/GLM-4.6-TEE',
       'zai-org/GLM-4.7-TEE',
+      'deepseek-ai/DeepSeek-V3.2-TEE',
       'MiniMaxAI/MiniMax-M2',
       'XiaomiMiMo/MiMo-V2-Flash',
     ],
     
     // Model display names
     modelDisplayNames: {
-      'deepseek-ai/DeepSeek-V3.2-TEE': 'DeepSeek V3.2',
-      'zai-org/GLM-4.6-TEE': 'GLM 4.6',
       'zai-org/GLM-4.7-TEE': 'GLM 4.7',
+      'deepseek-ai/DeepSeek-V3.2-TEE': 'DeepSeek V3.2',
       'MiniMaxAI/MiniMax-M2': 'MiniMax M2',
       'XiaomiMiMo/MiMo-V2-Flash': 'MiMo V2 Flash',
     } as Record<string, string>,
     
     // Model API configuration to help downstream helpers pick the right SDK
     modelApiConfig: {
-      'deepseek-ai/DeepSeek-V3.2-TEE': { provider: 'chutes' },
-      'zai-org/GLM-4.6-TEE': { provider: 'chutes' },
       'zai-org/GLM-4.7-TEE': { provider: 'chutes' },
+      'deepseek-ai/DeepSeek-V3.2-TEE': { provider: 'chutes' },
       'MiniMaxAI/MiniMax-M2': { provider: 'chutes' },
       'XiaomiMiMo/MiMo-V2-Flash': { provider: 'chutes' },
     },
