@@ -23,7 +23,8 @@ const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrend
 const TEST_PROMPT = 'Create a file called game.tsx with a simple React component that displays "Hello from AI" as a heading';
 
 // All agents and models
-const ALL_AGENTS = ['claude-code', 'codex', 'aider', 'opencode'] as const;
+// Note: opencode is experimental and excluded from default tests
+const ALL_AGENTS = ['codex', 'aider', 'claude-code'] as const;
 const ALL_MODELS = [
   'zai-org/GLM-4.7-TEE',
   'deepseek-ai/DeepSeek-V3.2-TEE',

@@ -78,12 +78,14 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
 The `/api/agent-run` endpoint enables running external CLI coding agents inside Sandy sandboxes. Each agent is configured to use Chutes' model endpoints:
 
-| Agent | Package | API Endpoint | Notes |
-|-------|---------|--------------|-------|
-| Claude Code | `@anthropic-ai/claude-code` | `claude.chutes.ai` | Works with Claude-compatible models |
-| Codex | `@openai/codex` | `responses.chutes.ai/v1` | Uses OpenAI Responses API proxy; auto-generates `config.toml` |
-| Aider | `aider-chat` (Python) | `llm.chutes.ai/v1` | OpenAI-compatible; models prefixed with `openai/` |
-| OpenCode | `opencode-ai` | `llm.chutes.ai/v1` | OpenAI-compatible; models prefixed with `openai/` |
+| Agent | Package | API Endpoint | Status | Notes |
+|-------|---------|--------------|--------|-------|
+| **Codex** | `@openai/codex` | `responses.chutes.ai/v1` | ✅ Tested | Uses OpenAI Responses API proxy; auto-generates `config.toml` |
+| **Aider** | `aider-chat` (Python) | `llm.chutes.ai/v1` | ✅ Tested | OpenAI-compatible; works with all models |
+| **Claude Code** | `@anthropic-ai/claude-code` | `claude.chutes.ai` | ⚠️ Limited | Requires Claude-compatible models |
+| **OpenCode** | `opencode-ai` | `llm.chutes.ai/v1` | 🧪 Experimental | OpenAI-compatible; may require configuration |
+
+> **Note:** Factory Droid was evaluated but requires a proprietary `FACTORY_API_KEY` and cannot use Chutes models.
 
 ### Agent API Usage
 
