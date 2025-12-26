@@ -10,6 +10,11 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
 - **Sandbox Providers** – use the self-hosted Sandy sandbox by default, with Vercel or E2B available as optional alternatives.
 - **Chutes-first AI defaults** – preconfigured to use Chutes' OpenAI-compatible endpoint while still supporting Groq, OpenAI, Anthropic, Gemini, and the Vercel AI Gateway.
+- **CLI Coding Agents** – integrated support for multiple AI coding agents running inside Sandy sandboxes:
+  - **Claude Code** (`@anthropic-ai/claude-code`) – via `claude.chutes.ai` proxy
+  - **OpenAI Codex** (`@openai/codex`) – via `responses.chutes.ai` Responses API proxy
+  - **Aider** (`aider-chat`) – Python-based coding assistant via OpenAI-compatible endpoint
+  - **OpenCode** (`opencode-ai`) – terminal-native AI coding agent with custom provider support
 - **Upstream Enhancements** – AI Builder UI, morph fast-apply edits, GitHub integration hooks, CLI scaffolding (`packages/create-open-lovable`).
 - **Render-ready deployment** – `render.yaml` and sensible `NEXT_PUBLIC_APP_URL` defaults for local routing.
 
@@ -68,6 +73,53 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 - Switching between Sandy, Vercel, and E2B sandboxes is a matter of flipping `SANDBOX_PROVIDER` and providing the appropriate credentials.
 - Sandy preview URLs are derived from `SANDY_HOST_SUFFIX` (and `NEXT_PUBLIC_SANDBOX_HOST_SUFFIX` for the UI).
 - GitHub integration and the new “Builder” experience follow the upstream conventions—set `GITHUB_TOKEN`, `NEXTAUTH_SECRET`, etc., if you adopt those workflows.
+
+## CLI Coding Agents
+
+The `/api/agent-run` endpoint enables running external CLI coding agents inside Sandy sandboxes. Each agent is configured to use Chutes' model endpoints:
+
+| Agent | Package | API Endpoint | Notes |
+|-------|---------|--------------|-------|
+| Claude Code | `@anthropic-ai/claude-code` | `claude.chutes.ai` | Works with Claude-compatible models |
+| Codex | `@openai/codex` | `responses.chutes.ai/v1` | Uses OpenAI Responses API proxy; auto-generates `config.toml` |
+| Aider | `aider-chat` (Python) | `llm.chutes.ai/v1` | OpenAI-compatible; models prefixed with `openai/` |
+| OpenCode | `opencode-ai` | `llm.chutes.ai/v1` | OpenAI-compatible; models prefixed with `openai/` |
+
+### Agent API Usage
+
+```bash
+curl -X POST https://your-deployment.com/api/agent-run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent": "codex",
+    "model": "deepseek-ai/DeepSeek-V3.2-TEE",
+    "prompt": "Create a hello world React component",
+    "sandboxId": "your-sandbox-id",
+    "apiKey": "your-chutes-api-key"
+  }'
+```
+
+### Available Models
+
+| Model ID | Display Name | Best For |
+|----------|--------------|----------|
+| `deepseek-ai/DeepSeek-V3.2-TEE` | DeepSeek V3.2 | Codex, Aider, OpenCode |
+| `zai-org/GLM-4.7-TEE` | GLM-4.7 | General coding |
+| `MiniMaxAI/MiniMax-M1-80k` | MiniMax M1 | Long context tasks |
+| `Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8` | Qwen3 Coder 480B | Specialized coding |
+| `XiaomiMiMo/MiMo-V2-Flash` | MiMo V2 Flash | Fast inference |
+
+### Testing Agents
+
+Run integration tests for specific agent/model combinations:
+
+```bash
+# Test a specific agent with a specific model
+npx tsx tests/test-via-webcoder-api.ts --agent=codex --model=deepseek-ai/DeepSeek-V3.2-TEE
+
+# Test all combinations (takes a while)
+npx tsx tests/test-via-webcoder-api.ts
+```
 
 ## Scripts
 
