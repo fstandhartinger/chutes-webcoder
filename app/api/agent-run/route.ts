@@ -45,7 +45,7 @@ const AGENTS = {
       TERM: 'dumb',
     }),
     buildCommand: (prompt: string) => [
-      'codex', 'exec', '--full-auto', '--quiet', prompt
+      'codex', 'exec', '--full-auto', prompt
     ],
   },
   'aider': {
@@ -304,3 +304,4 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
+
