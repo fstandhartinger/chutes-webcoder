@@ -82,10 +82,18 @@ The `/api/agent-run` endpoint enables running external CLI coding agents inside 
 |-------|---------|--------------|--------|-------|
 | **Codex** | `@openai/codex` | `responses.chutes.ai/v1` | ✅ Tested | Uses OpenAI Responses API proxy; auto-generates `config.toml` |
 | **Aider** | `aider-chat` (Python) | `llm.chutes.ai/v1` | ✅ Tested | OpenAI-compatible; works with all models |
-| **Claude Code** | `@anthropic-ai/claude-code` | `claude.chutes.ai` | ⚠️ Limited | Requires Claude-compatible models |
-| **OpenCode** | `opencode-ai` | `llm.chutes.ai/v1` | 🧪 Experimental | OpenAI-compatible; may require configuration |
+| **Claude Code** | `@anthropic-ai/claude-code` | `claude.chutes.ai` | ⚠️ Limited | Requires Claude-compatible models via Chutes proxy |
 
-> **Note:** Factory Droid was evaluated but requires a proprietary `FACTORY_API_KEY` and cannot use Chutes models.
+### Real-Time Output Streaming
+
+The agent-run API uses a polling-based streaming mechanism to provide real-time feedback:
+
+- Agent output is streamed to the client as soon as it's available (500ms polling interval)
+- Heartbeat events every 5 seconds keep the connection alive
+- Output is sent line-by-line for immediate visual feedback
+- Users see progress immediately instead of waiting for completion
+
+> **Note:** Factory Droid was evaluated but requires a proprietary `FACTORY_API_KEY` and cannot use Chutes models. OpenCode was tested but requires pre-registered models and doesn't support dynamic model configuration.
 
 ### Agent API Usage
 
@@ -105,7 +113,7 @@ curl -X POST https://your-deployment.com/api/agent-run \
 
 | Model ID | Display Name | Best For |
 |----------|--------------|----------|
-| `deepseek-ai/DeepSeek-V3.2-TEE` | DeepSeek V3.2 | Codex, Aider, OpenCode |
+| `deepseek-ai/DeepSeek-V3.2-TEE` | DeepSeek V3.2 | Codex, Aider (recommended) |
 | `zai-org/GLM-4.7-TEE` | GLM-4.7 | General coding |
 | `MiniMaxAI/MiniMax-M1-80k` | MiniMax M1 | Long context tasks |
 | `Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8` | Qwen3 Coder 480B | Specialized coding |
