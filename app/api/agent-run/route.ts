@@ -66,29 +66,8 @@ const AGENTS = {
       '--no-auto-commits',        // Don't auto-commit
       '--no-show-model-warnings', // Suppress model warnings
       '--no-pretty',              // Disable pretty output (no spinners/colors)
-      '--no-stream',              // Don't stream output (get complete response)
       '--message', prompt
-    ],
-  },
-  'opencode': {
-    name: 'OpenCode',
-    command: 'opencode',
-    setupEnv: (model: string, apiKey: string) => ({
-      // OpenCode uses OpenAI-compatible providers via config
-      OPENAI_API_KEY: apiKey,
-      OPENAI_BASE_URL: 'https://llm.chutes.ai/v1',
-      // Set default model
-      OPENCODE_MODEL: `openai/${model}`,
-      // Suppress interactive prompts
-      NO_COLOR: '1',
-      TERM: 'dumb',
-      CI: '1', // Non-interactive mode
-    }),
-    buildCommand: (prompt: string, _model: string) => [
-      'opencode',
-      'run',
-      '--yes',
-      prompt
+      // NOTE: Removed --no-stream to allow streaming output
     ],
   },
 } as const;
@@ -141,7 +120,7 @@ async function sandyRequest<T>(
   return response.json();
 }
 
-// Execute command in sandbox and stream output
+// Execute command in sandbox (synchronous)
 async function execInSandbox(
   sandboxId: string,
   command: string,
@@ -159,8 +138,81 @@ async function execInSandbox(
   });
 }
 
-// Setup Claude config via environment variables (settings.json not needed when using env vars)
-// Claude Code reads from ANTHROPIC_* env vars which we pass directly to exec
+// Start a command in background and return immediately
+async function startBackgroundCommand(
+  sandboxId: string,
+  command: string,
+  env: Record<string, string> = {},
+  outputFile: string = '/tmp/agent_output.log',
+  pidFile: string = '/tmp/agent.pid'
+): Promise<void> {
+  // Start the command in background, redirecting all output to file
+  const bgCommand = `nohup sh -c '${command.replace(/'/g, "'\\''")}' > ${outputFile} 2>&1 & echo $! > ${pidFile}`;
+  await execInSandbox(sandboxId, bgCommand, env, 10000);
+}
+
+// Check if background process is still running
+async function isProcessRunning(sandboxId: string, pidFile: string = '/tmp/agent.pid'): Promise<boolean> {
+  try {
+    const result = await execInSandbox(
+      sandboxId,
+      `if [ -f ${pidFile} ]; then kill -0 $(cat ${pidFile}) 2>/dev/null && echo "running" || echo "stopped"; else echo "stopped"; fi`,
+      {},
+      5000
+    );
+    return result.stdout.trim() === 'running';
+  } catch {
+    return false;
+  }
+}
+
+// Read output from file, starting from a specific byte offset
+async function readOutputFromOffset(
+  sandboxId: string,
+  outputFile: string = '/tmp/agent_output.log',
+  offset: number = 0
+): Promise<{ content: string; newOffset: number }> {
+  try {
+    const result = await execInSandbox(
+      sandboxId,
+      `tail -c +${offset + 1} ${outputFile} 2>/dev/null; wc -c < ${outputFile} 2>/dev/null`,
+      {},
+      5000
+    );
+    
+    const lines = result.stdout.split('\n');
+    const newOffset = parseInt(lines[lines.length - 1].trim()) || offset;
+    const content = lines.slice(0, -1).join('\n');
+    
+    return { content, newOffset };
+  } catch {
+    return { content: '', newOffset: offset };
+  }
+}
+
+// Get exit code of completed process
+async function getExitCode(sandboxId: string, pidFile: string = '/tmp/agent.pid'): Promise<number> {
+  try {
+    // Wait for the process and get its exit code
+    const result = await execInSandbox(
+      sandboxId,
+      `wait $(cat ${pidFile} 2>/dev/null) 2>/dev/null; echo $?`,
+      {},
+      5000
+    );
+    return parseInt(result.stdout.trim()) || 1;
+  } catch {
+    return 1;
+  }
+}
+
+// Helper to strip ANSI escape codes
+function stripAnsi(str: string): string {
+  return str
+    .replace(/\x1b\[[0-9;]*m/g, '')
+    .replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')
+    .replace(/\r/g, '');
+}
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
@@ -209,16 +261,27 @@ export async function POST(request: NextRequest) {
     const writer = stream.writable.getWriter();
     
     const sendEvent = async (data: object) => {
-      await writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      try {
+        await writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      } catch {
+        // Writer may be closed, ignore
+      }
     };
     
-    // Run agent in background
+    // Run agent in background with streaming output
     (async () => {
+      const outputFile = '/tmp/agent_output.log';
+      const pidFile = '/tmp/agent.pid';
+      let lastSentContent = '';
+      
       try {
         await sendEvent({ type: 'status', message: `Starting ${agentConfig.name}...` });
         
-        // Build environment variables (Claude Code reads from ANTHROPIC_* env vars)
+        // Build environment variables
         const env = agentConfig.setupEnv(model, apiKey);
+        
+        // Clean up any previous output files
+        await execInSandbox(sandboxId, `rm -f ${outputFile} ${pidFile}`, {}, 5000).catch(() => {});
         
         // For Codex, create config.toml before running
         if (agent === 'codex') {
@@ -255,45 +318,10 @@ CONFIGEOF`,
           console.log('[agent-run] Created Codex config.toml');
         }
         
-        // For OpenCode, create opencode.json config before running
-        if (agent === 'opencode') {
-          const opencodeConfig = JSON.stringify({
-            "$schema": "https://opencode.ai/config.json",
-            "provider": {
-              "openai": {
-                "name": "Chutes AI",
-                "options": {
-                  "baseURL": "https://llm.chutes.ai/v1"
-                },
-                "models": {
-                  [model]: {
-                    "name": model
-                  }
-                }
-              }
-            },
-            "permission": {
-              "edit": "allow",
-              "bash": "allow",
-              "read": "allow",
-              "write": "allow"
-            }
-          }, null, 2);
-          await execInSandbox(
-            sandboxId,
-            `mkdir -p /root/.config/opencode && cat > /workspace/opencode.json << 'CONFIGEOF'
-${opencodeConfig}
-CONFIGEOF`,
-            env,
-            10000
-          );
-          console.log('[agent-run] Created OpenCode opencode.json config');
-        }
-        
         // Build command
         const commandParts = agentConfig.buildCommand(prompt, model);
         const command = commandParts.map(part => 
-          part.includes(' ') ? `"${part.replace(/"/g, '\\"')}"` : part
+          part.includes(' ') || part.includes('"') ? `"${part.replace(/"/g, '\\"')}"` : part
         ).join(' ');
         
         await sendEvent({ 
@@ -301,63 +329,96 @@ CONFIGEOF`,
           message: `Running ${agentConfig.name} with model ${appConfig.ai.modelDisplayNames[model] || model}...` 
         });
         
-        console.log(`[agent-run] Executing: ${command}`);
+        console.log(`[agent-run] Executing in background: ${command}`);
         console.log(`[agent-run] Environment:`, Object.keys(env));
         
-        // Execute the agent command
-        // For now, we use a simple exec - in production, we'd want streaming
-        const result = await execInSandbox(
-          sandboxId,
-          command,
-          env,
-          600000 // 10 minute timeout
-        );
+        // Start the command in background
+        await startBackgroundCommand(sandboxId, command, env, outputFile, pidFile);
         
-        // Helper to strip ANSI escape codes
-        const stripAnsi = (str: string) => str.replace(/\x1b\[[0-9;]*m/g, '').replace(/\x1b\[[0-9;]*[A-Za-z]/g, '');
+        // Poll for output and stream it
+        let offset = 0;
+        let running = true;
+        let pollCount = 0;
+        const maxPolls = 1200; // 10 minutes at 500ms intervals
+        const pollInterval = 500; // 500ms between polls
         
-        // Parse and stream the output
-        if (result.stdout) {
-          const cleanOutput = stripAnsi(result.stdout);
+        while (running && pollCount < maxPolls) {
+          // Wait before polling
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+          pollCount++;
           
-          // For Claude Code, try to parse as JSON lines
-          if (agent === 'claude-code') {
-            const lines = cleanOutput.split('\n').filter(Boolean);
-            for (const line of lines) {
-              try {
-                const parsed = JSON.parse(line);
-                await sendEvent({ type: 'agent-output', data: parsed });
-              } catch {
-                // Plain text output - send as single message
-                if (line.trim()) {
-                  await sendEvent({ type: 'output', text: line.trim() });
+          // Check if process is still running
+          running = await isProcessRunning(sandboxId, pidFile);
+          
+          // Read new output
+          const { content, newOffset } = await readOutputFromOffset(sandboxId, outputFile, offset);
+          
+          if (content && content !== lastSentContent) {
+            const newContent = content.substring(lastSentContent.length);
+            if (newContent.trim()) {
+              const cleanContent = stripAnsi(newContent);
+              
+              // For Claude Code, try to parse as JSON lines
+              if (agent === 'claude-code') {
+                const lines = cleanContent.split('\n').filter(Boolean);
+                for (const line of lines) {
+                  try {
+                    const parsed = JSON.parse(line);
+                    await sendEvent({ type: 'agent-output', data: parsed });
+                  } catch {
+                    if (line.trim()) {
+                      await sendEvent({ type: 'output', text: line.trim() });
+                    }
+                  }
+                }
+              } else {
+                // For other agents, send line by line for real-time feel
+                const lines = cleanContent.split('\n');
+                for (const line of lines) {
+                  if (line.trim()) {
+                    await sendEvent({ type: 'output', text: line.trim() });
+                  }
                 }
               }
+              
+              lastSentContent = content;
             }
-          } else {
-            // For other agents, send the entire output as one message
-            if (cleanOutput.trim()) {
-              await sendEvent({ type: 'output', text: cleanOutput.trim() });
+          }
+          
+          offset = newOffset;
+          
+          // Send heartbeat every 10 polls (5 seconds) to keep connection alive
+          if (pollCount % 10 === 0 && running) {
+            await sendEvent({ type: 'heartbeat', elapsed: pollCount * pollInterval / 1000 });
+          }
+        }
+        
+        // Read any remaining output
+        const { content: finalContent } = await readOutputFromOffset(sandboxId, outputFile, 0);
+        if (finalContent && finalContent !== lastSentContent) {
+          const newContent = finalContent.substring(lastSentContent.length);
+          if (newContent.trim()) {
+            const cleanContent = stripAnsi(newContent);
+            const lines = cleanContent.split('\n').filter(line => line.trim());
+            for (const line of lines) {
+              await sendEvent({ type: 'output', text: line });
             }
           }
         }
         
-        if (result.stderr) {
-          const cleanStderr = stripAnsi(result.stderr);
-          if (cleanStderr.trim()) {
-            await sendEvent({ type: 'stderr', text: cleanStderr.trim() });
-          }
-        }
+        // Get exit code
+        const exitCode = await getExitCode(sandboxId, pidFile);
         
         await sendEvent({ 
           type: 'complete', 
-          exitCode: result.exitCode,
-          success: result.exitCode === 0
+          exitCode,
+          success: exitCode === 0
         });
         
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[agent-run] Error:', error);
-        await sendEvent({ type: 'error', error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        await sendEvent({ type: 'error', error: errorMessage });
       } finally {
         await writer.close();
       }
@@ -371,10 +432,11 @@ CONFIGEOF`,
       },
     });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[agent-run] Request error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: error.message },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -395,4 +457,3 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
-
