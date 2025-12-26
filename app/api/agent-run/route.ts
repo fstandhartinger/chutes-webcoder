@@ -97,10 +97,12 @@ function getSandyConfig() {
   return { baseUrl: baseUrl.replace(/\/+$/, ''), apiKey };
 }
 
-// Make a request to Sandy API
+// Make a request to Sandy API with retry logic
 async function sandyRequest<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  retries: number = 3,
+  retryDelay: number = 1000
 ): Promise<T> {
   const { baseUrl, apiKey } = getSandyConfig();
   const url = `${baseUrl}${path}`;
@@ -111,30 +113,70 @@ async function sandyRequest<T>(
   }
   headers.set('Content-Type', 'application/json');
   
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  let lastError: Error | null = null;
   
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Sandy API error ${response.status}: ${text}`);
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const text = await response.text();
+        // Don't retry 4xx errors (client errors)
+        if (response.status >= 400 && response.status < 500) {
+          throw new Error(`Sandy API error ${response.status}: ${text}`);
+        }
+        throw new Error(`Sandy API error ${response.status}: ${text}`);
+      }
+      
+      return response.json();
+    } catch (error: unknown) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      
+      // Don't retry if it's a 4xx error or abort
+      if (lastError.message.includes('404') || 
+          lastError.message.includes('400') ||
+          lastError.name === 'AbortError') {
+        throw lastError;
+      }
+      
+      // Retry with exponential backoff for transient errors
+      if (attempt < retries - 1) {
+        console.log(`[sandyRequest] Retry ${attempt + 1}/${retries} after error:`, lastError.message);
+        await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+      }
+    }
   }
   
-  return response.json();
+  throw lastError || new Error('Sandy API request failed after retries');
 }
 
-// Execute command in sandbox (synchronous)
+// Execute command in sandbox (synchronous) with validation
 async function execInSandbox(
   sandboxId: string,
   command: string,
   env: Record<string, string> = {},
   timeoutMs: number = 600000
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+  if (!sandboxId || sandboxId.length < 8) {
+    throw new Error(`Invalid sandboxId: ${sandboxId}`);
+  }
+  
+  // Sanitize command - remove any control characters
+  const sanitizedCommand = command.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
+  
   return sandyRequest(`/api/sandboxes/${sandboxId}/exec`, {
     method: 'POST',
     body: JSON.stringify({
-      command,
+      command: sanitizedCommand,
       cwd: '/workspace',
       env,
       timeoutMs,
@@ -362,58 +404,83 @@ CONFIGEOF`,
         let offset = 0;
         let running = true;
         let pollCount = 0;
+        let consecutiveErrors = 0;
         const maxPolls = 1200; // 10 minutes at 500ms intervals
         const pollInterval = 500; // 500ms between polls
+        const maxConsecutiveErrors = 5; // Allow some transient errors
         
-        while (running && pollCount < maxPolls) {
+        while (running && pollCount < maxPolls && consecutiveErrors < maxConsecutiveErrors) {
           // Wait before polling
           await new Promise(resolve => setTimeout(resolve, pollInterval));
           pollCount++;
           
-          // Check if process is still running (check done file)
-          running = await isProcessRunning(sandboxId, doneFile);
-          
-          // Read new output
-          const { content, newOffset } = await readOutputFromOffset(sandboxId, outputFile, offset);
-          
-          if (content && content !== lastSentContent) {
-            const newContent = content.substring(lastSentContent.length);
-            if (newContent.trim()) {
-              const cleanContent = stripAnsi(newContent);
-              
-              // For Claude Code, try to parse as JSON lines
-              if (agent === 'claude-code') {
-                const lines = cleanContent.split('\n').filter(Boolean);
-                for (const line of lines) {
-                  try {
-                    const parsed = JSON.parse(line);
-                    await sendEvent({ type: 'agent-output', data: parsed });
-                  } catch {
+          try {
+            // Check if process is still running (check done file)
+            running = await isProcessRunning(sandboxId, doneFile);
+            
+            // Read new output
+            const { content, newOffset } = await readOutputFromOffset(sandboxId, outputFile, offset);
+            
+            // Reset error counter on success
+            consecutiveErrors = 0;
+            
+            if (content && content !== lastSentContent) {
+              const newContent = content.substring(lastSentContent.length);
+              if (newContent.trim()) {
+                const cleanContent = stripAnsi(newContent);
+                
+                // For Claude Code, try to parse as JSON lines
+                if (agent === 'claude-code') {
+                  const lines = cleanContent.split('\n').filter(Boolean);
+                  for (const line of lines) {
+                    try {
+                      const parsed = JSON.parse(line);
+                      await sendEvent({ type: 'agent-output', data: parsed });
+                    } catch {
+                      if (line.trim()) {
+                        await sendEvent({ type: 'output', text: line.trim() });
+                      }
+                    }
+                  }
+                } else {
+                  // For other agents, send line by line for real-time feel
+                  const lines = cleanContent.split('\n');
+                  for (const line of lines) {
                     if (line.trim()) {
                       await sendEvent({ type: 'output', text: line.trim() });
                     }
                   }
                 }
-              } else {
-                // For other agents, send line by line for real-time feel
-                const lines = cleanContent.split('\n');
-                for (const line of lines) {
-                  if (line.trim()) {
-                    await sendEvent({ type: 'output', text: line.trim() });
-                  }
-                }
+                
+                lastSentContent = content;
               }
-              
-              lastSentContent = content;
+            }
+            
+            offset = newOffset;
+          } catch (pollError) {
+            consecutiveErrors++;
+            console.warn(`[agent-run] Poll error ${consecutiveErrors}/${maxConsecutiveErrors}:`, pollError);
+            
+            // If sandbox is gone, stop polling
+            if (pollError instanceof Error && 
+                (pollError.message.includes('404') || pollError.message.includes('not found'))) {
+              console.error('[agent-run] Sandbox disappeared during execution');
+              await sendEvent({ type: 'error', error: 'Sandbox was terminated unexpectedly' });
+              running = false;
+              break;
             }
           }
-          
-          offset = newOffset;
           
           // Send heartbeat every 10 polls (5 seconds) to keep connection alive
           if (pollCount % 10 === 0 && running) {
             await sendEvent({ type: 'heartbeat', elapsed: pollCount * pollInterval / 1000 });
           }
+        }
+        
+        // Check if we exited due to too many errors
+        if (consecutiveErrors >= maxConsecutiveErrors) {
+          console.error('[agent-run] Too many consecutive polling errors');
+          await sendEvent({ type: 'error', error: 'Lost connection to sandbox' });
         }
         
         // Read any remaining output

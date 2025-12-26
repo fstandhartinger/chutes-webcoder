@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SandboxFactory } from '@/lib/sandbox/factory';
+import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import type { SandboxState } from '@/types/sandbox';
 
 declare global {
   var activeSandboxProvider: any;
@@ -8,54 +10,85 @@ declare global {
   var existingFiles: Set<string>;
   var sandboxCreationInProgress: boolean;
   var sandboxCreationPromise: Promise<any> | null;
+  var sandboxState: SandboxState;
 }
 
 export async function POST() {
-  try {
-    console.log('[kill-sandbox] Stopping active sandbox...');
+  console.log('[kill-sandbox] Starting sandbox cleanup...');
+  
+  const results = {
+    providerTerminated: false,
+    managerCleanedUp: false,
+    stateCleared: false,
+    errors: [] as string[],
+  };
 
-    let sandboxKilled = false;
-
-    // Stop existing sandbox if any (check both variable names for compatibility)
-    const provider = global.activeSandboxProvider || global.sandboxProvider;
-    if (provider) {
-      try {
-        await provider.terminate();
-        sandboxKilled = true;
-        console.log('[kill-sandbox] Sandbox stopped successfully');
-      } catch (e) {
-        console.error('[kill-sandbox] Failed to stop sandbox:', e);
-      }
+  // Step 1: Wait for any in-progress creation to complete first
+  if (global.sandboxCreationInProgress && global.sandboxCreationPromise) {
+    console.log('[kill-sandbox] Waiting for in-progress sandbox creation...');
+    try {
+      await Promise.race([
+        global.sandboxCreationPromise,
+        new Promise(resolve => setTimeout(resolve, 5000)) // Max 5s wait
+      ]);
+    } catch {
+      // Ignore errors, we're cleaning up anyway
     }
-    
-    // Clear ALL sandbox-related global variables
-    global.activeSandboxProvider = null;
-    global.sandboxProvider = null;
-    global.sandboxData = null;
-    global.sandboxCreationInProgress = false;
-    global.sandboxCreationPromise = null;
-    
-    // Clear existing files tracking
-    if (global.existingFiles) {
-      global.existingFiles.clear();
-    }
-    
-    console.log('[kill-sandbox] All sandbox state cleared');
-    
-    return NextResponse.json({
-      success: true,
-      sandboxKilled,
-      message: 'Sandbox cleaned up successfully'
-    });
-    
-  } catch (error) {
-    console.error('[kill-sandbox] Error:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: (error as Error).message 
-      }, 
-      { status: 500 }
-    );
   }
+
+  // Step 2: Terminate sandbox via provider
+  const provider = global.activeSandboxProvider || global.sandboxProvider;
+  if (provider) {
+    try {
+      // Give it a timeout
+      await Promise.race([
+        provider.terminate(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Terminate timeout')), 10000))
+      ]);
+      results.providerTerminated = true;
+      console.log('[kill-sandbox] Provider terminated successfully');
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      console.error('[kill-sandbox] Provider termination error:', errorMsg);
+      results.errors.push(`Provider: ${errorMsg}`);
+    }
+  }
+
+  // Step 3: Clean up via sandbox manager
+  try {
+    await sandboxManager.terminateAll();
+    results.managerCleanedUp = true;
+    console.log('[kill-sandbox] Sandbox manager cleaned up');
+  } catch (e) {
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    console.error('[kill-sandbox] Manager cleanup error:', errorMsg);
+    results.errors.push(`Manager: ${errorMsg}`);
+  }
+
+  // Step 4: Clear ALL sandbox-related global variables
+  global.activeSandboxProvider = null;
+  global.sandboxProvider = null;
+  global.sandboxData = null;
+  // Reset sandboxState to empty state (can't be null due to type constraint)
+  global.sandboxState = {
+    fileCache: { files: {}, lastSync: 0, sandboxId: '' },
+    sandbox: null as any,
+    sandboxData: null as any
+  };
+  global.sandboxCreationInProgress = false;
+  global.sandboxCreationPromise = null;
+  
+  if (global.existingFiles) {
+    global.existingFiles.clear();
+  }
+  
+  results.stateCleared = true;
+  console.log('[kill-sandbox] All sandbox state cleared');
+  
+  return NextResponse.json({
+    success: true,
+    sandboxKilled: results.providerTerminated || results.managerCleanedUp,
+    message: 'Sandbox cleaned up successfully',
+    details: results
+  });
 }

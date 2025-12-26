@@ -138,7 +138,7 @@ function AISandboxPageContent() {
   const isMountedRef = useRef<boolean>(true);
   const streamAbortRef = useRef<AbortController | null>(null);
   const createSandboxRef = useRef<((fromHomeScreen?: boolean, suppressUrlPush?: boolean) => Promise<any>) | null>(null);
-  const sendChatMessageRef = useRef<((message: string, isEdit?: boolean) => Promise<void>) | null>(null);
+  const sendChatMessageRef = useRef<((message?: string, retryCount?: number) => Promise<void>) | null>(null);
   const captureUrlScreenshotRef = useRef<((url: string) => Promise<void>) | null>(null);
 
   useEffect(() => {
@@ -1706,14 +1706,23 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     return null;
   };
 
-  const sendChatMessage = async (overrideMessage?: string) => {
+  const sendChatMessage = async (overrideMessage?: string, retryCount: number = 0) => {
+    const MAX_RETRIES = 2;
     const message = (overrideMessage ?? aiChatInput).trim();
     console.log('[sendChatMessage] Called with message:', message?.substring(0, 50), '...');
     console.log('[sendChatMessage] Auth state:', { isAuthenticated, isAuthLoading });
     console.log('[sendChatMessage] Sandbox state:', { hasSandbox: !!sandboxData, sandboxId: sandboxData?.sandboxId });
+    console.log('[sendChatMessage] Retry count:', retryCount);
     
     if (!message) {
       console.log('[sendChatMessage] Empty message, returning');
+      return;
+    }
+    
+    // Prevent infinite retry loops
+    if (retryCount > MAX_RETRIES) {
+      console.error('[sendChatMessage] Max retries exceeded');
+      addChatMessage('Request failed after multiple retries. Please refresh the page and try again.', 'system');
       return;
     }
     
@@ -1875,14 +1884,34 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         const errorText = await response.text();
         console.error('[chat] API error response:', errorText);
         
-        // Special handling for 404 Sandbox not found - clear state and inform user
+        // Special handling for 404 Sandbox not found - auto-retry with new sandbox
         if (response.status === 404 && errorText.includes('Sandbox') && errorText.includes('not found')) {
-          console.log('[chat] Sandbox not found, clearing state...');
+          console.log('[chat] Sandbox not found, auto-creating new one and retrying... (attempt', retryCount + 1, ')');
           // Clear the stale sandbox data
           setSandboxData(null);
-          addChatMessage('Sandbox expired. Creating a new one - please try again.', 'system');
-          // Trigger new sandbox creation
-          createSandbox(true, true).catch(() => {});
+          
+          if (retryCount < MAX_RETRIES) {
+            addChatMessage('Sandbox expired. Recreating and retrying...', 'system');
+            
+            try {
+              // Create a new sandbox
+              const newSandbox = await createSandbox(true, true);
+              if (newSandbox?.sandboxId) {
+                console.log('[chat] New sandbox created:', newSandbox.sandboxId, '- retrying request');
+                // Remove the "expired" message and retry with new sandbox (increment retry count)
+                setChatMessages(prev => prev.filter(msg => msg.content !== 'Sandbox expired. Recreating and retrying...'));
+                // Retry with incremented count to prevent infinite loops
+                await sendChatMessage(message, retryCount + 1);
+              } else {
+                addChatMessage('Failed to create new sandbox. Please try again.', 'system');
+              }
+            } catch (retryError: any) {
+              console.error('[chat] Auto-retry failed:', retryError);
+              addChatMessage(`Retry failed: ${retryError.message}. Please refresh the page.`, 'system');
+            }
+          } else {
+            addChatMessage('Sandbox creation failed after multiple attempts. Please refresh the page.', 'system');
+          }
           return;
         }
         
