@@ -107,6 +107,36 @@ export const appConfig = {
     truncationRecoveryMaxTokens: 4000,
   },
   
+  // Coding Agent Configuration
+  agents: {
+    // Default coding agent
+    defaultAgent: 'builtin' as const,
+    
+    // Available agents
+    availableAgents: [
+      'builtin',      // Built-in code generator (current implementation)
+      'claude-code',  // Claude Code CLI
+      'codex',        // OpenAI Codex CLI
+      'aider',        // Aider AI coding assistant
+    ] as const,
+    
+    // Agent display names
+    agentDisplayNames: {
+      'builtin': 'Chutes Webcoder',
+      'claude-code': 'Claude Code',
+      'codex': 'OpenAI Codex',
+      'aider': 'Aider',
+    } as Record<string, string>,
+    
+    // Agent descriptions
+    agentDescriptions: {
+      'builtin': 'Built-in fast code generator optimized for web apps',
+      'claude-code': 'Anthropic\'s powerful coding agent with full project understanding',
+      'codex': 'OpenAI\'s code execution agent with autonomous capabilities',
+      'aider': 'Open-source AI pair programming assistant',
+    } as Record<string, string>,
+  },
+  
   // Code Application Configuration
   codeApplication: {
     // Delay after applying code before refreshing iframe (milliseconds)

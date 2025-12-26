@@ -88,6 +88,10 @@ function AISandboxPageContent() {
     const modelParam = searchParams.get('model');
     return appConfig.ai.availableModels.includes(modelParam || '') ? modelParam! : appConfig.ai.defaultModel;
   });
+  const [selectedAgent, setSelectedAgent] = useState<string>(() => {
+    const agentParam = searchParams.get('agent');
+    return appConfig.agents.availableAgents.includes(agentParam as any) ? agentParam! : appConfig.agents.defaultAgent;
+  });
   const [_urlOverlayVisible, _setUrlOverlayVisible] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [_urlStatus, _setUrlStatus] = useState<string[]>([]);
@@ -1822,18 +1826,33 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       console.log('[chat] - sandboxId:', fullContext.sandboxId);
       console.log('[chat] - isEdit:', conversationContext.appliedCode.length > 0);
       console.log('[chat] - model:', aiModel);
+      console.log('[chat] - agent:', selectedAgent);
       console.log('[chat] - prompt:', message.substring(0, 100));
       
-      console.log('[chat] Making fetch request to /api/generate-ai-code-stream...');
-      const response = await fetch('/api/generate-ai-code-stream', {
+      // Determine which API to use based on selected agent
+      const useExternalAgent = selectedAgent !== 'builtin' && effectiveSandboxId;
+      const apiEndpoint = useExternalAgent ? '/api/agent-run' : '/api/generate-ai-code-stream';
+      
+      console.log(`[chat] Making fetch request to ${apiEndpoint}...`);
+      
+      const requestBody = useExternalAgent 
+        ? {
+            agent: selectedAgent,
+            model: aiModel,
+            prompt: message,
+            sandboxId: effectiveSandboxId,
+          }
+        : {
+            prompt: message,
+            model: aiModel,
+            context: fullContext,
+            isEdit: conversationContext.appliedCode.length > 0
+          };
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: message,
-          model: aiModel,
-          context: fullContext,
-          isEdit: conversationContext.appliedCode.length > 0
-        })
+        body: JSON.stringify(requestBody)
       });
       
       console.log('[chat] Fetch response received:', response.status, response.statusText);
@@ -1876,7 +1895,30 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   console.log('[chat] Parsed data type:', data.type);
                 }
                 
-                if (data.type === 'status') {
+                // Handle agent-run specific output types
+                if (data.type === 'agent-output') {
+                  // Claude Code stream-json output
+                  const agentData = data.data;
+                  if (agentData.type === 'assistant' && agentData.message?.content) {
+                    for (const block of agentData.message.content) {
+                      if (block.type === 'text') {
+                        addChatMessage(block.text, 'ai');
+                      } else if (block.type === 'tool_use' && block.name === 'write_to_file') {
+                        // File was written by agent
+                        setGenerationProgress(prev => ({
+                          ...prev,
+                          status: `Agent wrote: ${block.input?.path || 'file'}`
+                        }));
+                      }
+                    }
+                  }
+                } else if (data.type === 'output') {
+                  // Plain text output from agent
+                  addChatMessage(data.text, 'ai');
+                } else if (data.type === 'stderr') {
+                  // Stderr from agent - show as warning
+                  console.warn('[agent] stderr:', data.text);
+                } else if (data.type === 'status') {
           setGenerationProgress(prev => ({ ...prev, status: data.message }));
                 } else if (data.type === 'thinking') {
                   setGenerationProgress(prev => ({ 
@@ -3243,14 +3285,49 @@ Focus on the key sections and content, making it clean and modern.`;
                 </div>
               </motion.form>
 
-              {/* Model Selector */}
+              {/* Agent & Model Selector */}
               <motion.div
                 className="mt-8 w-full max-w-3xl mx-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, ease: 'easeOut', delay: 0.6 }}
               >
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center gap-4 flex-wrap">
+                  {/* Agent Selector */}
+                  <div className="flex items-center gap-3 px-5 h-12 bg-neutral-900 border border-neutral-700 rounded-xl shadow-lg">
+                    <span className="text-sm text-neutral-400 font-medium">Agent:</span>
+                    <select
+                      value={selectedAgent}
+                      onChange={(e) => {
+                        const newAgent = e.target.value;
+                        setSelectedAgent(newAgent);
+                        const params = new URLSearchParams(searchParams);
+                        params.set('agent', newAgent);
+                        if (sandboxData?.sandboxId) {
+                          params.set('sandbox', sandboxData.sandboxId);
+                        }
+                        router.push(`/?${params.toString()}`);
+                      }}
+                      className="appearance-none bg-transparent text-base text-white font-semibold cursor-pointer focus:outline-none pr-7"
+                      style={{ 
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2310b981' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 0 center',
+                        backgroundSize: '18px'
+                      }}
+                    >
+                      {appConfig.agents.availableAgents.map(agent => {
+                        const displayName = appConfig.agents.agentDisplayNames[agent] || agent;
+                        return (
+                          <option key={agent} value={agent} className="bg-neutral-900 text-white">
+                            {displayName}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  
+                  {/* Model Selector */}
                   <div className="flex items-center gap-3 px-5 h-12 bg-neutral-900 border border-neutral-700 rounded-xl shadow-lg">
                     <span className="text-sm text-neutral-400 font-medium">Model:</span>
                     <select
@@ -3399,8 +3476,35 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             </button>
           </div>
           
-          {/* Right: Model Selector, Download, Status, Avatar */}
+          {/* Right: Agent Selector, Model Selector, Download, Status, Avatar */}
           <div className="flex items-center gap-2">
+          {/* Agent Selector */}
+          <div className="hidden lg:block">
+            <select
+              value={selectedAgent}
+              onChange={(e) => {
+                const newAgent = e.target.value;
+                setSelectedAgent(newAgent);
+                const params = new URLSearchParams(searchParams);
+                params.set('agent', newAgent);
+                if (sandboxData?.sandboxId) {
+                  params.set('sandbox', sandboxData.sandboxId);
+                }
+                router.push(`/?${params.toString()}`);
+              }}
+              className="h-10 px-4 text-sm bg-neutral-800 text-white border border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 hover:border-neutral-600 transition-colors font-medium"
+            >
+              {appConfig.agents.availableAgents.map(agent => {
+                const displayName = appConfig.agents.agentDisplayNames[agent] || agent;
+                return (
+                  <option key={agent} value={agent}>
+                    {displayName}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          
           {/* Model Selector */}
           <div className="hidden lg:block">
             <select
