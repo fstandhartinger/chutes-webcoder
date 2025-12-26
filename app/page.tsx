@@ -302,6 +302,13 @@ function AISandboxPageContent() {
         console.error('[ai-sandbox] Failed to clear old conversation:', error);
       }
       
+      // IMPORTANT: Clear any stale sandbox data from previous sessions
+      // A new page load should always start fresh unless restoring from URL
+      if (isMountedRef.current && !searchParams.get('sandbox')) {
+        console.log('[home] Clearing stale sandbox data on fresh page load');
+        setSandboxData(null);
+      }
+      
       // Check if sandbox ID is in URL
       const sandboxIdParam = searchParams.get('sandbox');
       
@@ -1744,16 +1751,20 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       return;
     }
     
-    // Start sandbox creation in parallel if needed
+    // IMPORTANT: Always check if sandbox creation is in progress
+    // This prevents race conditions where we use an old sandboxId while a new one is being created
     let sandboxPromise: Promise<{ sandboxId: string; url: string }> | null = null;
     let sandboxCreating = false;
     
-    if (!sandboxData) {
+    // Check if there's already a sandbox creation in progress (from home page auto-create, etc.)
+    if (creatingSandboxRef.current) {
+      sandboxCreating = true;
+      sandboxPromise = creatingSandboxRef.current;
+      console.log('[sendChatMessage] Sandbox creation already in progress, will wait for it...');
+    } else if (!sandboxData) {
       sandboxCreating = true;
       console.log('[sendChatMessage] No sandbox, creating one...');
-      // In-Progress Hinweis für den Benutzer
       addChatMessage('Creating sandbox...', 'system');
-      // Parallel starten, nicht blockieren
       sandboxPromise = createSandbox(true, true).catch((error: any) => {
         console.error('[sendChatMessage] Sandbox creation failed:', error);
         addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
@@ -1766,15 +1777,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     // Determine if this is an edit
     const isEdit = conversationContext.appliedCode.length > 0;
     
-    // If sandbox is being created, wait for it BEFORE calling the AI API
+    // ALWAYS wait for sandbox creation if it's in progress
     let effectiveSandboxId = sandboxData?.sandboxId;
     let effectiveSandboxUrl = sandboxData?.url;
     
     if (sandboxCreating && sandboxPromise) {
       console.log('[sendChatMessage] Waiting for sandbox creation before AI call...');
-      addChatMessage('Creating sandbox...', 'system');
+      if (!sandboxData) {
+        addChatMessage('Creating sandbox...', 'system');
+      }
       try {
         const createdSandbox = await sandboxPromise;
+        // ALWAYS use the newly created sandbox, not the old one
         effectiveSandboxId = createdSandbox.sandboxId;
         effectiveSandboxUrl = createdSandbox.url;
         console.log('[sendChatMessage] Sandbox ready:', effectiveSandboxId);
@@ -1860,6 +1874,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       if (!response.ok) {
         const errorText = await response.text();
         console.error('[chat] API error response:', errorText);
+        
+        // Special handling for 404 Sandbox not found - clear state and inform user
+        if (response.status === 404 && errorText.includes('Sandbox') && errorText.includes('not found')) {
+          console.log('[chat] Sandbox not found, clearing state...');
+          // Clear the stale sandbox data
+          setSandboxData(null);
+          addChatMessage('Sandbox expired. Creating a new one - please try again.', 'system');
+          // Trigger new sandbox creation
+          createSandbox(true, true).catch(() => {});
+          return;
+        }
+        
         throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
