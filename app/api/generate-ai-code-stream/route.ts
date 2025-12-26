@@ -1369,103 +1369,193 @@ It's better to have 3 complete files than 10 incomplete files.`
           console.log('[generate-ai-code-stream] Has API key:', !!chutesApiKey, 'Key prefix:', chutesApiKey?.substring(0, 8));
           console.log('[generate-ai-code-stream] Messages count:', streamOptions.messages.length);
           
-          const response = await fetch(`${chutesBaseUrl}/chat/completions`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${chutesApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: actualModel,
-              messages: streamOptions.messages,
-              temperature: streamOptions.temperature,
-              max_tokens: streamOptions.maxTokens,
-              stream: true,
-            }),
-          });
+          // Retry configuration for Chutes API
+          const chutesMaxRetries = 3;
+          const chutesBaseDelay = 2000; // 2 seconds initial delay
           
-          console.log('[generate-ai-code-stream] Chutes response status:', response.status, response.statusText);
+          // Get fallback models from available models (excluding current)
+          const fallbackModels = appConfig.ai.availableModels.filter(m => m !== actualModel);
+          let currentModelIndex = -1; // -1 means using the original model
+          let currentModel = actualModel;
+          let chutesSuccess = false;
           
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[generate-ai-code-stream] Chutes API error:', errorText);
-            throw new Error(`Chutes API error: ${response.status} - ${errorText}`);
-          }
-          
-          // Process the SSE stream manually
-          const reader = response.body?.getReader();
-          const decoder = new TextDecoder();
-          let buffer = '';
-          let generatedCode = '';
-          let chunkCount = 0;
-          
-          console.log('[generate-ai-code-stream] Starting to read Chutes stream...');
-          
-          if (reader) {
-            try {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                  console.log('[generate-ai-code-stream] Chutes stream done. Total chunks:', chunkCount, 'Generated code length:', generatedCode.length);
-                  break;
-                }
+          while (!chutesSuccess) {
+            let chutesRetryCount = 0;
+            
+            while (chutesRetryCount <= chutesMaxRetries) {
+              try {
+                console.log(`[generate-ai-code-stream] Chutes attempt ${chutesRetryCount + 1}/${chutesMaxRetries + 1} with model: ${currentModel}`);
                 
-                chunkCount++;
-                const rawChunk = decoder.decode(value, { stream: true });
-                buffer += rawChunk;
+                const response = await fetch(`${chutesBaseUrl}/chat/completions`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${chutesApiKey}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    model: currentModel,
+                    messages: streamOptions.messages,
+                    temperature: streamOptions.temperature,
+                    max_tokens: streamOptions.maxTokens,
+                    stream: true,
+                  }),
+                });
                 
-                if (chunkCount <= 5) {
-                  console.log('[generate-ai-code-stream] Chutes chunk', chunkCount, ':', rawChunk.substring(0, 300));
-                }
+                console.log('[generate-ai-code-stream] Chutes response status:', response.status, response.statusText);
                 
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-                
-                for (const line of lines) {
-                  if (line.startsWith('data: ')) {
-                    const data = line.slice(6);
-                    if (data === '[DONE]') {
-                      console.log('[generate-ai-code-stream] Received [DONE] signal');
-                      continue;
-                    }
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  console.error('[generate-ai-code-stream] Chutes API error:', errorText);
+                  
+                  // Check for rate limiting (429) or capacity issues
+                  const is429Error = response.status === 429;
+                  const isCapacityError = errorText.toLowerCase().includes('capacity') || 
+                                          errorText.toLowerCase().includes('rate') ||
+                                          errorText.toLowerCase().includes('overloaded');
+                  
+                  if (is429Error || isCapacityError) {
+                    chutesRetryCount++;
                     
-                    try {
-                      const parsed = JSON.parse(data);
-                      const content = parsed.choices?.[0]?.delta?.content || '';
-                      if (content) {
-                        generatedCode += content;
-                        await sendProgress({ type: 'stream', text: content, raw: true });
-                        process.stdout.write(content);
-                      }
-                    } catch (e) {
-                      console.warn('[generate-ai-code-stream] Failed to parse Chutes data:', data.substring(0, 100));
+                    if (chutesRetryCount <= chutesMaxRetries) {
+                      // Exponential backoff: 2s, 4s, 8s
+                      const delay = chutesBaseDelay * Math.pow(2, chutesRetryCount - 1);
+                      console.log(`[generate-ai-code-stream] Rate limited (429), waiting ${delay}ms before retry...`);
+                      
+                      await sendProgress({ 
+                        type: 'status', 
+                        message: `Server busy, retrying in ${delay / 1000}s (attempt ${chutesRetryCount}/${chutesMaxRetries})...` 
+                      });
+                      
+                      await new Promise(resolve => setTimeout(resolve, delay));
+                      continue; // Retry with same model
+                    } else {
+                      // All retries exhausted for this model, try fallback
+                      throw new Error(`Chutes API error: ${response.status} - ${errorText}`);
                     }
+                  } else {
+                    // Non-retryable error
+                    throw new Error(`Chutes API error: ${response.status} - ${errorText}`);
                   }
                 }
+                
+                // Success! Process the stream
+                const reader = response.body?.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let generatedCode = '';
+                let chunkCount = 0;
+                
+                console.log('[generate-ai-code-stream] Starting to read Chutes stream...');
+                
+                if (reader) {
+                  try {
+                    while (true) {
+                      const { done, value } = await reader.read();
+                      if (done) {
+                        console.log('[generate-ai-code-stream] Chutes stream done. Total chunks:', chunkCount, 'Generated code length:', generatedCode.length);
+                        break;
+                      }
+                      
+                      chunkCount++;
+                      const rawChunk = decoder.decode(value, { stream: true });
+                      buffer += rawChunk;
+                      
+                      if (chunkCount <= 5) {
+                        console.log('[generate-ai-code-stream] Chutes chunk', chunkCount, ':', rawChunk.substring(0, 300));
+                      }
+                      
+                      const lines = buffer.split('\n');
+                      buffer = lines.pop() || '';
+                      
+                      for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                          const data = line.slice(6);
+                          if (data === '[DONE]') {
+                            console.log('[generate-ai-code-stream] Received [DONE] signal');
+                            continue;
+                          }
+                          
+                          try {
+                            const parsed = JSON.parse(data);
+                            const content = parsed.choices?.[0]?.delta?.content || '';
+                            if (content) {
+                              generatedCode += content;
+                              await sendProgress({ type: 'stream', text: content, raw: true });
+                              process.stdout.write(content);
+                            }
+                          } catch (e) {
+                            console.warn('[generate-ai-code-stream] Failed to parse Chutes data:', data.substring(0, 100));
+                          }
+                        }
+                      }
+                    }
+                    
+                    console.log('[generate-ai-code-stream] Sending complete. Generated code length:', generatedCode.length);
+                    if (generatedCode.length === 0) {
+                      console.error('[generate-ai-code-stream] WARNING: Generated code is empty!');
+                    }
+                    
+                    // Send completion
+                    await sendProgress({ 
+                      type: 'complete', 
+                      generatedCode, 
+                      explanation: 'Code generation complete',
+                      packagesToInstall: []
+                    });
+                    
+                    chutesSuccess = true;
+                    break; // Exit retry loop
+                    
+                  } finally {
+                    reader.releaseLock();
+                  }
+                }
+                
+              } catch (error: any) {
+                console.error(`[generate-ai-code-stream] Chutes error on attempt ${chutesRetryCount + 1}:`, error.message);
+                
+                // Check if we should try another model
+                const is429Related = error.message?.includes('429') || 
+                                     error.message?.toLowerCase().includes('capacity') ||
+                                     error.message?.toLowerCase().includes('rate');
+                
+                if (is429Related && chutesRetryCount >= chutesMaxRetries) {
+                  // Move to fallback model
+                  currentModelIndex++;
+                  
+                  if (currentModelIndex < fallbackModels.length) {
+                    currentModel = fallbackModels[currentModelIndex];
+                    console.log(`[generate-ai-code-stream] Switching to fallback model: ${currentModel}`);
+                    
+                    await sendProgress({ 
+                      type: 'status', 
+                      message: `Model ${actualModel} unavailable, trying ${appConfig.ai.modelDisplayNames[currentModel] || currentModel}...` 
+                    });
+                    
+                    break; // Exit inner retry loop to try new model
+                  } else {
+                    // No more fallback models
+                    throw new Error(`All models unavailable. Last error: ${error.message}`);
+                  }
+                } else if (!is429Related) {
+                  // Non-retryable error, propagate
+                  throw error;
+                }
+                
+                chutesRetryCount++;
               }
-              
-              console.log('[generate-ai-code-stream] Sending complete. Generated code length:', generatedCode.length);
-              if (generatedCode.length === 0) {
-                console.error('[generate-ai-code-stream] WARNING: Generated code is empty!');
-              }
-              
-              // Send completion
-              await sendProgress({ 
-                type: 'complete', 
-                generatedCode, 
-                explanation: 'Code generation complete',
-                packagesToInstall: []
-              });
-              
-              // Don't return here - let it fall through to normal completion handling
-            } finally {
-              reader.releaseLock();
+            }
+            
+            // If we've exhausted retries for current model without success, 
+            // the loop will continue with the next model (if available)
+            if (!chutesSuccess && currentModelIndex >= fallbackModels.length) {
+              throw new Error('All Chutes models are currently unavailable. Please try again later.');
             }
           }
           
           // For Chutes, we've already sent all the data via sendProgress
           // Just return success without using streamText result
-          if (isChutes && chutesApiKey) {
+          if (chutesSuccess) {
             await writer.close();
             return new NextResponse(stream.readable, {
               headers: {
