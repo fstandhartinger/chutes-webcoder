@@ -49,9 +49,19 @@ const AGENTS = {
       OPENAI_API_KEY: apiKey,
       OPENAI_API_BASE: 'https://llm.chutes.ai/v1',
       AIDER_MODEL: `openai/${model}`,
+      // Suppress color codes and interactive prompts
+      NO_COLOR: '1',
+      TERM: 'dumb',
     }),
     buildCommand: (prompt: string) => [
-      'aider', '--yes', '--no-git', '--message', prompt
+      'aider',
+      '--yes',                    // Auto-confirm all prompts
+      '--no-git',                 // Don't use git
+      '--no-auto-commits',        // Don't auto-commit
+      '--no-show-model-warnings', // Suppress model warnings
+      '--no-pretty',              // Disable pretty output (no spinners/colors)
+      '--no-stream',              // Don't stream output (get complete response)
+      '--message', prompt
     ],
   },
 } as const;
@@ -206,24 +216,40 @@ export async function POST(request: NextRequest) {
           300000 // 5 minute timeout
         );
         
+        // Helper to strip ANSI escape codes
+        const stripAnsi = (str: string) => str.replace(/\x1b\[[0-9;]*m/g, '').replace(/\x1b\[[0-9;]*[A-Za-z]/g, '');
+        
         // Parse and stream the output
         if (result.stdout) {
-          // Try to parse as JSON lines (for Claude Code stream-json output)
-          const lines = result.stdout.split('\n').filter(Boolean);
+          const cleanOutput = stripAnsi(result.stdout);
           
-          for (const line of lines) {
-            try {
-              const parsed = JSON.parse(line);
-              await sendEvent({ type: 'agent-output', data: parsed });
-            } catch {
-              // Plain text output
-              await sendEvent({ type: 'output', text: line });
+          // For Claude Code, try to parse as JSON lines
+          if (agent === 'claude-code') {
+            const lines = cleanOutput.split('\n').filter(Boolean);
+            for (const line of lines) {
+              try {
+                const parsed = JSON.parse(line);
+                await sendEvent({ type: 'agent-output', data: parsed });
+              } catch {
+                // Plain text output - send as single message
+                if (line.trim()) {
+                  await sendEvent({ type: 'output', text: line.trim() });
+                }
+              }
+            }
+          } else {
+            // For other agents, send the entire output as one message
+            if (cleanOutput.trim()) {
+              await sendEvent({ type: 'output', text: cleanOutput.trim() });
             }
           }
         }
         
         if (result.stderr) {
-          await sendEvent({ type: 'stderr', text: result.stderr });
+          const cleanStderr = stripAnsi(result.stderr);
+          if (cleanStderr.trim()) {
+            await sendEvent({ type: 'stderr', text: cleanStderr.trim() });
+          }
         }
         
         await sendEvent({ 
