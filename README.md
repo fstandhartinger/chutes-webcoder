@@ -78,11 +78,19 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
 The `/api/agent-run` endpoint enables running external CLI coding agents inside Sandy sandboxes. Each agent is configured to use Chutes' model endpoints:
 
-| Agent | Package | API Endpoint | Status | Notes |
-|-------|---------|--------------|--------|-------|
-| **Codex** | `@openai/codex` | `responses.chutes.ai/v1` | ✅ Tested | Uses OpenAI Responses API proxy; auto-generates `config.toml` |
-| **Aider** | `aider-chat` (Python) | `llm.chutes.ai/v1` | ✅ Tested | OpenAI-compatible; works with all models |
-| **Claude Code** | `@anthropic-ai/claude-code` | `claude.chutes.ai` | ⚠️ Limited | Requires Claude-compatible models via Chutes proxy |
+| Agent | Package | API Endpoint | Status | Typical Speed |
+|-------|---------|--------------|--------|---------------|
+| **Aider** | `aider-chat` (Python) | `llm.chutes.ai/v1` | ✅ Tested | ~10s |
+| **Codex** | `@openai/codex` | `responses.chutes.ai/v1` | ✅ Tested | ~15-160s |
+| **Claude Code** | `@anthropic-ai/claude-code` | `claude.chutes.ai` | ⚠️ Slower | >60s |
+
+### Tested Model Combinations
+
+| Agent | DeepSeek V3.2 | GLM-4.7 |
+|-------|---------------|---------|
+| **Aider** | ✅ 10.2s | ✅ Works |
+| **Codex** | ✅ 156.9s | ✅ 13.4s |
+| **Claude Code** | ⚠️ Slow | ⚠️ Slow |
 
 ### Real-Time Output Streaming
 
