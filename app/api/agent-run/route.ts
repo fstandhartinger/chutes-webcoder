@@ -22,7 +22,7 @@ const AGENTS = {
       API_TIMEOUT_MS: '600000',
       CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
     }),
-    buildCommand: (prompt: string) => [
+    buildCommand: (prompt: string, _model: string) => [
       'claude', '-p', prompt,
       '--output-format', 'stream-json',
       '--verbose',
@@ -44,8 +44,8 @@ const AGENTS = {
       NO_COLOR: '1',
       TERM: 'dumb',
     }),
-    buildCommand: (prompt: string) => [
-      'codex', 'exec', '--full-auto', '--skip-git-repo-check', prompt
+    buildCommand: (prompt: string, model: string) => [
+      'codex', 'exec', '--full-auto', '--skip-git-repo-check', '--model', model, prompt
     ],
   },
   'aider': {
@@ -59,7 +59,7 @@ const AGENTS = {
       NO_COLOR: '1',
       TERM: 'dumb',
     }),
-    buildCommand: (prompt: string) => [
+    buildCommand: (prompt: string, _model: string) => [
       'aider',
       '--yes',                    // Auto-confirm all prompts
       '--no-git',                 // Don't use git
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
         const env = agentConfig.setupEnv(model, apiKey);
         
         // Build command
-        const commandParts = agentConfig.buildCommand(prompt);
+        const commandParts = agentConfig.buildCommand(prompt, model);
         const command = commandParts.map(part => 
           part.includes(' ') ? `"${part.replace(/"/g, '\\"')}"` : part
         ).join(' ');
