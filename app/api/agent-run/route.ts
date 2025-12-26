@@ -45,7 +45,7 @@ const AGENTS = {
       TERM: 'dumb',
     }),
     buildCommand: (prompt: string) => [
-      'codex', 'exec', '--full-auto', prompt
+      'codex', 'exec', '--full-auto', '--skip-git-repo-check', prompt
     ],
   },
   'aider': {
