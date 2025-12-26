@@ -1919,7 +1919,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   // Stderr from agent - show as warning
                   console.warn('[agent] stderr:', data.text);
                 } else if (data.type === 'status') {
-          setGenerationProgress(prev => ({ ...prev, status: data.message }));
+                  setGenerationProgress(prev => ({ ...prev, status: data.message }));
+                } else if (data.type === 'heartbeat') {
+                  // Keep-alive event - update status to show we're still working
+                  setGenerationProgress(prev => ({ 
+                    ...prev, 
+                    status: prev.status?.includes('Processing') ? prev.status : `Processing... (${data.elapsed}s)`
+                  }));
                 } else if (data.type === 'thinking') {
                   setGenerationProgress(prev => ({ 
                     ...prev, 

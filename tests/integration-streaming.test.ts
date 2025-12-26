@@ -242,10 +242,34 @@ async function main() {
   
   log(`\nAPI URL: ${API_URL}`, 'cyan');
   
-  const tests = [
+  // Parse command line args
+  const args = process.argv.slice(2);
+  const specificAgent = args.find(a => a.startsWith('--agent='))?.split('=')[1];
+  const specificModel = args.find(a => a.startsWith('--model='))?.split('=')[1];
+  
+  let tests = [
     { agent: 'codex', model: 'deepseek-ai/DeepSeek-V3.2-TEE' },
     { agent: 'aider', model: 'deepseek-ai/DeepSeek-V3.2-TEE' },
+    // Note: claude-code requires Claude-compatible models via claude.chutes.ai proxy
+    // { agent: 'claude-code', model: 'deepseek-ai/DeepSeek-V3.2-TEE' },
   ];
+  
+  if (specificAgent || specificModel) {
+    tests = tests.filter(t => 
+      (!specificAgent || t.agent === specificAgent) &&
+      (!specificModel || t.model === specificModel)
+    );
+    
+    // If specific agent requested but not in default list, add it
+    if (specificAgent && !tests.length) {
+      tests = [{ agent: specificAgent, model: specificModel || 'deepseek-ai/DeepSeek-V3.2-TEE' }];
+    }
+  }
+  
+  if (tests.length === 0) {
+    log('No tests to run!', 'red');
+    process.exit(1);
+  }
   
   const results: { agent: string; model: string; passed: boolean }[] = [];
   
