@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { appConfig } from '@/config/app.config';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // 5 minutes max for agent execution
+export const maxDuration = 600; // 10 minutes max for agent execution
 
 // Agent configurations
 const AGENTS = {
@@ -119,7 +119,7 @@ async function execInSandbox(
   sandboxId: string,
   command: string,
   env: Record<string, string> = {},
-  timeoutMs: number = 300000
+  timeoutMs: number = 600000
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return sandyRequest(`/api/sandboxes/${sandboxId}/exec`, {
     method: 'POST',
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
           sandboxId,
           command,
           env,
-          300000 // 5 minute timeout
+          600000 // 10 minute timeout
         );
         
         // Helper to strip ANSI escape codes
