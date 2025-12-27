@@ -524,11 +524,13 @@ CONFIGEOF`,
                         trimmed.startsWith('bash -c') ||
                         trimmed.match(/^OpenAI Codex v[\d.]+/) ||
                         trimmed.match(/^exec$/) ||
-                        trimmed.match(/in \/workspace succeeded in \d+ms/) ||
-                        trimmed.match(/^in \/workspace (succeeded|failed) in \d+ms:?$/) ||
+                        trimmed.match(/in \/workspace (succeeded|exited|failed) in \d+ms/) || // Command exec logs
                         trimmed.match(/^\d+$/) || // Pure numbers (byte counts, etc)
                         trimmed.match(/^user$/) ||
-                        trimmed.match(/^___SANDY_OFFSET_SEP___$/)) {
+                        trimmed.match(/^___SANDY_OFFSET_SEP___$/) ||
+                        trimmed.match(/^npm error Log files were not written/) || // Verbose npm log message
+                        trimmed.match(/^npm error You can rerun/) // Verbose npm suggestion
+                    ) {
                       continue; // Skip noise
                     }
 
