@@ -450,38 +450,54 @@ CONFIGEOF`,
         const maxPolls = 1200; // 10 minutes at 500ms intervals
         const pollInterval = 500; // 500ms between polls
         const maxConsecutiveErrors = 5; // Allow some transient errors
-        
+
+        // Buffer for incomplete JSON lines (Claude Code stream-json format)
+        let jsonLineBuffer = '';
+
         while (running && pollCount < maxPolls && consecutiveErrors < maxConsecutiveErrors) {
           // Wait before polling
           await new Promise(resolve => setTimeout(resolve, pollInterval));
           pollCount++;
-          
+
           try {
             // Check if process is still running (check done file)
             running = await isProcessRunning(sandboxId, doneFile);
-            
+
             // Read new output
             const { content, newOffset } = await readOutputFromOffset(sandboxId, outputFile, offset);
-            
+
             // Reset error counter on success
             consecutiveErrors = 0;
-            
+
             if (content && content !== lastSentContent) {
               const newContent = content.substring(lastSentContent.length);
               if (newContent.trim()) {
                 const cleanContent = stripAnsi(newContent);
-                
-                // For Claude Code, try to parse as JSON lines
+
+                // For Claude Code, try to parse as JSON lines with buffering
                 if (agent === 'claude-code') {
-                  const lines = cleanContent.split('\n').filter(Boolean);
+                  // Add new content to buffer
+                  jsonLineBuffer += cleanContent;
+
+                  // Process complete lines (those ending with newline)
+                  const lines = jsonLineBuffer.split('\n');
+                  // Keep the last incomplete line in the buffer
+                  jsonLineBuffer = lines.pop() || '';
+
                   for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) continue;
+
                     try {
-                      const parsed = JSON.parse(line);
+                      const parsed = JSON.parse(trimmedLine);
                       await sendEvent({ type: 'agent-output', data: parsed });
                     } catch {
-                      if (line.trim()) {
-                        await sendEvent({ type: 'output', text: line.trim() });
+                      // If it looks like incomplete JSON, skip it
+                      // Only send as output if it's clearly NOT JSON
+                      if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('"')) {
+                        await sendEvent({ type: 'output', text: trimmedLine });
                       }
+                      // Otherwise, it's likely a malformed JSON line - skip it
                     }
                   }
                 } else {
@@ -493,11 +509,11 @@ CONFIGEOF`,
                     }
                   }
                 }
-                
+
                 lastSentContent = content;
               }
             }
-            
+
             offset = newOffset;
           } catch (pollError) {
             consecutiveErrors++;
@@ -525,6 +541,16 @@ CONFIGEOF`,
           await sendEvent({ type: 'error', error: 'Lost connection to sandbox' });
         }
         
+        // Process any remaining buffered content for Claude Code
+        if (agent === 'claude-code' && jsonLineBuffer.trim()) {
+          try {
+            const parsed = JSON.parse(jsonLineBuffer.trim());
+            await sendEvent({ type: 'agent-output', data: parsed });
+          } catch {
+            // Skip malformed JSON in buffer
+          }
+        }
+
         // Read any remaining output
         const { content: finalContent } = await readOutputFromOffset(sandboxId, outputFile, 0);
         if (finalContent && finalContent !== lastSentContent) {
@@ -533,7 +559,20 @@ CONFIGEOF`,
             const cleanContent = stripAnsi(newContent);
             const lines = cleanContent.split('\n').filter(line => line.trim());
             for (const line of lines) {
-              await sendEvent({ type: 'output', text: line });
+              // For Claude Code, try to parse as JSON
+              if (agent === 'claude-code') {
+                try {
+                  const parsed = JSON.parse(line);
+                  await sendEvent({ type: 'agent-output', data: parsed });
+                } catch {
+                  // Only send non-JSON lines as output
+                  if (!line.startsWith('{') && !line.startsWith('"')) {
+                    await sendEvent({ type: 'output', text: line });
+                  }
+                }
+              } else {
+                await sendEvent({ type: 'output', text: line });
+              }
             }
           }
         }

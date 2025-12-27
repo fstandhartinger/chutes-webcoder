@@ -2004,7 +2004,15 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   // Plain text output from agent - clean it first
                   const cleaned = data.text?.trim();
                   if (cleaned && cleaned.length > 0) {
-                    addChatMessage(cleaned, 'ai');
+                    // Skip if it looks like JSON or a JSON fragment
+                    if (cleaned.startsWith('{') || cleaned.startsWith('"type":') ||
+                        cleaned.startsWith('ype":') || cleaned.includes('"message":{"content":') ||
+                        cleaned.includes('"subtype":"init"') || cleaned.includes('"session_id":')) {
+                      // Skip JSON fragments
+                      console.log('[chat] Skipping JSON fragment from output');
+                    } else {
+                      addChatMessage(cleaned, 'ai');
+                    }
                   }
                 } else if (data.type === 'stderr') {
                   // Stderr from agent - show as warning

@@ -35,8 +35,27 @@ export function parseClaudeCodeOutput(data: any): ParsedMessage {
     return { type: 'skip', content: '' };
   }
 
+  // Handle null/undefined
+  if (data === null || data === undefined) {
+    return { type: 'skip', content: '' };
+  }
+
   // Handle system init messages - skip these as they're internal
-  if (data.type === 'system' && data.subtype === 'init') {
+  if (data.type === 'system') {
+    return { type: 'skip', content: '' };
+  }
+
+  // Handle user messages (tool results) - skip these
+  if (data.type === 'user') {
+    return { type: 'skip', content: '' };
+  }
+
+  // Handle result messages - skip these
+  if (data.type === 'result') {
+    // Check if it has a useful message
+    if (data.result && typeof data.result === 'string' && !data.result.includes('"type":')) {
+      return { type: 'user-friendly', content: data.result };
+    }
     return { type: 'skip', content: '' };
   }
 
@@ -44,19 +63,24 @@ export function parseClaudeCodeOutput(data: any): ParsedMessage {
   if (data.type === 'assistant' && data.message?.content) {
     const content = data.message.content;
     const messages: string[] = [];
+    const toolUses: ParsedMessage[] = [];
 
     for (const block of content) {
       if (block.type === 'thinking') {
-        // Extract thinking text for display
+        // Thinking blocks are internal - just show status
         return {
           type: 'thinking',
-          content: block.thinking || '',
+          content: 'Thinking...',
           metadata: { thinking: true }
         };
       }
 
-      if (block.type === 'text') {
-        messages.push(block.text);
+      if (block.type === 'text' && block.text) {
+        // Only add non-empty, non-JSON text
+        const text = block.text.trim();
+        if (text && !text.startsWith('{') && !text.includes('"type":')) {
+          messages.push(text);
+        }
       }
 
       if (block.type === 'tool_use') {
@@ -65,58 +89,53 @@ export function parseClaudeCodeOutput(data: any): ParsedMessage {
 
         // Format tool use nicely
         if (toolName === 'Write' || toolName === 'write_to_file') {
-          return {
+          toolUses.push({
             type: 'tool-use',
             content: `Creating file: ${input.file_path || input.path || 'file'}`,
             metadata: { toolName, filePath: input.file_path || input.path }
-          };
-        }
-
-        if (toolName === 'Edit') {
-          return {
+          });
+        } else if (toolName === 'Edit') {
+          toolUses.push({
             type: 'tool-use',
             content: `Editing file: ${input.file_path || 'file'}`,
             metadata: { toolName, filePath: input.file_path }
-          };
-        }
-
-        if (toolName === 'Read') {
-          return {
-            type: 'tool-use',
-            content: `Reading file: ${input.file_path || 'file'}`,
-            metadata: { toolName, filePath: input.file_path }
-          };
-        }
-
-        if (toolName === 'Bash') {
+          });
+        } else if (toolName === 'Read') {
+          // Reading files is less important, skip showing it
+        } else if (toolName === 'Bash') {
           const cmd = input.command || '';
-          // Clean up the command display
-          const shortCmd = cmd.length > 100 ? cmd.substring(0, 100) + '...' : cmd;
-          return {
-            type: 'tool-use',
-            content: `Running: ${shortCmd}`,
-            metadata: { toolName }
-          };
+          // Clean up the command display - show npm/install commands
+          if (cmd.includes('npm install') || cmd.includes('npm run')) {
+            const shortCmd = cmd.length > 80 ? cmd.substring(0, 80) + '...' : cmd;
+            toolUses.push({
+              type: 'tool-use',
+              content: `Running: ${shortCmd}`,
+              metadata: { toolName }
+            });
+          }
         }
-
-        // Generic tool use
-        return {
-          type: 'tool-use',
-          content: `Using tool: ${toolName}`,
-          metadata: { toolName }
-        };
+        // Skip other tool uses to reduce noise
       }
     }
 
+    // Prefer returning tool uses if we have them (more informative during generation)
+    if (toolUses.length > 0) {
+      return toolUses[0];
+    }
+
+    // Return text messages
     if (messages.length > 0) {
       return {
         type: 'user-friendly',
         content: messages.join('\n')
       };
     }
+
+    // Skip if no useful content
+    return { type: 'skip', content: '' };
   }
 
-  // Handle tool results - usually skip these
+  // Handle tool results - skip these
   if (data.type === 'tool_result') {
     return { type: 'skip', content: '' };
   }
@@ -181,11 +200,24 @@ export function cleanAgentOutput(text: string): string {
   // Remove control characters
   cleaned = cleaned.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
 
-  // Check if this looks like raw JSON - if so, try to extract meaningful content
-  if (cleaned.trim().startsWith('{') || cleaned.trim().startsWith('"type":')) {
+  // Check if this looks like raw JSON or JSON fragment - if so, try to extract meaningful content
+  const trimmed = cleaned.trim();
+
+  // Skip obvious JSON fragments that start with quotes (partial JSON lines)
+  if (trimmed.startsWith('"') && (
+      trimmed.includes('"type":') ||
+      trimmed.includes('"message":') ||
+      trimmed.includes('"content":') ||
+      trimmed.includes('"session_id":') ||
+      trimmed.includes('"subtype":')
+  )) {
+    return '';
+  }
+
+  if (trimmed.startsWith('{') || trimmed.startsWith('"type":')) {
     try {
       // Try to parse and extract useful info
-      let jsonStr = cleaned.trim();
+      let jsonStr = trimmed;
       if (jsonStr.startsWith('"type":')) {
         jsonStr = '{' + jsonStr;
       }
