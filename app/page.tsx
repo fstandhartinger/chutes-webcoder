@@ -2018,12 +2018,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   // Stderr from agent - show as warning
                   console.warn('[agent] stderr:', data.text);
                 } else if (data.type === 'status') {
+                  // Show status messages both in progress bar and chat
                   setGenerationProgress(prev => ({ ...prev, status: data.message }));
+                  // Also add important status messages to chat for visibility
+                  if (data.message && !data.message.includes('Processing')) {
+                    addChatMessage(data.message, 'system');
+                  }
                 } else if (data.type === 'heartbeat') {
-                  // Keep-alive event - update status to show we're still working
-                  setGenerationProgress(prev => ({ 
-                    ...prev, 
-                    status: prev.status?.includes('Processing') ? prev.status : `Processing... (${data.elapsed}s)`
+                  // Keep-alive event - always update status with current elapsed time
+                  setGenerationProgress(prev => ({
+                    ...prev,
+                    status: `Processing... (${Math.round(data.elapsed)}s)`
                   }));
                 } else if (data.type === 'thinking') {
                   setGenerationProgress(prev => ({ 

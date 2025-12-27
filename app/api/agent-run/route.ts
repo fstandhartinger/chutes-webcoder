@@ -501,12 +501,42 @@ CONFIGEOF`,
                     }
                   }
                 } else {
-                  // For other agents, send line by line for real-time feel
+                  // For other agents (Codex, Aider), filter and format output
                   const lines = cleanContent.split('\n');
                   for (const line of lines) {
-                    if (line.trim()) {
-                      await sendEvent({ type: 'output', text: line.trim() });
+                    const trimmed = line.trim();
+                    if (!trimmed) continue;
+
+                    // Filter out noise patterns from Codex/Aider
+                    if (trimmed.startsWith('--------') ||
+                        trimmed.startsWith('workdir:') ||
+                        trimmed.startsWith('model:') ||
+                        trimmed.startsWith('provider:') ||
+                        trimmed.startsWith('approval:') ||
+                        trimmed.startsWith('sandbox:') ||
+                        trimmed.startsWith('reasoning') ||
+                        trimmed.startsWith('session id:') ||
+                        trimmed.startsWith('mcp startup:') ||
+                        trimmed.match(/^OpenAI Codex v[\d.]+/) ||
+                        trimmed.match(/^exec$/) ||
+                        trimmed.match(/in \/workspace succeeded in \d+ms/) ||
+                        trimmed.match(/^user$/)) {
+                      continue; // Skip noise
                     }
+
+                    // Format Codex plan updates nicely
+                    if (trimmed.startsWith('Plan update')) {
+                      await sendEvent({ type: 'status', message: 'Planning...' });
+                      continue;
+                    }
+
+                    // Send codex/aider text (their actual response)
+                    if (trimmed === 'codex' || trimmed === 'aider') {
+                      continue; // Skip agent name lines
+                    }
+
+                    // Send meaningful output
+                    await sendEvent({ type: 'output', text: trimmed });
                   }
                 }
 
