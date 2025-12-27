@@ -2030,6 +2030,31 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     ...prev,
                     status: `Processing... (${Math.round(data.elapsed)}s)`
                   }));
+                } else if (data.type === 'files-update') {
+                  // Agent detected new files - add them to the file list
+                  if (data.files && data.files.length > 0) {
+                    console.log('[chat] Agent detected new files:', data.files);
+                    setGenerationProgress(prev => {
+                      const existingPaths = new Set(prev.files.map(f => f.path));
+                      const newFileEntries = data.files
+                        .filter((filePath: string) => !existingPaths.has(filePath))
+                        .map((filePath: string) => {
+                          const ext = filePath.split('.').pop() || '';
+                          return {
+                            path: filePath,
+                            content: '', // Content will be fetched later
+                            type: ext === 'jsx' || ext === 'js' ? 'javascript' :
+                                  ext === 'css' ? 'css' : 'text',
+                            completed: false
+                          };
+                        });
+                      return {
+                        ...prev,
+                        files: [...prev.files, ...newFileEntries],
+                        status: `Created ${data.totalFiles} files...`
+                      };
+                    });
+                  }
                 } else if (data.type === 'thinking') {
                   setGenerationProgress(prev => ({ 
                     ...prev, 

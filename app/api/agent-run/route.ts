@@ -87,34 +87,34 @@ interface AgentRunRequest {
 
 // System instruction to enforce React/Vite tech stack
 const REACT_VITE_SYSTEM_PROMPT = `
-IMPORTANT REQUIREMENTS - Follow these strictly:
+IMPORTANT - You are working in a sandbox that ALREADY has a React/Vite project set up.
 
-1. You MUST create a React application using Vite as the bundler
-2. The project structure MUST be:
-   - /workspace/src/App.jsx - Main app component
-   - /workspace/src/main.jsx - Entry point
-   - /workspace/src/index.css - Styles (using Tailwind CSS classes)
-   - /workspace/index.html - HTML template
-   - /workspace/vite.config.js - Vite configuration
-   - /workspace/package.json - Dependencies
+EXISTING SETUP:
+- The sandbox is at /workspace with a working Vite + React + Tailwind setup
+- package.json, vite.config.js, tailwind.config.js are already configured
+- The dev server is ALREADY running on port 5173
+- Dependencies (react, react-dom, vite, tailwindcss) are ALREADY installed
 
-3. Use the following tech stack:
-   - React 18 with functional components and hooks
-   - Tailwind CSS for styling (use utility classes)
-   - NO external CSS frameworks (no Bootstrap, Material UI, etc)
-   - NO TypeScript (use .jsx files)
+YOUR TASK:
+1. Modify the existing files in /workspace/src/ to create the requested application
+2. The main file is /workspace/src/App.jsx - this is where your app component goes
+3. Additional components go in /workspace/src/components/ (create this folder if needed)
+4. Styles should use Tailwind CSS classes (already configured)
 
-4. The app MUST:
-   - Be a complete, working web application
-   - Run on port 5173 (Vite default)
-   - Have all dependencies installed
-   - Start with "npm run dev"
+RULES:
+- DO NOT modify package.json, vite.config.js, or tailwind.config.js unless absolutely necessary
+- DO NOT run "npm install" unless you need to add a NEW package
+- DO NOT run "npm run dev" - the server is already running
+- If you do need to install new packages, use: npm install --legacy-peer-deps <package-name>
 
-5. After creating all files, run these commands:
-   - cd /workspace && npm install
-   - npm run dev
+TECH STACK (already set up):
+- React 18 with functional components and hooks
+- Tailwind CSS for styling (use utility classes)
+- Vite as the bundler (HMR will auto-reload your changes)
+- NO TypeScript (use .jsx files)
 
-6. Make sure the app visually works and displays content in the browser.
+After you make changes to files, they will automatically be picked up by the Vite dev server.
+Make sure your App.jsx exports a default function component that renders visible content.
 
 User Request:
 `;
@@ -457,6 +457,9 @@ CONFIGEOF`,
         // Buffer for incomplete JSON lines (Claude Code stream-json format)
         let jsonLineBuffer = '';
 
+        // Track known files for change detection
+        const knownFiles: Set<string> = new Set();
+
         while (running && pollCount < maxPolls && consecutiveErrors < maxConsecutiveErrors) {
           // Wait before polling
           await new Promise(resolve => setTimeout(resolve, pollInterval));
@@ -581,9 +584,40 @@ CONFIGEOF`,
             }
           }
           
-          // Send heartbeat every 10 polls (5 seconds) to keep connection alive
+          // Send heartbeat and check for file changes every 10 polls (5 seconds)
           if (pollCount % 10 === 0 && running) {
             await sendEvent({ type: 'heartbeat', elapsed: pollCount * pollInterval / 1000 });
+
+            // Check for new/modified files in /workspace/src
+            try {
+              const fileListResult = await execInSandbox(
+                sandboxId,
+                'find /workspace/src -type f -name "*.jsx" -o -name "*.js" -o -name "*.css" 2>/dev/null | head -50',
+                {},
+                5000
+              );
+              if (fileListResult.exitCode === 0 && fileListResult.stdout.trim()) {
+                const currentFiles = new Set(fileListResult.stdout.trim().split('\n').filter(f => f));
+                // Find new files
+                const newFiles: string[] = [];
+                for (const file of currentFiles) {
+                  if (!knownFiles.has(file)) {
+                    newFiles.push(file);
+                    knownFiles.add(file);
+                  }
+                }
+                // Send file update event if we found new files
+                if (newFiles.length > 0) {
+                  await sendEvent({
+                    type: 'files-update',
+                    files: newFiles.map(f => f.replace('/workspace/', '')),
+                    totalFiles: currentFiles.size
+                  });
+                }
+              }
+            } catch {
+              // Ignore file check errors
+            }
           }
         }
         
@@ -631,9 +665,33 @@ CONFIGEOF`,
         
         // Get exit code
         const exitCode = await getExitCode(sandboxId, doneFile);
-        
-        await sendEvent({ 
-          type: 'complete', 
+
+        // After agent completes, ensure Vite is running
+        await sendEvent({ type: 'status', message: 'Verifying Vite server...' });
+        try {
+          const viteCheck = await execInSandbox(sandboxId, 'pgrep -f "vite" || echo "not_running"', {}, 5000);
+          const viteRunning = viteCheck.stdout.trim() !== 'not_running' && viteCheck.stdout.trim() !== '';
+
+          if (!viteRunning) {
+            console.log('[agent-run] Vite not running, starting it...');
+            await sendEvent({ type: 'status', message: 'Starting Vite server...' });
+            // Kill any zombie processes first
+            await execInSandbox(sandboxId, 'pkill -f vite || true', {}, 5000).catch(() => {});
+            // Start Vite in background
+            await execInSandbox(sandboxId, 'cd /workspace && nohup npm run dev > /tmp/vite.log 2>&1 &', {}, 10000);
+            // Wait for Vite to start
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            console.log('[agent-run] Vite started');
+          } else {
+            console.log('[agent-run] Vite is already running');
+          }
+        } catch (viteError) {
+          console.error('[agent-run] Error checking/starting Vite:', viteError);
+          // Continue anyway, frontend will retry
+        }
+
+        await sendEvent({
+          type: 'complete',
           exitCode,
           success: exitCode === 0
         });
