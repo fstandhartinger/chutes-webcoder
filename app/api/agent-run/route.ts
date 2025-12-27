@@ -506,6 +506,8 @@ CONFIGEOF`,
                 } else {
                   // For other agents (Codex, Aider), filter and format output
                   const lines = cleanContent.split('\n');
+                  const batchedLines: string[] = [];
+
                   for (const line of lines) {
                     const trimmed = line.trim();
                     if (!trimmed) continue;
@@ -536,17 +538,27 @@ CONFIGEOF`,
 
                     // Format Codex plan updates nicely
                     if (trimmed.startsWith('Plan update')) {
+                      // Send any batched content first
+                      if (batchedLines.length > 0) {
+                        await sendEvent({ type: 'output', text: batchedLines.join('\n') });
+                        batchedLines.length = 0;
+                      }
                       await sendEvent({ type: 'status', message: 'Planning...' });
                       continue;
                     }
 
-                    // Send codex/aider text (their actual response)
+                    // Skip agent name lines
                     if (trimmed === 'codex' || trimmed === 'aider') {
-                      continue; // Skip agent name lines
+                      continue;
                     }
 
-                    // Send meaningful output
-                    await sendEvent({ type: 'output', text: trimmed });
+                    // Collect meaningful output for batching
+                    batchedLines.push(trimmed);
+                  }
+
+                  // Send batched lines as a single message
+                  if (batchedLines.length > 0) {
+                    await sendEvent({ type: 'output', text: batchedLines.join('\n') });
                   }
                 }
 

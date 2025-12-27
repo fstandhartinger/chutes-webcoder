@@ -2199,7 +2199,28 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         files: prev.files.map(f => ({ ...f, completed: true }))
                       }));
 
-                      // Switch to preview mode and refresh
+                      // Refresh file list from sandbox
+                      console.log('[chat] Fetching sandbox files after agent completion');
+                      fetchSandboxFiles();
+
+                      // Restart Vite to ensure preview works (agent may not have started it)
+                      (async () => {
+                        try {
+                          console.log('[chat] Restarting Vite after agent completion');
+                          const restartResponse = await fetch('/api/restart-vite', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                          });
+                          if (restartResponse.ok) {
+                            const restartData = await restartResponse.json();
+                            console.log('[chat] Vite restart result:', restartData.success);
+                          }
+                        } catch (e) {
+                          console.error('[chat] Error restarting Vite:', e);
+                        }
+                      })();
+
+                      // Switch to preview mode and refresh after Vite starts
                       setTimeout(() => {
                         console.log('[chat] Switching to preview after agent complete');
                         setActiveTab('preview');
@@ -2209,10 +2230,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           console.log('[chat] Refreshing iframe to:', refreshUrl);
                           iframeRef.current.src = refreshUrl;
                         }
-                      }, 1000);
+                      }, 3000); // Wait longer for Vite to start
                     } else {
                       // Agent finished with errors
                       addChatMessage('Agent encountered some issues. Check the output above for details.', 'system');
+
+                      // Still refresh file list to show what was created
+                      fetchSandboxFiles();
                     }
                   } else {
                     // Builtin agent complete (has generatedCode)
