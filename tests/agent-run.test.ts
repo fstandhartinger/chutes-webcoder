@@ -276,3 +276,7 @@ if (import.meta.main) {
   console.log('Has CHUTES_API_KEY:', !!CHUTES_API_KEY);
 }
 
+
+
+
+

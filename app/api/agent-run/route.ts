@@ -261,17 +261,20 @@ async function readOutputFromOffset(
   offset: number = 0
 ): Promise<{ content: string; newOffset: number }> {
   try {
+    // Use a unique separator to split content from byte count
+    const SEPARATOR = '___SANDY_OFFSET_SEP___';
     const result = await execInSandbox(
       sandboxId,
-      `tail -c +${offset + 1} ${outputFile} 2>/dev/null; wc -c < ${outputFile} 2>/dev/null`,
+      `tail -c +${offset + 1} ${outputFile} 2>/dev/null; echo "${SEPARATOR}"; wc -c < ${outputFile} 2>/dev/null`,
       {},
       5000
     );
-    
-    const lines = result.stdout.split('\n');
-    const newOffset = parseInt(lines[lines.length - 1].trim()) || offset;
-    const content = lines.slice(0, -1).join('\n');
-    
+
+    // Split by separator to get content and byte count separately
+    const parts = result.stdout.split(SEPARATOR);
+    const content = parts[0] || '';
+    const newOffset = parts[1] ? parseInt(parts[1].trim()) || offset : offset;
+
     return { content, newOffset };
   } catch {
     return { content: '', newOffset: offset };
@@ -517,10 +520,15 @@ CONFIGEOF`,
                         trimmed.startsWith('reasoning') ||
                         trimmed.startsWith('session id:') ||
                         trimmed.startsWith('mcp startup:') ||
+                        trimmed.startsWith('bash -lc') ||
+                        trimmed.startsWith('bash -c') ||
                         trimmed.match(/^OpenAI Codex v[\d.]+/) ||
                         trimmed.match(/^exec$/) ||
                         trimmed.match(/in \/workspace succeeded in \d+ms/) ||
-                        trimmed.match(/^user$/)) {
+                        trimmed.match(/^in \/workspace (succeeded|failed) in \d+ms:?$/) ||
+                        trimmed.match(/^\d+$/) || // Pure numbers (byte counts, etc)
+                        trimmed.match(/^user$/) ||
+                        trimmed.match(/^___SANDY_OFFSET_SEP___$/)) {
                       continue; // Skip noise
                     }
 
