@@ -27,6 +27,7 @@ import { MessageSquare, Code2, Eye, ExternalLink, Clipboard } from 'lucide-react
 import CodeApplicationProgress, { type CodeApplicationState } from '@/components/CodeApplicationProgress';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { parseClaudeCodeOutput, SSEJsonBuffer, shouldDisplayMessage } from '@/lib/agent-output-parser';
 // Lazy-load the wave to avoid impacting TTI
 const ParticleWave = dynamic(() => import('@/components/ParticleWave'), { ssr: false });
 
@@ -1952,24 +1953,59 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 
                 // Handle agent-run specific output types
                 if (data.type === 'agent-output') {
-                  // Claude Code stream-json output
-                  const agentData = data.data;
-                  if (agentData.type === 'assistant' && agentData.message?.content) {
-                    for (const block of agentData.message.content) {
-                      if (block.type === 'text') {
-                        addChatMessage(block.text, 'ai');
-                      } else if (block.type === 'tool_use' && block.name === 'write_to_file') {
-                        // File was written by agent
-                        setGenerationProgress(prev => ({
-                          ...prev,
-                          status: `Agent wrote: ${block.input?.path || 'file'}`
-                        }));
+                  // Use the improved parser for Claude Code output
+                  const parsed = parseClaudeCodeOutput(data.data);
+
+                  if (shouldDisplayMessage(parsed)) {
+                    if (parsed.type === 'user-friendly') {
+                      addChatMessage(parsed.content, 'ai');
+                    } else if (parsed.type === 'tool-use') {
+                      // Show tool use as status, not as chat message
+                      setGenerationProgress(prev => ({
+                        ...prev,
+                        status: parsed.content,
+                        isStreaming: true
+                      }));
+                      // Also extract file path for tracking
+                      if (parsed.metadata?.filePath) {
+                        const filePath = parsed.metadata.filePath;
+                        const fileName = filePath.split('/').pop() || filePath;
+                        setGenerationProgress(prev => {
+                          // Check if we already have this file
+                          const exists = prev.files.some(f => f.path === filePath);
+                          if (exists) return prev;
+
+                          const ext = fileName.split('.').pop() || '';
+                          const fileType = ext === 'jsx' || ext === 'js' ? 'javascript' :
+                                          ext === 'css' ? 'css' :
+                                          ext === 'json' ? 'json' : 'text';
+                          return {
+                            ...prev,
+                            files: [...prev.files, {
+                              path: filePath,
+                              content: '',
+                              type: fileType,
+                              completed: false
+                            }]
+                          };
+                        });
                       }
+                    } else if (parsed.type === 'thinking') {
+                      setGenerationProgress(prev => ({
+                        ...prev,
+                        isThinking: true,
+                        thinkingText: parsed.content
+                      }));
+                    } else if (parsed.type === 'error') {
+                      addChatMessage(parsed.content, 'error');
                     }
                   }
                 } else if (data.type === 'output') {
-                  // Plain text output from agent
-                  addChatMessage(data.text, 'ai');
+                  // Plain text output from agent - clean it first
+                  const cleaned = data.text?.trim();
+                  if (cleaned && cleaned.length > 0) {
+                    addChatMessage(cleaned, 'ai');
+                  }
                 } else if (data.type === 'stderr') {
                   // Stderr from agent - show as warning
                   console.warn('[agent] stderr:', data.text);
@@ -2124,61 +2160,105 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     status: data.message || `Installing ${data.name}`
                   }));
                 } else if (data.type === 'complete') {
-                  generatedCode = data.generatedCode;
-                  explanation = data.explanation;
-                  
-                  // Save the last generated code
-                  setConversationContext(prev => ({
-                    ...prev,
-                    lastGeneratedCode: generatedCode
-                  }));
-                  
-                  // Clear thinking state when generation completes
-                  setGenerationProgress(prev => ({
-                    ...prev,
-                    isThinking: false,
-                    thinkingText: undefined,
-                    thinkingDuration: undefined
-                  }));
-                  
-                  // Store packages to install from tool calls
-                  if (data.packagesToInstall && data.packagesToInstall.length > 0) {
-                    console.log('[generate-code] Packages to install from tools:', data.packagesToInstall);
-                    // Store packages globally for later installation
-                    (window as any).pendingPackages = data.packagesToInstall;
+                  // Check if this is from external agent (has exitCode) or builtin agent (has generatedCode)
+                  if (typeof data.exitCode !== 'undefined') {
+                    // External agent (Claude Code, Codex, Aider) complete
+                    console.log('[chat] External agent complete. exitCode:', data.exitCode, 'success:', data.success);
+
+                    // Clear thinking state
+                    setGenerationProgress(prev => ({
+                      ...prev,
+                      isThinking: false,
+                      thinkingText: undefined,
+                      thinkingDuration: undefined,
+                      isGenerating: false,
+                      isStreaming: false,
+                      status: data.success ? 'Agent completed successfully!' : 'Agent finished with errors'
+                    }));
+
+                    if (data.success) {
+                      // Agent completed successfully - the app should be running in sandbox
+                      addChatMessage('Agent completed successfully! Your app is now running in the preview.', 'ai');
+
+                      // Mark all tracked files as completed
+                      setGenerationProgress(prev => ({
+                        ...prev,
+                        files: prev.files.map(f => ({ ...f, completed: true }))
+                      }));
+
+                      // Switch to preview mode and refresh
+                      setTimeout(() => {
+                        console.log('[chat] Switching to preview after agent complete');
+                        setActiveTab('preview');
+                        // Trigger iframe refresh
+                        if (iframeRef.current && sandboxData?.url) {
+                          const refreshUrl = `${sandboxData.url}?t=${Date.now()}`;
+                          console.log('[chat] Refreshing iframe to:', refreshUrl);
+                          iframeRef.current.src = refreshUrl;
+                        }
+                      }, 1000);
+                    } else {
+                      // Agent finished with errors
+                      addChatMessage('Agent encountered some issues. Check the output above for details.', 'system');
+                    }
+                  } else {
+                    // Builtin agent complete (has generatedCode)
+                    generatedCode = data.generatedCode;
+                    explanation = data.explanation;
+
+                    // Save the last generated code
+                    setConversationContext(prev => ({
+                      ...prev,
+                      lastGeneratedCode: generatedCode
+                    }));
+
+                    // Clear thinking state when generation completes
+                    setGenerationProgress(prev => ({
+                      ...prev,
+                      isThinking: false,
+                      thinkingText: undefined,
+                      thinkingDuration: undefined
+                    }));
+
+                    // Store packages to install from tool calls
+                    if (data.packagesToInstall && data.packagesToInstall.length > 0) {
+                      console.log('[generate-code] Packages to install from tools:', data.packagesToInstall);
+                      // Store packages globally for later installation
+                      (window as any).pendingPackages = data.packagesToInstall;
+                    }
+
+                    // Parse all files from the completed code if not already done
+                    const fileRegex = /<file path="([^"]+)">([^]*?)<\/file>/g;
+                    const parsedFiles: Array<{path: string; content: string; type: string; completed: boolean}> = [];
+                    let fileMatch;
+
+                    while ((fileMatch = fileRegex.exec(data.generatedCode)) !== null) {
+                      const filePath = fileMatch[1];
+                      const fileContent = fileMatch[2];
+                      const fileExt = filePath.split('.').pop() || '';
+                      const fileType = fileExt === 'jsx' || fileExt === 'js' ? 'javascript' :
+                                      fileExt === 'css' ? 'css' :
+                                      fileExt === 'json' ? 'json' :
+                                      fileExt === 'html' ? 'html' : 'text';
+
+                      parsedFiles.push({
+                        path: filePath,
+                        content: fileContent.trim(),
+                        type: fileType,
+                        completed: true
+                      });
+                    }
+
+                    setGenerationProgress(prev => ({
+                      ...prev,
+                      status: `Generated ${parsedFiles.length > 0 ? parsedFiles.length : prev.files.length} file${(parsedFiles.length > 0 ? parsedFiles.length : prev.files.length) !== 1 ? 's' : ''}!`,
+                      isGenerating: false,
+                      isStreaming: false,
+                      isEdit: prev.isEdit,
+                      // Keep the files that were already parsed during streaming
+                      files: prev.files.length > 0 ? prev.files : parsedFiles
+                    }));
                   }
-                  
-                  // Parse all files from the completed code if not already done
-                  const fileRegex = /<file path="([^"]+)">([^]*?)<\/file>/g;
-                  const parsedFiles: Array<{path: string; content: string; type: string; completed: boolean}> = [];
-                  let fileMatch;
-                  
-                  while ((fileMatch = fileRegex.exec(data.generatedCode)) !== null) {
-                    const filePath = fileMatch[1];
-                    const fileContent = fileMatch[2];
-                    const fileExt = filePath.split('.').pop() || '';
-                    const fileType = fileExt === 'jsx' || fileExt === 'js' ? 'javascript' :
-                                    fileExt === 'css' ? 'css' :
-                                    fileExt === 'json' ? 'json' :
-                                    fileExt === 'html' ? 'html' : 'text';
-                    
-                    parsedFiles.push({
-                      path: filePath,
-                      content: fileContent.trim(),
-                      type: fileType,
-                      completed: true
-                    });
-                  }
-                  
-                  setGenerationProgress(prev => ({
-                    ...prev,
-                    status: `Generated ${parsedFiles.length > 0 ? parsedFiles.length : prev.files.length} file${(parsedFiles.length > 0 ? parsedFiles.length : prev.files.length) !== 1 ? 's' : ''}!`,
-                    isGenerating: false,
-                    isStreaming: false,
-                    isEdit: prev.isEdit,
-                    // Keep the files that were already parsed during streaming
-                    files: prev.files.length > 0 ? prev.files : parsedFiles
-                  }));
                 } else if (data.type === 'error') {
                   throw new Error(data.error);
                 }
@@ -3689,7 +3769,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-8 pt-8 pb-6 flex flex-col gap-6 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-4 pb-3 flex flex-col gap-2 scrollbar-dark scroll-touch overscroll-contain" ref={chatMessagesRef}>
             {chatMessages.map((msg, idx) => {
               // Check if this message is from a successful generation
               const isGenerationComplete = msg.content.includes('Successfully recreated') || 
@@ -3700,16 +3780,16 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
               const _completedFiles = msg.metadata?.appliedFiles || [];
               
               return (
-                <div key={idx} className="block py-2">
+                <div key={idx} className="block py-1">
                   <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className="block">
-                      <div className={`block rounded-2xl px-8 py-6 text-sm leading-relaxed ${
-                        msg.type === 'user' ? 'bg-gradient-to-r from-emerald-600/40 to-emerald-500/30 border border-[#262626] text-[#f5f5f5] ml-auto max-w-[75%] shadow-[0_20px_45px_rgba(37,83,63,0.25)]' :
-                        msg.type === 'ai' ? 'bg-neutral-800/90 backdrop-blur-xl border border-[#262626] text-[#d4d4d4] mr-auto max-w-[75%] shadow-[0_18px_40px_rgba(7,10,16,0.45)]' :
-                        msg.type === 'system' ? 'bg-transparent text-[#737373] font-medium text-xs tracking-wide uppercase' :
-                        msg.type === 'command' ? 'bg-neutral-800/90 backdrop-blur-xl border border-[#262626] text-[#d4d4d4] font-mono text-xs' :
-                        msg.type === 'error' ? 'bg-orange-500/10 border border-orange-500/40 text-orange-500 text-sm' :
-                        'bg-neutral-800/90 backdrop-blur-xl border border-[#262626] text-[#d4d4d4] text-sm'
+                    <div className="block max-w-[85%] md:max-w-[70%]">
+                      <div className={`block rounded-xl px-4 py-2.5 text-sm leading-relaxed overflow-hidden ${
+                        msg.type === 'user' ? 'bg-gradient-to-r from-emerald-600/40 to-emerald-500/30 border border-emerald-600/30 text-[#f5f5f5] rounded-br-md shadow-lg' :
+                        msg.type === 'ai' ? 'bg-neutral-800/70 border border-neutral-700/50 text-[#d4d4d4] rounded-bl-md shadow-lg' :
+                        msg.type === 'system' ? 'bg-transparent text-[#737373] font-medium text-xs tracking-wide py-1' :
+                        msg.type === 'command' ? 'bg-neutral-800/80 border border-neutral-700/50 text-[#d4d4d4] font-mono text-xs px-3 py-2' :
+                        msg.type === 'error' ? 'bg-red-500/10 border border-red-500/30 text-red-300 text-sm' :
+                        'bg-neutral-800/70 border border-neutral-700/50 text-[#d4d4d4] text-sm'
                       }`}>
                     {msg.type === 'command' ? (
                       <div className="flex items-start gap-2">
@@ -3752,11 +3832,11 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                   
                       {/* Show applied files if this is an apply success message */}
                       {msg.metadata?.appliedFiles && msg.metadata.appliedFiles.length > 0 && (
-                        <div className="mt-8 ml-6 inline-block">
-                          <div className="text-xs font-medium mb-4 text-[#a3a3a3]">
+                        <div className="mt-2 pt-2 border-t border-neutral-700/30">
+                          <div className="text-xs text-neutral-400 mb-1.5">
                             {msg.content.includes('Applied') ? 'Files Updated:' : 'Generated Files:'}
                           </div>
-                          <div className="flex flex-wrap items-start gap-3">
+                          <div className="flex flex-wrap gap-1.5">
                             {msg.metadata.appliedFiles.map((filePath, fileIdx) => {
                               const fileName = filePath.split('/').pop() || filePath;
                               const fileExt = fileName.split('.').pop() || '';
@@ -3765,22 +3845,20 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                                               fileExt === 'json' ? 'json' : 'text';
 
                               return (
-                                <div
+                                <span
                                   key={`applied-${fileIdx}`}
-                                  className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-[#d4d4d4] rounded-xl text-xs animate-fade-in-up"
-                                  style={{ animationDelay: `${fileIdx * 30}ms` }}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-700/50 text-neutral-300 rounded text-xs"
                                 >
                                   <span
-                                    className={`inline-block rounded-full ${
-                                    fileType === 'css' ? 'bg-emerald-500' :
-                                    fileType === 'javascript' ? 'bg-orange-500' :
-                                    fileType === 'json' ? 'bg-emerald-600' :
-                                    'bg-[#525252]'
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                    fileType === 'css' ? 'bg-blue-500' :
+                                    fileType === 'javascript' ? 'bg-yellow-500' :
+                                    fileType === 'json' ? 'bg-green-500' :
+                                    'bg-neutral-500'
                                   }`}
-                                    style={{ width: '4px', height: '4px' }}
                                   />
                                   {fileName}
-                                </div>
+                                </span>
                               );
                             })}
                           </div>
@@ -3788,31 +3866,29 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                       )}
 
                       {isGenerationComplete && generationProgress.files.length > 0 && idx === chatMessages.length - 1 && !msg.metadata?.appliedFiles && !chatMessages.some(m => m.metadata?.appliedFiles) && (
-                        <div className="mt-8 ml-6 inline-block">
-                          <div className="text-xs font-medium mb-4 text-[#a3a3a3]">Generated Files:</div>
-                          <div className="flex flex-wrap items-start gap-3">
+                        <div className="mt-2 pt-2 border-t border-neutral-700/30">
+                          <div className="text-xs text-neutral-400 mb-1.5">Generated Files:</div>
+                          <div className="flex flex-wrap gap-1.5">
                             {generationProgress.files.map((file, fileIdx) => (
-                              <div
+                              <span
                                 key={`complete-${fileIdx}`}
-                                className="inline-flex items-center gap-3 px-6 py-4 bg-surface-ink-750 text-[#d4d4d4] rounded-xl text-xs animate-fade-in-up"
-                                style={{ animationDelay: `${fileIdx * 30}ms` }}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-700/50 text-neutral-300 rounded text-xs"
                               >
                               <span
-                                className={`inline-block rounded-full ${
-                                    file.type === 'css' ? 'bg-emerald-500' :
-                                    file.type === 'javascript' ? 'bg-orange-500' :
-                                    file.type === 'json' ? 'bg-emerald-600' :
-                                    'bg-[#525252]'
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                    file.type === 'css' ? 'bg-blue-500' :
+                                    file.type === 'javascript' ? 'bg-yellow-500' :
+                                    file.type === 'json' ? 'bg-green-500' :
+                                    'bg-neutral-500'
                                   }`}
-                                style={{ width: '4px', height: '4px' }}
                               />
                                 {file.path.split('/').pop()}
-                              </div>
+                              </span>
                             ))}
                           </div>
                           {!sandboxData && (
-                            <div className="mt-3 flex items-center gap-2 text-xs text-[#737373]">
-                              <div className="w-3 h-3 border-2 border-[#262626] border-t-transparent rounded-full animate-spin" />
+                            <div className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
+                              <div className="w-3 h-3 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
                               <span>Deploying sandbox preview…</span>
                             </div>
                           )}

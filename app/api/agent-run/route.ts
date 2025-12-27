@@ -85,6 +85,45 @@ interface AgentRunRequest {
   sandboxId: string;
 }
 
+// System instruction to enforce React/Vite tech stack
+const REACT_VITE_SYSTEM_PROMPT = `
+IMPORTANT REQUIREMENTS - Follow these strictly:
+
+1. You MUST create a React application using Vite as the bundler
+2. The project structure MUST be:
+   - /workspace/src/App.jsx - Main app component
+   - /workspace/src/main.jsx - Entry point
+   - /workspace/src/index.css - Styles (using Tailwind CSS classes)
+   - /workspace/index.html - HTML template
+   - /workspace/vite.config.js - Vite configuration
+   - /workspace/package.json - Dependencies
+
+3. Use the following tech stack:
+   - React 18 with functional components and hooks
+   - Tailwind CSS for styling (use utility classes)
+   - NO external CSS frameworks (no Bootstrap, Material UI, etc)
+   - NO TypeScript (use .jsx files)
+
+4. The app MUST:
+   - Be a complete, working web application
+   - Run on port 5173 (Vite default)
+   - Have all dependencies installed
+   - Start with "npm run dev"
+
+5. After creating all files, run these commands:
+   - cd /workspace && npm install
+   - npm run dev
+
+6. Make sure the app visually works and displays content in the browser.
+
+User Request:
+`;
+
+// Helper to wrap user prompt with system instructions
+function wrapPromptForReactVite(prompt: string): string {
+  return REACT_VITE_SYSTEM_PROMPT + prompt;
+}
+
 // Get Sandy API configuration
 function getSandyConfig() {
   const baseUrl = process.env.SANDY_BASE_URL;
@@ -383,9 +422,12 @@ CONFIGEOF`,
           console.log('[agent-run] Created Codex config.toml');
         }
         
+        // Wrap prompt with React/Vite system instructions
+        const wrappedPrompt = wrapPromptForReactVite(prompt);
+
         // Build command
-        const commandParts = agentConfig.buildCommand(prompt, model);
-        const command = commandParts.map(part => 
+        const commandParts = agentConfig.buildCommand(wrappedPrompt, model);
+        const command = commandParts.map(part =>
           part.includes(' ') || part.includes('"') ? `"${part.replace(/"/g, '\\"')}"` : part
         ).join(' ');
         
@@ -547,3 +589,7 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
+
+
+
+
