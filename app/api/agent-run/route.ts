@@ -527,14 +527,24 @@ CONFIGEOF`,
                         trimmed.startsWith('mcp startup:') ||
                         trimmed.startsWith('bash -lc') ||
                         trimmed.startsWith('bash -c') ||
+                        trimmed.startsWith('Git repo:') ||
+                        trimmed.startsWith('Repo-map:') ||
+                        trimmed.startsWith('Model:') ||
+                        trimmed.startsWith('Weak model:') ||
+                        trimmed.startsWith('https://aider.chat') ||
+                        trimmed.startsWith('Detected dumb terminal') ||
                         trimmed.match(/^OpenAI Codex v[\d.]+/) ||
+                        trimmed.match(/^aider v[\d.]+/) ||
+                        trimmed.match(/^ider v[\d.]+/) || // Partial match for Aider version
                         trimmed.match(/^exec$/) ||
                         trimmed.match(/in \/workspace (succeeded|exited|failed) in \d+ms/) || // Command exec logs
                         trimmed.match(/^\d+$/) || // Pure numbers (byte counts, etc)
                         trimmed.match(/^user$/) ||
                         trimmed.match(/^___SANDY_OFFSET_SEP___$/) ||
                         trimmed.match(/^npm error Log files were not written/) || // Verbose npm log message
-                        trimmed.match(/^npm error You can rerun/) // Verbose npm suggestion
+                        trimmed.match(/^npm error You can rerun/) || // Verbose npm suggestion
+                        trimmed.match(/^iff edit format/) || // Aider format info
+                        trimmed.match(/^diff edit format/) // Aider format info
                     ) {
                       continue; // Skip noise
                     }

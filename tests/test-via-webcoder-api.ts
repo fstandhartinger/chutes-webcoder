@@ -20,7 +20,7 @@ import { parseArgs } from 'util';
 const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrender.com';
 
 // Test prompt - creates a simple file to verify agent functionality
-const TEST_PROMPT = 'Create a file called game.tsx with a simple React component that displays "Hello from AI" as a heading';
+const TEST_PROMPT = 'Create a file called Game.jsx with a simple React component that displays "Hello from AI" as a heading';
 
 // All agents and models
 // Note: opencode is experimental and excluded from default tests
