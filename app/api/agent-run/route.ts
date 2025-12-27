@@ -533,6 +533,29 @@ CONFIGEOF`,
                         trimmed.startsWith('Weak model:') ||
                         trimmed.startsWith('https://aider.chat') ||
                         trimmed.startsWith('Detected dumb terminal') ||
+                        trimmed.startsWith('IMPORTANT - You are working') || // System prompt
+                        trimmed.startsWith('EXISTING SETUP:') || // System prompt
+                        trimmed.startsWith('- The sandbox is at') || // System prompt
+                        trimmed.startsWith('- package.json') || // System prompt
+                        trimmed.startsWith('- The dev server') || // System prompt
+                        trimmed.startsWith('- Dependencies') || // System prompt
+                        trimmed.startsWith('YOUR TASK:') || // System prompt
+                        trimmed.startsWith('1. Modify the existing') || // System prompt
+                        trimmed.startsWith('2. The main file') || // System prompt
+                        trimmed.startsWith('3. Additional components') || // System prompt
+                        trimmed.startsWith('4. Styles should use') || // System prompt
+                        trimmed.startsWith('RULES:') || // System prompt
+                        trimmed.startsWith('- DO NOT modify package.json') || // System prompt
+                        trimmed.startsWith('- DO NOT run "npm') || // System prompt
+                        trimmed.startsWith('- If you do need to install') || // System prompt
+                        trimmed.startsWith('TECH STACK') || // System prompt
+                        trimmed.startsWith('- React 18 with') || // System prompt
+                        trimmed.startsWith('- Tailwind CSS for') || // System prompt
+                        trimmed.startsWith('- Vite as the bundler') || // System prompt
+                        trimmed.startsWith('- NO TypeScript') || // System prompt
+                        trimmed.startsWith('After you make changes') || // System prompt
+                        trimmed.startsWith('Make sure your App.jsx') || // System prompt
+                        trimmed.startsWith('User Request:') || // System prompt
                         trimmed.match(/^OpenAI Codex v[\d.]+/) ||
                         trimmed.match(/^aider v[\d.]+/) ||
                         trimmed.match(/^ider v[\d.]+/) || // Partial match for Aider version
