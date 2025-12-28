@@ -507,131 +507,58 @@ CONFIGEOF`,
                     }
                   }
                 } else {
-                  // For other agents (Codex, Aider), filter and format output
+                  // For other agents (Codex, Aider), use whitelist approach
+                  // Only show lines that look like human-readable explanations
                   const lines = cleanContent.split('\n');
-                  const batchedLines: string[] = [];
+                  const meaningfulLines: string[] = [];
 
                   for (const line of lines) {
                     const trimmed = line.trim();
                     if (!trimmed) continue;
-
-                    // Filter out noise patterns from Codex/Aider
-                    if (trimmed.startsWith('--------') ||
-                        trimmed.startsWith('workdir:') ||
-                        trimmed.startsWith('model:') ||
-                        trimmed.startsWith('provider:') ||
-                        trimmed.startsWith('approval:') ||
-                        trimmed.startsWith('sandbox:') ||
-                        trimmed.startsWith('reasoning') ||
-                        trimmed.startsWith('session id:') ||
-                        trimmed.startsWith('mcp startup:') ||
-                        trimmed.startsWith('bash -lc') ||
-                        trimmed.startsWith('bash -c') ||
-                        trimmed.startsWith('cat ') || // Command output
-                        trimmed.startsWith('Git repo:') ||
-                        trimmed.startsWith('Repo-map:') ||
-                        trimmed.startsWith('Model:') ||
-                        trimmed.startsWith('Weak model:') ||
-                        trimmed.startsWith('https://aider.chat') ||
-                        trimmed.startsWith('Detected dumb terminal') ||
-                        trimmed.startsWith('IMPORTANT - You are working') || // System prompt
-                        trimmed.startsWith('EXISTING SETUP:') || // System prompt
-                        trimmed.startsWith('- The sandbox is at') || // System prompt
-                        trimmed.startsWith('- package.json') || // System prompt
-                        trimmed.startsWith('- The dev server') || // System prompt
-                        trimmed.startsWith('- Dependencies') || // System prompt
-                        trimmed.startsWith('YOUR TASK:') || // System prompt
-                        trimmed.startsWith('1. Modify the existing') || // System prompt
-                        trimmed.startsWith('2. The main file') || // System prompt
-                        trimmed.startsWith('3. Additional components') || // System prompt
-                        trimmed.startsWith('4. Styles should use') || // System prompt
-                        trimmed.startsWith('RULES:') || // System prompt
-                        trimmed.startsWith('- DO NOT modify package.json') || // System prompt
-                        trimmed.startsWith('- DO NOT run "npm') || // System prompt
-                        trimmed.startsWith('- If you do need to install') || // System prompt
-                        trimmed.startsWith('TECH STACK') || // System prompt
-                        trimmed.startsWith('- React 18 with') || // System prompt
-                        trimmed.startsWith('- Tailwind CSS for') || // System prompt
-                        trimmed.startsWith('- Vite as the bundler') || // System prompt
-                        trimmed.startsWith('- NO TypeScript') || // System prompt
-                        trimmed.startsWith('After you make changes') || // System prompt
-                        trimmed.startsWith('Make sure your App.jsx') || // System prompt
-                        trimmed.startsWith('User Request:') || // System prompt
-                        trimmed.startsWith('tokens used') || // Codex internal
-                        trimmed.startsWith('EOFMARKER') || // Heredoc marker
-                        trimmed.match(/^OpenAI Codex v[\d.]+/) ||
-                        trimmed.match(/^aider v[\d.]+/) ||
-                        trimmed.match(/^ider v[\d.]+/) || // Partial match for Aider version
-                        trimmed.match(/^exec$/) ||
-                        trimmed.match(/^codex$/) || // Agent name
-                        trimmed.match(/^aider$/) || // Agent name
-                        trimmed.match(/in \/workspace (succeeded|exited|failed) in \d+ms/) || // Command exec logs
-                        trimmed.match(/^\d+$/) || // Pure numbers (byte counts, etc)
-                        trimmed.match(/^user$/) ||
-                        trimmed.match(/^___SANDY_OFFSET_SEP___$/) ||
-                        trimmed.match(/^npm error Log files were not written/) || // Verbose npm log message
-                        trimmed.match(/^npm error You can rerun/) || // Verbose npm suggestion
-                        trimmed.match(/^iff edit format/) || // Aider format info
-                        trimmed.match(/^diff edit format/) || // Aider format info
-                        // Skip code content lines (we don't need to show raw code in chat)
-                        trimmed.match(/^import\s+/) || // JS imports
-                        trimmed.match(/^export\s+/) || // JS exports  
-                        trimmed.match(/^function\s+/) || // Function definitions
-                        trimmed.match(/^const\s+\[/) || // React hooks
-                        trimmed.match(/^const\s+\w+\s*=/) || // Const declarations
-                        trimmed.match(/^return\s*\(/) || // Return statements
-                        trimmed.match(/^<[A-Za-z]/) || // JSX elements
-                        trimmed.match(/^\s*<\//) || // Closing JSX tags
-                        trimmed.match(/^\s*\{.*\}\s*$/) || // Single JSX expressions
-                        trimmed.match(/^className=/) || // className attributes
-                        trimmed.match(/^onClick=/) || // onClick handlers
-                        // Diff format lines
-                        trimmed.match(/^[\+\-]\s*import\s+/) || // Added/removed imports
-                        trimmed.match(/^[\+\-]\s*export\s+/) || // Added/removed exports
-                        trimmed.match(/^[\+\-]\s*function\s+/) || // Added/removed functions
-                        trimmed.match(/^[\+\-]\s*const\s+/) || // Added/removed consts
-                        trimmed.match(/^[\+\-]\s*</) || // Added/removed JSX
-                        trimmed.match(/^[\+\-]\s*\{/) || // Added/removed expressions
-                        trimmed.match(/^[\+\-]\s*className/) || // Added/removed className
-                        trimmed.match(/^[\+\-]\s*onClick/) || // Added/removed onClick
-                        trimmed.match(/^[\+\-]\s*return/) || // Added/removed return
-                        trimmed.match(/^[\+\-]\s*\)/) || // Added/removed closing parens
-                        trimmed.match(/^[\+\-]\s*\}/) || // Added/removed closing braces
-                        trimmed.match(/^[\+\-]\s*>/) || // Added/removed >
-                        trimmed.match(/^[\+\-]\s*<\//) || // Added/removed closing tags
-                        trimmed.match(/^\\ No newline/) || // Diff no newline
-                        trimmed.match(/^@@\s*-?\d+/) || // Diff hunk headers
-                        // Pure code lines (indented)
-                        trimmed.match(/^\s{2,}[<{]/) || // Indented JSX/expressions
-                        trimmed.match(/^\s{2,}[a-z]+\s*=/) || // Indented attribute assignments
-                        trimmed.match(/^\s{2,}\w+\(/) // Indented function calls
-                    ) {
-                      continue; // Skip noise
+                    
+                    // Use whitelist: only pass lines that look like explanations
+                    const isExplanation = (
+                      // Lines with markdown formatting (agent explanations)
+                      trimmed.includes('**') ||
+                      trimmed.includes('`') ||
+                      // Bullet points that describe features
+                      (trimmed.startsWith('- ') && trimmed.length > 10 && !trimmed.includes('sandbox') && !trimmed.includes('/workspace')) ||
+                      // Success/completion messages
+                      trimmed.match(/^(Done|Ready|Created|Built|Updated|Finished|Complete)/i) ||
+                      trimmed.match(/(successfully|complete|ready)[\s!.]*$/i) ||
+                      // Agent starting to explain
+                      trimmed.match(/^I('ll| will| have| am|'ve)/) ||
+                      trimmed.match(/^(The|Your|This|Now|Here|Check)/i) && trimmed.length > 20 && !trimmed.includes('workspace') ||
+                      // Task descriptions
+                      trimmed.match(/^(counter|component|button|feature|function|page|app)/i) && trimmed.length > 15
+                    );
+                    
+                    // Additional validation - must be readable text, not code
+                    const isNotCode = !(
+                      trimmed.match(/^[<{}\[\]();>]/) || // Code syntax
+                      trimmed.match(/^\s*[<{}\[\]();>]/) || // Indented code syntax
+                      trimmed.match(/^(import|export|function|const|let|var|return|class)\s/) || // JS keywords
+                      trimmed.match(/^[\+\-]/) || // Diff format
+                      trimmed.match(/^[a-z]+="/) || // Attributes
+                      trimmed.match(/^(cat|ls|exec|bash|mkdir|rm|cd|npm|node|pnpm)\s/) || // Commands
+                      trimmed.match(/in \/workspace/) || // Path logs
+                      trimmed.match(/^\d+$/) || // Pure numbers
+                      trimmed.match(/^(total|drwx|[-r][-w][-x])/) || // ls output
+                      trimmed.match(/^codex$/i) || trimmed.match(/^aider$/i) || // Agent names
+                      trimmed.match(/^exec$/i) || // Exec marker
+                      trimmed.match(/^ENDOFFILE|^EOFMARKER|^EOF/) || // Heredoc markers
+                      trimmed.match(/^tokens used/i) || // Token counts
+                      trimmed.match(/^0$/) // Just zero
+                    );
+                    
+                    if (isExplanation && isNotCode) {
+                      meaningfulLines.push(trimmed);
                     }
-
-                    // Format Codex plan updates nicely
-                    if (trimmed.startsWith('Plan update')) {
-                      // Send any batched content first
-                      if (batchedLines.length > 0) {
-                        await sendEvent({ type: 'output', text: batchedLines.join('\n') });
-                        batchedLines.length = 0;
-                      }
-                      await sendEvent({ type: 'status', message: 'Planning...' });
-                      continue;
-                    }
-
-                    // Skip agent name lines
-                    if (trimmed === 'codex' || trimmed === 'aider') {
-                      continue;
-                    }
-
-                    // Collect meaningful output for batching
-                    batchedLines.push(trimmed);
                   }
 
-                  // Send batched lines as a single message
-                  if (batchedLines.length > 0) {
-                    await sendEvent({ type: 'output', text: batchedLines.join('\n') });
+                  // Send meaningful content
+                  if (meaningfulLines.length > 0) {
+                    await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
                   }
                 }
 
@@ -828,6 +755,7 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
+
 
 
 
