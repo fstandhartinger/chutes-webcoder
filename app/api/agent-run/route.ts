@@ -575,15 +575,36 @@ CONFIGEOF`,
                         trimmed.match(/^diff edit format/) || // Aider format info
                         // Skip code content lines (we don't need to show raw code in chat)
                         trimmed.match(/^import\s+/) || // JS imports
-                        trimmed.match(/^export\s+/) || // JS exports
+                        trimmed.match(/^export\s+/) || // JS exports  
                         trimmed.match(/^function\s+/) || // Function definitions
                         trimmed.match(/^const\s+\[/) || // React hooks
+                        trimmed.match(/^const\s+\w+\s*=/) || // Const declarations
                         trimmed.match(/^return\s*\(/) || // Return statements
                         trimmed.match(/^<[A-Za-z]/) || // JSX elements
                         trimmed.match(/^\s*<\//) || // Closing JSX tags
                         trimmed.match(/^\s*\{.*\}\s*$/) || // Single JSX expressions
                         trimmed.match(/^className=/) || // className attributes
-                        trimmed.match(/^onClick=/) // onClick handlers
+                        trimmed.match(/^onClick=/) || // onClick handlers
+                        // Diff format lines
+                        trimmed.match(/^[\+\-]\s*import\s+/) || // Added/removed imports
+                        trimmed.match(/^[\+\-]\s*export\s+/) || // Added/removed exports
+                        trimmed.match(/^[\+\-]\s*function\s+/) || // Added/removed functions
+                        trimmed.match(/^[\+\-]\s*const\s+/) || // Added/removed consts
+                        trimmed.match(/^[\+\-]\s*</) || // Added/removed JSX
+                        trimmed.match(/^[\+\-]\s*\{/) || // Added/removed expressions
+                        trimmed.match(/^[\+\-]\s*className/) || // Added/removed className
+                        trimmed.match(/^[\+\-]\s*onClick/) || // Added/removed onClick
+                        trimmed.match(/^[\+\-]\s*return/) || // Added/removed return
+                        trimmed.match(/^[\+\-]\s*\)/) || // Added/removed closing parens
+                        trimmed.match(/^[\+\-]\s*\}/) || // Added/removed closing braces
+                        trimmed.match(/^[\+\-]\s*>/) || // Added/removed >
+                        trimmed.match(/^[\+\-]\s*<\//) || // Added/removed closing tags
+                        trimmed.match(/^\\ No newline/) || // Diff no newline
+                        trimmed.match(/^@@\s*-?\d+/) || // Diff hunk headers
+                        // Pure code lines (indented)
+                        trimmed.match(/^\s{2,}[<{]/) || // Indented JSX/expressions
+                        trimmed.match(/^\s{2,}[a-z]+\s*=/) || // Indented attribute assignments
+                        trimmed.match(/^\s{2,}\w+\(/) // Indented function calls
                     ) {
                       continue; // Skip noise
                     }
