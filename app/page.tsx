@@ -1921,6 +1921,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
+      const sseBuffer = new SSEJsonBuffer();
       let generatedCode = '';
       let explanation = '';
       let aggregatedStream = '';
@@ -1937,19 +1938,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           }
           
           chunkCount++;
-          const chunk = decoder.decode(value);
+          const chunk = decoder.decode(value, { stream: true });
           if (chunkCount <= 3) {
             console.log('[chat] Chunk', chunkCount, ':', chunk.substring(0, 200));
           }
-          const lines = chunk.split('\n');
+          const { jsonObjects } = sseBuffer.addChunk(chunk);
           
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6));
-                if (chunkCount <= 3) {
-                  console.log('[chat] Parsed data type:', data.type);
-                }
+          for (const data of jsonObjects) {
+            try {
+              if (chunkCount <= 3) {
+                console.log('[chat] Parsed data type:', data.type);
+              }
                 
                 // Handle agent-run specific output types
                 if (data.type === 'agent-output') {
@@ -2015,9 +2014,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       // Skip technical lines (code, commands, etc.)
                       const isExplanation = (
                         cleaned.includes('**') || // Markdown formatting
-                        cleaned.includes('✓') || cleaned.includes('✅') || // Success indicators
+                        cleaned.includes('✓') || cleaned.includes('✅') || cleaned.includes('✔') || // Success indicators
                         cleaned.includes('created') || cleaned.includes('Created') ||
                         cleaned.includes('built') || cleaned.includes('Built') ||
+                        cleaned.includes('updated') || cleaned.includes('Updated') ||
+                        cleaned.includes('applied') || cleaned.includes('Applied') ||
+                        cleaned.includes('saved') || cleaned.includes('Saved') ||
+                        cleaned.includes('writing') || cleaned.includes('Writing') ||
+                        cleaned.includes('edited') || cleaned.includes('Editing') ||
+                        cleaned.includes('installing') || cleaned.includes('Installing') ||
+                        cleaned.includes('running') || cleaned.includes('Running') ||
+                        cleaned.includes('generated') || cleaned.includes('Generating') ||
                         cleaned.includes('Done') || cleaned.includes('done') ||
                         cleaned.includes('Ready') || cleaned.includes('ready') ||
                         cleaned.includes('successfully') ||
@@ -2025,7 +2032,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         cleaned.startsWith('The ') || cleaned.startsWith('Your ') ||
                         cleaned.startsWith('Check ') || cleaned.startsWith('Now ') ||
                         cleaned.includes('counter') || cleaned.includes('component') ||
-                        cleaned.includes('button') || cleaned.includes('feature')
+                        cleaned.includes('button') || cleaned.includes('feature') ||
+                        cleaned.match(/\\b(app|page|file|component)\\b/i)
                       );
                       
                       if (isExplanation) {
@@ -2346,7 +2354,6 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               } catch (e) {
                 console.error('Failed to parse SSE data:', e);
               }
-            }
           }
         }
       }

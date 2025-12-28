@@ -305,6 +305,67 @@ function stripAnsi(str: string): string {
     .replace(/\r/g, '');
 }
 
+function isPlainTextExplanationLine(trimmed: string): boolean {
+  if (
+    trimmed.includes('**') ||
+    trimmed.includes('`') ||
+    trimmed.startsWith('• ') ||
+    trimmed.startsWith('* ') ||
+    (trimmed.startsWith('- ') && trimmed.length > 10 && !trimmed.includes('sandbox'))
+  ) {
+    return true;
+  }
+
+  if (trimmed.match(/^[✓✔]/)) return true;
+
+  if (
+    trimmed.match(/^(Done|Ready|Created|Built|Updated|Finished|Complete|Applied|Added|Saving|Saved|Writing|Wrote|Editing|Edited|Installing|Installed|Running|Generating)/i) ||
+    trimmed.match(/(successfully|complete|ready|updated|saved|installed)[\s!.]*$/i) ||
+    trimmed.match(/^I('ll| will| have| am|'ve)/) ||
+    (trimmed.match(/^(The|Your|This|Now|Here|Check)/i) && trimmed.length > 20 && !trimmed.includes('workspace')) ||
+    (trimmed.match(/^(counter|component|button|feature|function|page|app)/i) && trimmed.length > 15) ||
+    trimmed.match(/\b(creating|editing|edited|updating|updated|applying|applied|writing|wrote|saving|saved|installing|installed|running|generated|generating|adding|added)\b/i)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function isPlainTextNoiseLine(trimmed: string): boolean {
+  return Boolean(
+    trimmed.match(/^[<{}\[\]();>]/) ||
+    trimmed.match(/^\s*[<{}\[\]();>]/) ||
+    trimmed.match(/^(import|export|function|const|let|var|return|class)\s/) ||
+    trimmed.match(/^[\+\-]/) ||
+    trimmed.match(/^[a-z]+="/) ||
+    trimmed.match(/^(cat|ls|exec|bash|mkdir|rm|cd|npm|node|pnpm)\s/) ||
+    trimmed.match(/in \/workspace/) ||
+    trimmed.match(/^\d+$/) ||
+    trimmed.match(/^(total|drwx|[-r][-w][-x])/) ||
+    trimmed.match(/^codex$/i) ||
+    trimmed.match(/^aider$/i) ||
+    trimmed.match(/^exec$/i) ||
+    trimmed.match(/^ENDOFFILE|^EOFMARKER|^EOF/) ||
+    trimmed.match(/^tokens used/i) ||
+    trimmed.match(/^0$/)
+  );
+}
+
+function filterPlainTextLines(lines: string[]): string[] {
+  const meaningfulLines: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (!isPlainTextExplanationLine(trimmed)) continue;
+    if (isPlainTextNoiseLine(trimmed)) continue;
+    meaningfulLines.push(trimmed);
+  }
+
+  return meaningfulLines;
+}
+
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
   
@@ -379,7 +440,7 @@ export async function POST(request: NextRequest) {
       const outputFile = '/tmp/agent_output.log';
       const pidFile = '/tmp/agent.pid';
       const doneFile = '/tmp/agent.done';
-      let lastSentContent = '';
+      let lineBuffer = '';
       
       try {
         await sendEvent({ type: 'status', message: `Starting ${agentConfig.name}...` });
@@ -460,6 +521,39 @@ CONFIGEOF`,
         // Track known files for change detection
         const knownFiles: Set<string> = new Set();
 
+        const processOutputChunk = async (rawChunk: string) => {
+          if (!rawChunk) return;
+          const cleanContent = stripAnsi(rawChunk);
+
+          if (agent === 'claude-code') {
+            jsonLineBuffer += cleanContent;
+            const lines = jsonLineBuffer.split('\n');
+            jsonLineBuffer = lines.pop() || '';
+
+            for (const line of lines) {
+              const trimmedLine = line.trim();
+              if (!trimmedLine) continue;
+
+              try {
+                const parsed = JSON.parse(trimmedLine);
+                await sendEvent({ type: 'agent-output', data: parsed });
+              } catch {
+                if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('"')) {
+                  await sendEvent({ type: 'output', text: trimmedLine });
+                }
+              }
+            }
+          } else {
+            lineBuffer += cleanContent;
+            const lines = lineBuffer.split('\n');
+            lineBuffer = lines.pop() || '';
+            const meaningfulLines = filterPlainTextLines(lines);
+            if (meaningfulLines.length > 0) {
+              await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
+            }
+          }
+        };
+
         while (running && pollCount < maxPolls && consecutiveErrors < maxConsecutiveErrors) {
           // Wait before polling
           await new Promise(resolve => setTimeout(resolve, pollInterval));
@@ -475,95 +569,8 @@ CONFIGEOF`,
             // Reset error counter on success
             consecutiveErrors = 0;
 
-            if (content && content !== lastSentContent) {
-              const newContent = content.substring(lastSentContent.length);
-              if (newContent.trim()) {
-                const cleanContent = stripAnsi(newContent);
-
-                // For Claude Code, try to parse as JSON lines with buffering
-                if (agent === 'claude-code') {
-                  // Add new content to buffer
-                  jsonLineBuffer += cleanContent;
-
-                  // Process complete lines (those ending with newline)
-                  const lines = jsonLineBuffer.split('\n');
-                  // Keep the last incomplete line in the buffer
-                  jsonLineBuffer = lines.pop() || '';
-
-                  for (const line of lines) {
-                    const trimmedLine = line.trim();
-                    if (!trimmedLine) continue;
-
-                    try {
-                      const parsed = JSON.parse(trimmedLine);
-                      await sendEvent({ type: 'agent-output', data: parsed });
-                    } catch {
-                      // If it looks like incomplete JSON, skip it
-                      // Only send as output if it's clearly NOT JSON
-                      if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('"')) {
-                        await sendEvent({ type: 'output', text: trimmedLine });
-                      }
-                      // Otherwise, it's likely a malformed JSON line - skip it
-                    }
-                  }
-                } else {
-                  // For other agents (Codex, Aider), use whitelist approach
-                  // Only show lines that look like human-readable explanations
-                  const lines = cleanContent.split('\n');
-                  const meaningfulLines: string[] = [];
-
-                  for (const line of lines) {
-                    const trimmed = line.trim();
-                    if (!trimmed) continue;
-                    
-                    // Use whitelist: only pass lines that look like explanations
-                    const isExplanation = (
-                      // Lines with markdown formatting (agent explanations)
-                      trimmed.includes('**') ||
-                      trimmed.includes('`') ||
-                      // Bullet points that describe features
-                      (trimmed.startsWith('- ') && trimmed.length > 10 && !trimmed.includes('sandbox') && !trimmed.includes('/workspace')) ||
-                      // Success/completion messages
-                      trimmed.match(/^(Done|Ready|Created|Built|Updated|Finished|Complete)/i) ||
-                      trimmed.match(/(successfully|complete|ready)[\s!.]*$/i) ||
-                      // Agent starting to explain
-                      trimmed.match(/^I('ll| will| have| am|'ve)/) ||
-                      trimmed.match(/^(The|Your|This|Now|Here|Check)/i) && trimmed.length > 20 && !trimmed.includes('workspace') ||
-                      // Task descriptions
-                      trimmed.match(/^(counter|component|button|feature|function|page|app)/i) && trimmed.length > 15
-                    );
-                    
-                    // Additional validation - must be readable text, not code
-                    const isNotCode = !(
-                      trimmed.match(/^[<{}\[\]();>]/) || // Code syntax
-                      trimmed.match(/^\s*[<{}\[\]();>]/) || // Indented code syntax
-                      trimmed.match(/^(import|export|function|const|let|var|return|class)\s/) || // JS keywords
-                      trimmed.match(/^[\+\-]/) || // Diff format
-                      trimmed.match(/^[a-z]+="/) || // Attributes
-                      trimmed.match(/^(cat|ls|exec|bash|mkdir|rm|cd|npm|node|pnpm)\s/) || // Commands
-                      trimmed.match(/in \/workspace/) || // Path logs
-                      trimmed.match(/^\d+$/) || // Pure numbers
-                      trimmed.match(/^(total|drwx|[-r][-w][-x])/) || // ls output
-                      trimmed.match(/^codex$/i) || trimmed.match(/^aider$/i) || // Agent names
-                      trimmed.match(/^exec$/i) || // Exec marker
-                      trimmed.match(/^ENDOFFILE|^EOFMARKER|^EOF/) || // Heredoc markers
-                      trimmed.match(/^tokens used/i) || // Token counts
-                      trimmed.match(/^0$/) // Just zero
-                    );
-                    
-                    if (isExplanation && isNotCode) {
-                      meaningfulLines.push(trimmed);
-                    }
-                  }
-
-                  // Send meaningful content
-                  if (meaningfulLines.length > 0) {
-                    await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
-                  }
-                }
-
-                lastSentContent = content;
-              }
+            if (content) {
+              await processOutputChunk(content);
             }
 
             offset = newOffset;
@@ -623,77 +630,32 @@ CONFIGEOF`,
           console.error('[agent-run] Too many consecutive polling errors');
           await sendEvent({ type: 'error', error: 'Lost connection to sandbox' });
         }
-        
-        // Process any remaining buffered content for Claude Code
-        if (agent === 'claude-code' && jsonLineBuffer.trim()) {
-          try {
-            const parsed = JSON.parse(jsonLineBuffer.trim());
-            await sendEvent({ type: 'agent-output', data: parsed });
-          } catch {
-            // Skip malformed JSON in buffer
-          }
+
+        // Read any remaining output after the last poll
+        const { content: finalContent, newOffset: finalOffset } = await readOutputFromOffset(
+          sandboxId,
+          outputFile,
+          offset
+        );
+        offset = finalOffset;
+        if (finalContent) {
+          await processOutputChunk(finalContent);
         }
 
-        // Read any remaining output (apply same filtering as main loop)
-        const { content: finalContent } = await readOutputFromOffset(sandboxId, outputFile, 0);
-        if (finalContent && finalContent !== lastSentContent) {
-          const newContent = finalContent.substring(lastSentContent.length);
-          if (newContent.trim()) {
-            const cleanContent = stripAnsi(newContent);
-            const lines = cleanContent.split('\n').filter(line => line.trim());
-            
-            if (agent === 'claude-code') {
-              // For Claude Code, try to parse as JSON
-              for (const line of lines) {
-                try {
-                  const parsed = JSON.parse(line);
-                  await sendEvent({ type: 'agent-output', data: parsed });
-                } catch {
-                  // Only send non-JSON lines as output
-                  if (!line.startsWith('{') && !line.startsWith('"')) {
-                    await sendEvent({ type: 'output', text: line });
-                  }
-                }
-              }
-            } else {
-              // For Codex/Aider: apply whitelist filtering
-              const meaningfulLines: string[] = [];
-              for (const line of lines) {
-                const trimmed = line.trim();
-                if (!trimmed) continue;
-                
-                // Use whitelist: only pass lines that look like explanations
-                const isExplanation = (
-                  trimmed.includes('**') ||
-                  trimmed.includes('`') ||
-                  (trimmed.startsWith('- ') && trimmed.length > 10 && !trimmed.includes('sandbox') && !trimmed.includes('/workspace')) ||
-                  trimmed.match(/^(Done|Ready|Created|Built|Updated|Finished|Complete)/i) ||
-                  trimmed.match(/(successfully|complete|ready)[\s!.]*$/i) ||
-                  trimmed.match(/^I('ll| will| have| am|'ve)/) ||
-                  (trimmed.match(/^(The|Your|This|Now|Here|Check)/i) && trimmed.length > 20 && !trimmed.includes('workspace'))
-                );
-                
-                const isNotCode = !(
-                  trimmed.match(/^[<{}\[\]();>]/) ||
-                  trimmed.match(/^(import|export|function|const|let|var|return|class)\s/) ||
-                  trimmed.match(/^[\+\-]/) ||
-                  trimmed.match(/^(cat|ls|exec|bash|mkdir|rm|cd|npm|node)\s/) ||
-                  trimmed.match(/in \/workspace/) ||
-                  trimmed.match(/^\d+$/) ||
-                  trimmed.match(/^(total|drwx|[-r][-w][-x])/) ||
-                  trimmed.match(/^codex$/i) || trimmed.match(/^aider$/i) ||
-                  trimmed.match(/^exec$/i) ||
-                  trimmed.match(/^tokens used/i)
-                );
-                
-                if (isExplanation && isNotCode) {
-                  meaningfulLines.push(trimmed);
-                }
-              }
-              if (meaningfulLines.length > 0) {
-                await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
-              }
+        if (agent === 'claude-code' && jsonLineBuffer.trim()) {
+          const trimmed = jsonLineBuffer.trim();
+          try {
+            const parsed = JSON.parse(trimmed);
+            await sendEvent({ type: 'agent-output', data: parsed });
+          } catch {
+            if (!trimmed.startsWith('{') && !trimmed.startsWith('"')) {
+              await sendEvent({ type: 'output', text: trimmed });
             }
+          }
+        } else if (agent !== 'claude-code' && lineBuffer.trim()) {
+          const meaningfulLines = filterPlainTextLines([lineBuffer]);
+          if (meaningfulLines.length > 0) {
+            await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
           }
         }
         
@@ -792,6 +754,9 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
+
+
+
 
 
 
