@@ -634,16 +634,17 @@ CONFIGEOF`,
           }
         }
 
-        // Read any remaining output
+        // Read any remaining output (apply same filtering as main loop)
         const { content: finalContent } = await readOutputFromOffset(sandboxId, outputFile, 0);
         if (finalContent && finalContent !== lastSentContent) {
           const newContent = finalContent.substring(lastSentContent.length);
           if (newContent.trim()) {
             const cleanContent = stripAnsi(newContent);
             const lines = cleanContent.split('\n').filter(line => line.trim());
-            for (const line of lines) {
+            
+            if (agent === 'claude-code') {
               // For Claude Code, try to parse as JSON
-              if (agent === 'claude-code') {
+              for (const line of lines) {
                 try {
                   const parsed = JSON.parse(line);
                   await sendEvent({ type: 'agent-output', data: parsed });
@@ -653,8 +654,44 @@ CONFIGEOF`,
                     await sendEvent({ type: 'output', text: line });
                   }
                 }
-              } else {
-                await sendEvent({ type: 'output', text: line });
+              }
+            } else {
+              // For Codex/Aider: apply whitelist filtering
+              const meaningfulLines: string[] = [];
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) continue;
+                
+                // Use whitelist: only pass lines that look like explanations
+                const isExplanation = (
+                  trimmed.includes('**') ||
+                  trimmed.includes('`') ||
+                  (trimmed.startsWith('- ') && trimmed.length > 10 && !trimmed.includes('sandbox') && !trimmed.includes('/workspace')) ||
+                  trimmed.match(/^(Done|Ready|Created|Built|Updated|Finished|Complete)/i) ||
+                  trimmed.match(/(successfully|complete|ready)[\s!.]*$/i) ||
+                  trimmed.match(/^I('ll| will| have| am|'ve)/) ||
+                  (trimmed.match(/^(The|Your|This|Now|Here|Check)/i) && trimmed.length > 20 && !trimmed.includes('workspace'))
+                );
+                
+                const isNotCode = !(
+                  trimmed.match(/^[<{}\[\]();>]/) ||
+                  trimmed.match(/^(import|export|function|const|let|var|return|class)\s/) ||
+                  trimmed.match(/^[\+\-]/) ||
+                  trimmed.match(/^(cat|ls|exec|bash|mkdir|rm|cd|npm|node)\s/) ||
+                  trimmed.match(/in \/workspace/) ||
+                  trimmed.match(/^\d+$/) ||
+                  trimmed.match(/^(total|drwx|[-r][-w][-x])/) ||
+                  trimmed.match(/^codex$/i) || trimmed.match(/^aider$/i) ||
+                  trimmed.match(/^exec$/i) ||
+                  trimmed.match(/^tokens used/i)
+                );
+                
+                if (isExplanation && isNotCode) {
+                  meaningfulLines.push(trimmed);
+                }
+              }
+              if (meaningfulLines.length > 0) {
+                await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
               }
             }
           }
