@@ -60,7 +60,10 @@ async function createSandbox(): Promise<{ sandboxId: string; url: string }> {
   }
   
   const data = await response.json();
-  return { sandboxId: data.sandboxId, url: data.url };
+  const resolvedUrl = data.url && data.url.startsWith('/')
+    ? new URL(data.url, API_URL).toString()
+    : data.url;
+  return { sandboxId: data.sandboxId, url: resolvedUrl };
 }
 
 async function runAgentWithStreaming(
@@ -308,6 +311,9 @@ main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
+
+
+
 
 
 

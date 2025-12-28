@@ -44,10 +44,7 @@ const CODE_PANEL_EXPANDED_MAX_HEIGHT = '70vh';
 const CODE_PANEL_MIN_HEIGHT = '12rem';
 const CHAT_STREAM_MIN_HEIGHT = '8rem';
 const CHAT_STREAM_MAX_HEIGHT = '18rem';
-const SANDBOX_HOST_SUFFIX_RAW = (process.env.NEXT_PUBLIC_SANDBOX_HOST_SUFFIX || '.sandy.localhost').trim();
-const SANDBOX_HOST_SUFFIX = SANDBOX_HOST_SUFFIX_RAW
-  ? (SANDBOX_HOST_SUFFIX_RAW.startsWith('.') ? SANDBOX_HOST_SUFFIX_RAW : `.${SANDBOX_HOST_SUFFIX_RAW}`)
-  : '';
+const buildFallbackSandboxUrl = (sandboxId: string) => `/api/sandy-preview/${sandboxId}`;
 
 interface SandboxData {
   sandboxId: string;
@@ -161,13 +158,28 @@ function AISandboxPageContent() {
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
   const pingSandbox = async (baseUrl?: string) => {
     if (!baseUrl) return false;
-    // Use an image ping to bypass CORS; success or error both indicate reachability
+    const trimmed = baseUrl.replace(/\/$/, '');
+    const sameOrigin = trimmed.startsWith('/') || trimmed.startsWith(window.location.origin);
+
+    if (sameOrigin) {
+      try {
+        const res = await fetch(`${trimmed}?ping=${Date.now()}`, {
+          method: 'HEAD',
+          cache: 'no-store'
+        });
+        return res.ok;
+      } catch {
+        return false;
+      }
+    }
+
+    // Fallback to an image ping to bypass CORS for cross-origin sandboxes.
     try {
       await new Promise<void>((resolve) => {
         const img = new Image();
         img.onload = () => resolve();
         img.onerror = () => resolve();
-        img.src = `${baseUrl.replace(/\/$/, '')}/favicon.ico?t=${Date.now()}`;
+        img.src = `${trimmed}/favicon.ico?t=${Date.now()}`;
       });
       return true;
     } catch {
@@ -2423,7 +2435,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           ? sandboxData
           : (createdSandbox && createdSandbox.sandboxId)
             ? createdSandbox
-            : (sandboxParam ? { sandboxId: sandboxParam, url: SANDBOX_HOST_SUFFIX ? `https://${sandboxParam}${SANDBOX_HOST_SUFFIX}` : '' } as any : null);
+            : (sandboxParam ? { sandboxId: sandboxParam, url: buildFallbackSandboxUrl(sandboxParam) } as any : null);
         
         if (effectiveSandbox && generatedCode) {
           console.log('[chat] Applying generated code. sandboxId=', effectiveSandbox.sandboxId, 'url=', effectiveSandbox.url);

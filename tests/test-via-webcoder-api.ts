@@ -98,7 +98,10 @@ async function createSandbox(forceNew: boolean = false): Promise<{ sandboxId: st
   }
   
   const data = await response.json();
-  return { sandboxId: data.sandboxId, url: data.url };
+  const resolvedUrl = data.url && data.url.startsWith('/')
+    ? new URL(data.url, API_BASE_URL).toString()
+    : data.url;
+  return { sandboxId: data.sandboxId, url: resolvedUrl };
 }
 
 // Run agent and stream results
@@ -385,6 +388,9 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+
+
+
 
 
 

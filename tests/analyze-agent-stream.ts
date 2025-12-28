@@ -49,10 +49,13 @@ async function createSandbox(): Promise<{ sandboxId: string; url: string }> {
   }
   
   const data = await response.json() as any;
+  const resolvedUrl = data.url && data.url.startsWith('/')
+    ? new URL(data.url, API_URL).toString()
+    : data.url;
   console.log(`✅ Sandbox created: ${data.sandboxId}`);
-  console.log(`   URL: ${data.url}`);
+  console.log(`   URL: ${resolvedUrl}`);
   
-  return { sandboxId: data.sandboxId, url: data.url };
+  return { sandboxId: data.sandboxId, url: resolvedUrl };
 }
 
 async function runAgent(
@@ -389,4 +392,7 @@ async function main() {
 }
 
 main();
+
+
+
 

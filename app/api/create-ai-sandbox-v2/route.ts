@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { SandboxFactory } from '@/lib/sandbox/factory';
 import type { SandboxState } from '@/types/sandbox';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 
 // Store active sandbox globally
 declare global {
@@ -33,6 +34,16 @@ export async function POST() {
     try {
       const healthResult = await global.activeSandboxProvider.runCommand('echo "health"');
       if (healthResult.success) {
+        const providerInfo = global.activeSandboxProvider.getSandboxInfo?.();
+        if (providerInfo) {
+          const { previewUrl, sandboxUrl } = resolveSandboxUrls(providerInfo);
+          global.sandboxData = {
+            sandboxId: providerInfo.sandboxId,
+            url: previewUrl,
+            sandboxUrl,
+            provider: providerInfo.provider
+          };
+        }
         console.log('[create-ai-sandbox-v2] Returning existing active sandbox:', global.sandboxData.sandboxId);
         return NextResponse.json({
           success: true,
@@ -143,6 +154,8 @@ async function createSandboxInternal() {
   if (!sandboxInfo.sandboxId || sandboxInfo.sandboxId.length < 8) {
     throw new Error(`Invalid sandbox ID received: ${sandboxInfo.sandboxId}`);
   }
+
+  const { previewUrl, sandboxUrl } = resolveSandboxUrls(sandboxInfo);
   
   console.log('[create-ai-sandbox-v2] Setting up Vite React app...');
   
@@ -174,7 +187,9 @@ async function createSandboxInternal() {
   global.sandboxProvider = provider;
   global.sandboxData = {
     sandboxId: sandboxInfo.sandboxId,
-    url: sandboxInfo.url
+    url: previewUrl,
+    sandboxUrl,
+    provider: sandboxInfo.provider
   };
   
   // Initialize sandbox state
@@ -187,16 +202,18 @@ async function createSandboxInternal() {
     sandbox: provider,
     sandboxData: {
       sandboxId: sandboxInfo.sandboxId,
-      url: sandboxInfo.url
+      url: previewUrl,
+      sandboxUrl,
+      provider: sandboxInfo.provider
     }
   };
   
-  console.log('[create-ai-sandbox-v2] Sandbox ready at:', sandboxInfo.url);
+  console.log('[create-ai-sandbox-v2] Sandbox ready at:', previewUrl);
   
   return {
     success: true,
     sandboxId: sandboxInfo.sandboxId,
-    url: sandboxInfo.url,
+    url: previewUrl,
     provider: sandboxInfo.provider,
     message: 'Sandbox created and Vite React app initialized'
   };

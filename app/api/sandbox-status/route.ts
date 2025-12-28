@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 
 declare global {
   var activeSandboxProvider: any;
@@ -21,10 +22,17 @@ export async function GET() {
         // Check if sandbox is healthy by getting its info
         const providerInfo = provider.getSandboxInfo();
         sandboxHealthy = !!providerInfo;
-        
+
+        const resolvedUrls = providerInfo ? resolveSandboxUrls(providerInfo) : null;
+        const previewUrl = global.sandboxData?.url || resolvedUrls?.previewUrl || providerInfo?.url;
+        const sandboxUrl = global.sandboxData?.sandboxUrl || resolvedUrls?.sandboxUrl || providerInfo?.url;
+        const providerName = providerInfo?.provider || global.sandboxData?.provider;
+
         sandboxInfo = {
           sandboxId: providerInfo?.sandboxId || global.sandboxData?.sandboxId,
-          url: providerInfo?.url || global.sandboxData?.url,
+          url: previewUrl,
+          sandboxUrl,
+          provider: providerName,
           filesTracked: global.existingFiles ? Array.from(global.existingFiles) : [],
           lastHealthCheck: new Date().toISOString()
         };

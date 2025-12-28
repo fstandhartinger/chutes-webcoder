@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { SandboxState } from '@/types/sandbox';
 import { SandboxFactory } from '@/lib/sandbox/factory';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 
 // Store active sandbox globally
 declare global {
@@ -29,6 +30,16 @@ export async function POST() {
 
   // Check if we already have an active sandbox
   if (global.sandboxProvider && global.sandboxData) {
+    const providerInfo = global.sandboxProvider.getSandboxInfo?.();
+    if (providerInfo) {
+      const { previewUrl, sandboxUrl } = resolveSandboxUrls(providerInfo);
+      global.sandboxData = {
+        sandboxId: providerInfo.sandboxId,
+        url: previewUrl,
+        sandboxUrl,
+        provider: providerInfo.provider
+      };
+    }
     console.log('[create-ai-sandbox] Returning existing active sandbox');
     return NextResponse.json({
       success: true,
@@ -131,6 +142,8 @@ async function createSandboxInternal() {
     throw new Error(`Invalid sandbox ID received: ${sandboxInfo.sandboxId}`);
   }
 
+  const { previewUrl, sandboxUrl } = resolveSandboxUrls(sandboxInfo);
+
   // Setup Vite with timeout
   const setupPromise = provider.setupViteApp();
   const setupTimeoutPromise = new Promise<never>((_, reject) => 
@@ -157,7 +170,9 @@ async function createSandboxInternal() {
   global.sandboxProvider = provider;
   global.sandboxData = {
     sandboxId: sandboxInfo.sandboxId,
-    url: sandboxInfo.url
+    url: previewUrl,
+    sandboxUrl,
+    provider: sandboxInfo.provider
   };
 
   global.sandboxState = {
@@ -169,14 +184,16 @@ async function createSandboxInternal() {
     sandbox: provider,
     sandboxData: {
       sandboxId: sandboxInfo.sandboxId,
-      url: sandboxInfo.url
+      url: previewUrl,
+      sandboxUrl,
+      provider: sandboxInfo.provider
     }
   };
 
   const result = {
     success: true,
     sandboxId: sandboxInfo.sandboxId,
-    url: sandboxInfo.url,
+    url: previewUrl,
     provider: sandboxInfo.provider,
     message: 'Sandbox created and Vite React app initialized'
   };

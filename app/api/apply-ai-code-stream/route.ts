@@ -5,6 +5,7 @@ import { parseAIResponse } from '@/lib/ai-response';
 import type { SandboxState } from '@/types/sandbox';
 import type { ConversationState } from '@/types/conversation';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 
 declare global {
   var conversationState: ConversationState | null;
@@ -108,6 +109,7 @@ export async function POST(request: NextRequest) {
         provider = SandboxFactory.create();
         const sandboxInfo = await provider.createSandbox();
         await provider.setupViteApp();
+        const { previewUrl, sandboxUrl } = resolveSandboxUrls(sandboxInfo);
 
         // Register with sandbox manager
         sandboxManager.registerSandbox(sandboxInfo.sandboxId, provider);
@@ -116,7 +118,9 @@ export async function POST(request: NextRequest) {
         global.activeSandboxProvider = provider;
         global.sandboxData = {
           sandboxId: sandboxInfo.sandboxId,
-          url: sandboxInfo.url
+          url: previewUrl,
+          sandboxUrl,
+          provider: sandboxInfo.provider
         };
 
         console.log(`[apply-ai-code-stream] Created new sandbox successfully`);
