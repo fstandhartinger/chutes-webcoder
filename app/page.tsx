@@ -2011,7 +2011,26 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       // Skip JSON fragments
                       console.log('[chat] Skipping JSON fragment from output');
                     } else {
-                      addChatMessage(cleaned, 'ai');
+                      // Only show lines that look like human-readable explanations
+                      // Skip technical lines (code, commands, etc.)
+                      const isExplanation = (
+                        cleaned.includes('**') || // Markdown formatting
+                        cleaned.includes('✓') || cleaned.includes('✅') || // Success indicators
+                        cleaned.includes('created') || cleaned.includes('Created') ||
+                        cleaned.includes('built') || cleaned.includes('Built') ||
+                        cleaned.includes('Done') || cleaned.includes('done') ||
+                        cleaned.includes('Ready') || cleaned.includes('ready') ||
+                        cleaned.includes('successfully') ||
+                        cleaned.startsWith('I') || cleaned.startsWith("I'") || // Agent speaking
+                        cleaned.startsWith('The ') || cleaned.startsWith('Your ') ||
+                        cleaned.startsWith('Check ') || cleaned.startsWith('Now ') ||
+                        cleaned.includes('counter') || cleaned.includes('component') ||
+                        cleaned.includes('button') || cleaned.includes('feature')
+                      );
+                      
+                      if (isExplanation) {
+                        addChatMessage(cleaned, 'ai');
+                      }
                     }
                   }
                 } else if (data.type === 'stderr') {
