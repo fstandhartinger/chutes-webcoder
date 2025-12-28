@@ -527,6 +527,7 @@ CONFIGEOF`,
                         trimmed.startsWith('mcp startup:') ||
                         trimmed.startsWith('bash -lc') ||
                         trimmed.startsWith('bash -c') ||
+                        trimmed.startsWith('cat ') || // Command output
                         trimmed.startsWith('Git repo:') ||
                         trimmed.startsWith('Repo-map:') ||
                         trimmed.startsWith('Model:') ||
@@ -556,10 +557,14 @@ CONFIGEOF`,
                         trimmed.startsWith('After you make changes') || // System prompt
                         trimmed.startsWith('Make sure your App.jsx') || // System prompt
                         trimmed.startsWith('User Request:') || // System prompt
+                        trimmed.startsWith('tokens used') || // Codex internal
+                        trimmed.startsWith('EOFMARKER') || // Heredoc marker
                         trimmed.match(/^OpenAI Codex v[\d.]+/) ||
                         trimmed.match(/^aider v[\d.]+/) ||
                         trimmed.match(/^ider v[\d.]+/) || // Partial match for Aider version
                         trimmed.match(/^exec$/) ||
+                        trimmed.match(/^codex$/) || // Agent name
+                        trimmed.match(/^aider$/) || // Agent name
                         trimmed.match(/in \/workspace (succeeded|exited|failed) in \d+ms/) || // Command exec logs
                         trimmed.match(/^\d+$/) || // Pure numbers (byte counts, etc)
                         trimmed.match(/^user$/) ||
@@ -567,7 +572,18 @@ CONFIGEOF`,
                         trimmed.match(/^npm error Log files were not written/) || // Verbose npm log message
                         trimmed.match(/^npm error You can rerun/) || // Verbose npm suggestion
                         trimmed.match(/^iff edit format/) || // Aider format info
-                        trimmed.match(/^diff edit format/) // Aider format info
+                        trimmed.match(/^diff edit format/) || // Aider format info
+                        // Skip code content lines (we don't need to show raw code in chat)
+                        trimmed.match(/^import\s+/) || // JS imports
+                        trimmed.match(/^export\s+/) || // JS exports
+                        trimmed.match(/^function\s+/) || // Function definitions
+                        trimmed.match(/^const\s+\[/) || // React hooks
+                        trimmed.match(/^return\s*\(/) || // Return statements
+                        trimmed.match(/^<[A-Za-z]/) || // JSX elements
+                        trimmed.match(/^\s*<\//) || // Closing JSX tags
+                        trimmed.match(/^\s*\{.*\}\s*$/) || // Single JSX expressions
+                        trimmed.match(/^className=/) || // className attributes
+                        trimmed.match(/^onClick=/) // onClick handlers
                     ) {
                       continue; // Skip noise
                     }
@@ -699,24 +715,44 @@ CONFIGEOF`,
         // Get exit code
         const exitCode = await getExitCode(sandboxId, doneFile);
 
-        // After agent completes, ensure Vite is running
-        await sendEvent({ type: 'status', message: 'Verifying Vite server...' });
+        // After agent completes, ensure Vite is running and serving content
+        await sendEvent({ type: 'status', message: 'Preparing preview...' });
         try {
+          // Check if Vite process is running
           const viteCheck = await execInSandbox(sandboxId, 'pgrep -f "vite" || echo "not_running"', {}, 5000);
           const viteRunning = viteCheck.stdout.trim() !== 'not_running' && viteCheck.stdout.trim() !== '';
 
           if (!viteRunning) {
             console.log('[agent-run] Vite not running, starting it...');
-            await sendEvent({ type: 'status', message: 'Starting Vite server...' });
+            await sendEvent({ type: 'status', message: 'Starting preview server...' });
             // Kill any zombie processes first
             await execInSandbox(sandboxId, 'pkill -f vite || true', {}, 5000).catch(() => {});
-            // Start Vite in background
-            await execInSandbox(sandboxId, 'cd /workspace && nohup npm run dev > /tmp/vite.log 2>&1 &', {}, 10000);
-            // Wait for Vite to start
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            console.log('[agent-run] Vite started');
+            // Remove any stale lock files
+            await execInSandbox(sandboxId, 'rm -f /workspace/node_modules/.vite/*.lock 2>/dev/null || true', {}, 5000).catch(() => {});
+            // Start Vite in background with explicit host binding
+            await execInSandbox(sandboxId, 'cd /workspace && nohup npm run dev -- --host 0.0.0.0 > /tmp/vite.log 2>&1 &', {}, 10000);
+            // Wait for Vite to fully start (check for "ready" in log)
+            let viteReady = false;
+            for (let i = 0; i < 10; i++) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              try {
+                const logCheck = await execInSandbox(sandboxId, 'grep -q "ready\\|Local:" /tmp/vite.log 2>/dev/null && echo "ready" || echo "waiting"', {}, 3000);
+                if (logCheck.stdout.trim() === 'ready') {
+                  viteReady = true;
+                  break;
+                }
+              } catch {}
+            }
+            if (viteReady) {
+              console.log('[agent-run] Vite started and ready');
+              await sendEvent({ type: 'status', message: 'Preview ready!' });
+            } else {
+              console.log('[agent-run] Vite may still be starting...');
+            }
           } else {
             console.log('[agent-run] Vite is already running');
+            // Still verify it's responding
+            await sendEvent({ type: 'status', message: 'Preview ready!' });
           }
         } catch (viteError) {
           console.error('[agent-run] Error checking/starting Vite:', viteError);
