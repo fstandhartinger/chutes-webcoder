@@ -65,6 +65,107 @@ interface ChatMessage {
   };
 }
 
+// Simple markdown renderer for chat messages
+function renderMarkdown(text: string): React.ReactNode {
+  // Split by code blocks first (```)
+  const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    // Add text before code block
+    if (match.index > lastIndex) {
+      parts.push(
+        <span key={`text-${keyIndex++}`}>
+          {renderInlineMarkdown(text.slice(lastIndex, match.index))}
+        </span>
+      );
+    }
+
+    // Add code block
+    const language = match[1] || 'text';
+    const code = match[2].trim();
+    parts.push(
+      <pre
+        key={`code-${keyIndex++}`}
+        className="my-2 p-3 bg-neutral-900 rounded-lg overflow-x-auto text-sm font-mono"
+      >
+        <code className={`language-${language}`}>{code}</code>
+      </pre>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(
+      <span key={`text-${keyIndex++}`}>
+        {renderInlineMarkdown(text.slice(lastIndex))}
+      </span>
+    );
+  }
+
+  return parts.length === 1 ? parts[0] : <>{parts}</>;
+}
+
+// Render inline markdown (bold, italic, code, links)
+function renderInlineMarkdown(text: string): React.ReactNode {
+  // Process inline elements: **bold**, *italic*, `code`, [link](url)
+  const elements: React.ReactNode[] = [];
+  let keyIndex = 0;
+
+  // Regex for all inline patterns
+  const inlineRegex = /(\*\*(.+?)\*\*|\*(.+?)\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\))/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = inlineRegex.exec(text)) !== null) {
+    // Add plain text before match
+    if (match.index > lastIndex) {
+      elements.push(text.slice(lastIndex, match.index));
+    }
+
+    const fullMatch = match[1];
+    if (fullMatch.startsWith('**')) {
+      // Bold
+      elements.push(<strong key={`b-${keyIndex++}`} className="font-semibold">{match[2]}</strong>);
+    } else if (fullMatch.startsWith('*') && !fullMatch.startsWith('**')) {
+      // Italic
+      elements.push(<em key={`i-${keyIndex++}`}>{match[3]}</em>);
+    } else if (fullMatch.startsWith('`')) {
+      // Inline code
+      elements.push(
+        <code key={`c-${keyIndex++}`} className="px-1.5 py-0.5 bg-neutral-800 rounded text-emerald-400 text-sm font-mono">
+          {match[4]}
+        </code>
+      );
+    } else if (fullMatch.startsWith('[')) {
+      // Link
+      elements.push(
+        <a
+          key={`a-${keyIndex++}`}
+          href={match[6]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-emerald-400 hover:text-emerald-300 underline"
+        >
+          {match[5]}
+        </a>
+      );
+    }
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining plain text
+  if (lastIndex < text.length) {
+    elements.push(text.slice(lastIndex));
+  }
+
+  return elements.length === 1 ? elements[0] : <>{elements}</>;
+}
+
 function AISandboxPageContent() {
   const [sandboxData, setSandboxData] = useState<SandboxData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -3946,7 +4047,12 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                           <span>Waiting for sandbox to be ready...</span>
                         </div>
                       ) : (
-                        msg.content
+                        // Render markdown for AI and system messages
+                        msg.type === 'ai' || msg.type === 'system' ? (
+                          <div className="whitespace-pre-wrap">{renderMarkdown(msg.content)}</div>
+                        ) : (
+                          msg.content
+                        )
                       )
                     )}
                       </div>

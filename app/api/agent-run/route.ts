@@ -369,11 +369,21 @@ function filterPlainTextLines(lines: string[]): string[] {
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
-  
+  const requestId = Math.random().toString(36).substring(7);
+
+  console.log(`[agent-run:${requestId}] ========== NEW REQUEST ==========`);
+
   try {
     const body: AgentRunRequest = await request.json();
     const { agent, model, prompt, sandboxId } = body;
-    
+
+    // Log received request details
+    console.log(`[agent-run:${requestId}] Received request:`);
+    console.log(`[agent-run:${requestId}]   agent: "${agent}"`);
+    console.log(`[agent-run:${requestId}]   model: "${model}"`);
+    console.log(`[agent-run:${requestId}]   sandboxId: "${sandboxId}"`);
+    console.log(`[agent-run:${requestId}]   prompt: "${prompt?.substring(0, 100)}..."`);
+
     // Validate agent
     if (!AGENTS[agent]) {
       return NextResponse.json(
@@ -423,7 +433,8 @@ export async function POST(request: NextRequest) {
     }
     
     const agentConfig = AGENTS[agent];
-    
+    console.log(`[agent-run:${requestId}] Using agent config: "${agentConfig.name}" (command: ${agentConfig.command})`);
+
     // Create streaming response
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
@@ -484,7 +495,7 @@ CONFIGEOF`,
             env,
             10000
           );
-          console.log('[agent-run] Created Codex config.toml');
+          console.log(`[agent-run:${requestId}] Created Codex config.toml`);
         }
         
         // Wrap prompt with React/Vite system instructions
@@ -501,8 +512,8 @@ CONFIGEOF`,
           message: `Running ${agentConfig.name} with model ${appConfig.ai.modelDisplayNames[model] || model}...` 
         });
         
-        console.log(`[agent-run] Executing in background: ${command}`);
-        console.log(`[agent-run] Environment:`, Object.keys(env));
+        console.log(`[agent-run:${requestId}] Executing ${agentConfig.name} command: ${command.substring(0, 200)}...`);
+        console.log(`[agent-run:${requestId}] Environment keys:`, Object.keys(env));
         
         // Start the command in background
         await startBackgroundCommand(sandboxId, command, env, outputFile, pidFile, doneFile);
