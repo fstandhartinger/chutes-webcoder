@@ -538,6 +538,22 @@ CONFIGEOF`,
               try {
                 const parsed = JSON.parse(trimmedLine);
                 await sendEvent({ type: 'agent-output', data: parsed });
+
+                // Extract file content from Write tool results immediately
+                if (parsed.type === 'user' && parsed.tool_use_result) {
+                  const result = parsed.tool_use_result;
+                  if (result.type === 'update' && result.filePath && result.content) {
+                    const relativePath = result.filePath.replace('/workspace/', '');
+                    if (!knownFiles.has(result.filePath)) {
+                      knownFiles.add(result.filePath);
+                      await sendEvent({
+                        type: 'files-update',
+                        files: [{ path: relativePath, content: result.content }],
+                        totalFiles: knownFiles.size
+                      });
+                    }
+                  }
+                }
               } catch {
                 if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('"')) {
                   await sendEvent({ type: 'output', text: trimmedLine });

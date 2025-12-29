@@ -2074,29 +2074,43 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   if (data.files && data.files.length > 0) {
                     console.log('[chat] Agent detected new files:', data.files);
                     setGenerationProgress(prev => {
-                      const existingPaths = new Set(prev.files.map(f => f.path));
                       // Handle both old format (string[]) and new format ({path, content}[])
-                      const newFileEntries = data.files
-                        .map((fileEntry: string | {path: string; content: string}) => {
-                          // Handle both string and object formats
-                          const filePath = typeof fileEntry === 'string' ? fileEntry : fileEntry.path;
-                          const fileContent = typeof fileEntry === 'string' ? '' : (fileEntry.content || '');
-                          return { filePath, fileContent };
-                        })
-                        .filter(({ filePath }: { filePath: string }) => !existingPaths.has(filePath))
-                        .map(({ filePath, fileContent }: { filePath: string; fileContent: string }) => {
-                          const ext = filePath.split('.').pop() || '';
-                          return {
-                            path: filePath,
-                            content: fileContent,
-                            type: ext === 'jsx' || ext === 'js' ? 'javascript' :
-                                  ext === 'css' ? 'css' : 'text',
-                            completed: fileContent.length > 0
-                          };
-                        });
+                      const incomingFiles = data.files.map((fileEntry: string | {path: string; content: string}) => {
+                        const filePath = typeof fileEntry === 'string' ? fileEntry : fileEntry.path;
+                        const fileContent = typeof fileEntry === 'string' ? '' : (fileEntry.content || '');
+                        const ext = filePath.split('.').pop() || '';
+                        return {
+                          path: filePath,
+                          content: fileContent,
+                          type: ext === 'jsx' || ext === 'js' ? 'javascript' :
+                                ext === 'css' ? 'css' : 'text',
+                          completed: fileContent.length > 0
+                        };
+                      });
+
+                      // Merge with existing files: update content if file exists with empty content
+                      const existingPathsMap = new Map(prev.files.map(f => [f.path, f]));
+                      const updatedFiles = [...prev.files];
+                      const newFiles: typeof updatedFiles = [];
+
+                      for (const incoming of incomingFiles) {
+                        const existing = existingPathsMap.get(incoming.path);
+                        if (existing) {
+                          // Update content only if existing is empty and incoming has content
+                          if (!existing.content && incoming.content) {
+                            const idx = updatedFiles.findIndex(f => f.path === incoming.path);
+                            if (idx >= 0) {
+                              updatedFiles[idx] = { ...existing, content: incoming.content, completed: true };
+                            }
+                          }
+                        } else {
+                          newFiles.push(incoming);
+                        }
+                      }
+
                       return {
                         ...prev,
-                        files: [...prev.files, ...newFileEntries],
+                        files: [...updatedFiles, ...newFiles],
                         status: `Created ${data.totalFiles} files...`
                       };
                     });
