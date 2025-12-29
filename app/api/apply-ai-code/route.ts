@@ -196,7 +196,8 @@ export async function POST(request: NextRequest) {
             // Call the restart-vite endpoint
             const restartResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/restart-vite`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sandboxId })
             });
             
             if (restartResponse.ok) {

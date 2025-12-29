@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useMemo, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { appConfig } from '@/config/app.config';
 import HeroInput from '@/components/HeroInput';
@@ -76,8 +76,9 @@ function AISandboxPage() {
   const [urlInput, setUrlInput] = useState('');
   const [urlStatus, setUrlStatus] = useState<string[]>([]);
   const [showHomeScreen, setShowHomeScreen] = useState(true);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['app', 'src', 'src/components']));
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const userSelectedFileRef = useRef(false);
   const [isCodeExpanded, setIsCodeExpanded] = useState(false);
   const [homeScreenFading, setHomeScreenFading] = useState(false);
   const [homeUrlInput, setHomeUrlInput] = useState('');
@@ -133,7 +134,7 @@ function AISandboxPage() {
     thinkingText?: string;
     thinkingDuration?: number;
     currentFile?: { path: string; content: string; type: string };
-    files: Array<{ path: string; content: string; type: string; completed: boolean; edited?: boolean }>;
+    files: Array<{ path: string; content: string; type: string; completed: boolean; edited?: boolean; lastUpdated?: number }>;
     lastProcessedPosition: number;
     isEdit?: boolean;
   }>({
@@ -147,6 +148,36 @@ function AISandboxPage() {
     files: [],
     lastProcessedPosition: 0
   });
+
+  const rootFolder = useMemo(() => {
+    const filePaths = generationProgress.files.map(file => file.path).filter(Boolean);
+    if (filePaths.length === 0) return 'src';
+    const topLevelDirs = new Set(filePaths.map(path => path.split('/')[0]).filter(Boolean));
+    if (topLevelDirs.has('src')) return 'src';
+    if (topLevelDirs.has('app')) return 'app';
+    if (topLevelDirs.size === 1) return Array.from(topLevelDirs)[0] as string;
+    return 'workspace';
+  }, [generationProgress.files]);
+
+  const treeFiles = useMemo(() => {
+    const rootPrefix = rootFolder === 'workspace' ? '' : `${rootFolder}/`;
+    return generationProgress.files.map(file => {
+      const displayPath = rootPrefix && file.path.startsWith(rootPrefix)
+        ? file.path.slice(rootPrefix.length)
+        : file.path;
+      return { ...file, displayPath, fullPath: file.path };
+    });
+  }, [generationProgress.files, rootFolder]);
+
+  useEffect(() => {
+    if (!rootFolder) return;
+    setExpandedFolders(prev => {
+      if (prev.has(rootFolder)) return prev;
+      const next = new Set(prev);
+      next.add(rootFolder);
+      return next;
+    });
+  }, [rootFolder]);
 
   useEffect(() => {
     setIsCodeExpanded(false);
@@ -375,6 +406,19 @@ function AISandboxPage() {
     setStatus({ text, active });
   };
 
+  const getActiveSandboxId = useCallback(
+    (override?: string | null) => override || sandboxData?.sandboxId || searchParams.get('sandbox') || null,
+    [sandboxData?.sandboxId, searchParams]
+  );
+  const buildSandboxStatusUrl = useCallback(
+    (sandboxId: string) => `/api/sandbox-status?sandboxId=${encodeURIComponent(sandboxId)}`,
+    []
+  );
+  const buildSandboxFilesUrl = useCallback(
+    (sandboxId: string) => `/api/get-sandbox-files?sandboxId=${encodeURIComponent(sandboxId)}`,
+    []
+  );
+
   const log = (message: string, type: 'info' | 'error' | 'command' = 'info') => {
     setResponseArea(prev => [...prev, `[${type}] ${message}`]);
   };
@@ -483,9 +527,17 @@ function AISandboxPage() {
   };
 
   const checkSandboxStatus = async () => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) {
+      if (!sandboxData) {
+        setSandboxData(null);
+      }
+      updateStatus('No sandbox', false);
+      return;
+    }
     try {
-      const response = await fetch('/api/sandbox-status');
-      const data = await response.json();
+      const response = await fetch(buildSandboxStatusUrl(sandboxId));
+      const data = await response.json().catch(() => ({}));
       
       if (data.active && data.healthy && data.sandboxData) {
         console.log('[checkSandboxStatus] Setting sandboxData from API:', data.sandboxData);
@@ -572,7 +624,7 @@ function AISandboxPage() {
         }
         
         // Fetch sandbox files after creation
-        setTimeout(fetchSandboxFiles, 1000);
+        setTimeout(() => fetchSandboxFiles(data.sandboxId), 1000);
         
         // For Vercel sandboxes, Vite is already started during setupViteApp
         // No need to restart it immediately after creation
@@ -923,7 +975,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           }
           
           // Fetch updated file structure
-          await fetchSandboxFiles();
+          await fetchSandboxFiles(overrideSandboxData?.sandboxId || sandboxData?.sandboxId);
           
           // Skip automatic package check - it's not needed here and can cause false "no sandbox" messages
           // Packages are already installed during the apply-ai-code-stream process
@@ -1037,11 +1089,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
-  const fetchSandboxFiles = async () => {
-    if (!sandboxData) return;
+  const fetchSandboxFiles = async (overrideSandboxId?: string | null) => {
+    const sandboxId = getActiveSandboxId(overrideSandboxId);
+    if (!sandboxId) return;
     
     try {
-      const response = await fetch('/api/get-sandbox-files', {
+      const response = await fetch(buildSandboxFilesUrl(sandboxId), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -1140,26 +1193,26 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 {/* Root app folder */}
                 <div 
                   className="flex items-center gap-2 py-0.5 px-3 hover:bg-surface-ink-850 rounded cursor-pointer text-ink-300"
-                  onClick={() => toggleFolder('app')}
+                  onClick={() => toggleFolder(rootFolder)}
                 >
-                  {expandedFolders.has('app') ? (
+                  {expandedFolders.has(rootFolder) ? (
                     <FiChevronDown style={{ width: '16px', height: '16px' }} className="text-ink-400" />
                   ) : (
                     <FiChevronRight style={{ width: '16px', height: '16px' }} className="text-ink-400" />
                   )}
-                  {expandedFolders.has('app') ? (
+                  {expandedFolders.has(rootFolder) ? (
                     <BsFolder2Open style={{ width: '16px', height: '16px' }} className="text-moss-400" />
                   ) : (
                     <BsFolderFill style={{ width: '16px', height: '16px' }} className="text-moss-400" />
                   )}
-                  <span className="font-medium text-ink-200">app</span>
+                  <span className="font-medium text-ink-200">{rootFolder}</span>
                 </div>
                 
-                {expandedFolders.has('app') && (
+                {expandedFolders.has(rootFolder) && (
                   <div className="ml-6">
                     {/* Group files by directory */}
                     {(() => {
-                      const fileTree: { [key: string]: Array<{ name: string; edited?: boolean }> } = {};
+                      const fileTree: { [key: string]: Array<{ name: string; path: string; edited?: boolean }> } = {};
                       
                       // Create a map of edited files
                       // const editedFiles = new Set(
@@ -1169,14 +1222,15 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       // );
                       
                       // Process all files from generation progress
-                      generationProgress.files.forEach(file => {
-                        const parts = file.path.split('/');
+                      treeFiles.forEach(file => {
+                        const parts = file.displayPath.split('/');
                         const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '';
                         const fileName = parts[parts.length - 1];
                         
                         if (!fileTree[dir]) fileTree[dir] = [];
                         fileTree[dir].push({
                           name: fileName,
+                          path: file.fullPath,
                           edited: file.edited || false
                         });
                       });
@@ -1204,7 +1258,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           {(!dir || expandedFolders.has(dir)) && (
                             <div className={dir ? 'ml-8' : ''}>
                               {files.sort((a, b) => a.name.localeCompare(b.name)).map(fileInfo => {
-                                const fullPath = dir ? `${dir}/${fileInfo.name}` : fileInfo.name;
+                                const fullPath = fileInfo.path;
                                 const isSelected = selectedFile === fullPath;
                                 
                                 return (
@@ -1295,7 +1349,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           <span className="font-mono text-sm">{selectedFile}</span>
                         </div>
                         <button
-                          onClick={() => setSelectedFile(null)}
+                          onClick={() => {
+                            userSelectedFileRef.current = false;
+                            setSelectedFile(null);
+                          }}
                           className="hover:bg-surface-ink-800/60 p-1 rounded transition-colors"
                         >
                           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2253,6 +2310,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
   };
 
   const handleFileClick = async (filePath: string) => {
+    userSelectedFileRef.current = true;
     setSelectedFile(filePath);
     // TODO: Add file content fetching logic here
   };

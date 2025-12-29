@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
+import { useState, useEffect, useRef, Suspense, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import NextImage from 'next/image';
 import { appConfig } from '@/config/app.config';
@@ -195,8 +195,9 @@ function AISandboxPageContent() {
   const [urlInput, setUrlInput] = useState('');
   const [_urlStatus, _setUrlStatus] = useState<string[]>([]);
   const [showHomeScreen, setShowHomeScreen] = useState(true);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['app', 'src', 'src/components']));
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const userSelectedFileRef = useRef(false);
   const [isCodeExpanded, setIsCodeExpanded] = useState(false);
   const [homeScreenFading, setHomeScreenFading] = useState(false);
   const [homeUrlInput, setHomeUrlInput] = useState('');
@@ -255,6 +256,19 @@ function AISandboxPageContent() {
     stage: null
   });
 
+  const getActiveSandboxId = useCallback(
+    (override?: string | null) => override || sandboxData?.sandboxId || searchParams.get('sandbox') || null,
+    [sandboxData?.sandboxId, searchParams]
+  );
+  const buildSandboxStatusUrl = useCallback(
+    (sandboxId: string) => `/api/sandbox-status?sandboxId=${encodeURIComponent(sandboxId)}`,
+    []
+  );
+  const buildSandboxFilesUrl = useCallback(
+    (sandboxId: string) => `/api/get-sandbox-files?sandboxId=${encodeURIComponent(sandboxId)}`,
+    []
+  );
+
   // Helpers for robust preview readiness
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
   const pingSandbox = async (baseUrl?: string) => {
@@ -287,9 +301,11 @@ function AISandboxPageContent() {
       return false;
     }
   };
-  const fetchSandboxActive = async (): Promise<boolean> => {
+  const fetchSandboxActive = async (overrideSandboxId?: string | null): Promise<boolean> => {
+    const sandboxId = getActiveSandboxId(overrideSandboxId);
+    if (!sandboxId) return false;
     try {
-      const res = await fetch('/api/sandbox-status', { method: 'GET' });
+      const res = await fetch(buildSandboxStatusUrl(sandboxId), { method: 'GET' });
       if (!res.ok) return false;
       const data = await res.json();
       if (data?.active && data?.healthy) {
@@ -313,7 +329,7 @@ function AISandboxPageContent() {
     thinkingText?: string;
     thinkingDuration?: number;
     currentFile?: { path: string; content: string; type: string };
-    files: Array<{ path: string; content: string; type: string; completed: boolean }>;
+    files: Array<{ path: string; content: string; type: string; completed: boolean; edited?: boolean; lastUpdated?: number }>;
     lastProcessedPosition: number;
     isEdit?: boolean;
   }>({
@@ -327,6 +343,36 @@ function AISandboxPageContent() {
     files: [],
     lastProcessedPosition: 0
   });
+
+  const rootFolder = useMemo(() => {
+    const filePaths = generationProgress.files.map(file => file.path).filter(Boolean);
+    if (filePaths.length === 0) return 'src';
+    const topLevelDirs = new Set(filePaths.map(path => path.split('/')[0]).filter(Boolean));
+    if (topLevelDirs.has('src')) return 'src';
+    if (topLevelDirs.has('app')) return 'app';
+    if (topLevelDirs.size === 1) return Array.from(topLevelDirs)[0] as string;
+    return 'workspace';
+  }, [generationProgress.files]);
+
+  const treeFiles = useMemo(() => {
+    const rootPrefix = rootFolder === 'workspace' ? '' : `${rootFolder}/`;
+    return generationProgress.files.map(file => {
+      const displayPath = rootPrefix && file.path.startsWith(rootPrefix)
+        ? file.path.slice(rootPrefix.length)
+        : file.path;
+      return { ...file, displayPath, fullPath: file.path };
+    });
+  }, [generationProgress.files, rootFolder]);
+
+  useEffect(() => {
+    if (!rootFolder) return;
+    setExpandedFolders(prev => {
+      if (prev.has(rootFolder)) return prev;
+      const next = new Set(prev);
+      next.add(rootFolder);
+      return next;
+    });
+  }, [rootFolder]);
 
   useEffect(() => {
     setIsCodeExpanded(false);
@@ -510,9 +556,15 @@ function AISandboxPageContent() {
   }, []);
 
   const checkSandboxStatus = useCallback(async () => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) {
+      setSandboxData(null);
+      updateStatus('No sandbox', false);
+      return;
+    }
     try {
-      const response = await fetch('/api/sandbox-status');
-      const data = await response.json();
+      const response = await fetch(buildSandboxStatusUrl(sandboxId));
+      const data = await response.json().catch(() => ({}));
       
       if (data.active && data.healthy && data.sandboxData) {
         setSandboxData(data.sandboxData);
@@ -522,15 +574,23 @@ function AISandboxPageContent() {
         updateStatus('Sandbox not responding', false);
         // Optionally try to create a new one
       } else {
-        setSandboxData(null);
-        updateStatus('No sandbox', false);
+        if (!sandboxData) {
+          setSandboxData(null);
+          updateStatus('No sandbox', false);
+        } else {
+          updateStatus('Sandbox inactive', false);
+        }
       }
     } catch (error) {
       console.error('Failed to check sandbox status:', error);
-      setSandboxData(null);
-      updateStatus('Error', false);
+      if (!sandboxData) {
+        setSandboxData(null);
+        updateStatus('Error', false);
+      } else {
+        updateStatus('Status check failed', false);
+      }
     }
-  }, [updateStatus]);
+  }, [buildSandboxStatusUrl, getActiveSandboxId, sandboxData, updateStatus]);
 
 
   useEffect(() => {
@@ -782,12 +842,16 @@ function AISandboxPageContent() {
             if (isMountedRef.current) displayStructure(data.structure);
           }
           // Fetch sandbox files after creation
-          setTimeout(() => { if (isMountedRef.current) fetchSandboxFiles(); }, 1000);
+          setTimeout(() => { if (isMountedRef.current) fetchSandboxFiles(data.sandboxId); }, 1000);
           // Ensure Vite server is up
           setTimeout(async () => {
             try {
               console.log('[createSandbox] Ensuring Vite server is running...');
-              const restartResponse = await fetch('/api/restart-vite', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+              const restartResponse = await fetch('/api/restart-vite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sandboxId: data.sandboxId })
+              });
               if (restartResponse.ok) {
                 const restartData = await restartResponse.json();
                 if (restartData.success) {
@@ -1043,7 +1107,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             // Also restart Vite to pick up any dependencies or initial app bootstrap
             try {
               console.log('[applyGeneratedCode] Requesting /api/restart-vite');
-              await fetch('/api/restart-vite', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+              await fetch('/api/restart-vite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sandboxId: effectiveSandbox.sandboxId })
+              });
             } catch {}
             // Do not force switch; rely on iframe load and auto-switch logic elsewhere
           }
@@ -1132,7 +1200,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           }
           
           // Fetch updated file structure
-          await fetchSandboxFiles();
+          await fetchSandboxFiles(sandboxOverride?.sandboxId || sandboxData?.sandboxId);
           
           // Automatically check and install any missing packages
           await checkAndInstallPackages();
@@ -1187,11 +1255,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
-  const fetchSandboxFiles = async () => {
-    if (!sandboxData) return;
+  const fetchSandboxFiles = async (overrideSandboxId?: string | null) => {
+    const sandboxId = getActiveSandboxId(overrideSandboxId);
+    if (!sandboxId) return;
     
     try {
-      const response = await fetch('/api/get-sandbox-files', {
+      const response = await fetch(buildSandboxFilesUrl(sandboxId), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -1218,7 +1287,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       
       const response = await fetch('/api/restart-vite', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sandboxId: sandboxData?.sandboxId })
       });
       
       if (response.ok) {
@@ -1291,26 +1361,26 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                 {/* Root app folder */}
                 <div 
                   className="flex items-center gap-1 py-2 px-3 hover:bg-surface-ink-750 rounded cursor-pointer text-[#f5f5f5]"
-                  onClick={() => toggleFolder('app')}
+                  onClick={() => toggleFolder(rootFolder)}
                 >
-                  {expandedFolders.has('app') ? (
+                  {expandedFolders.has(rootFolder) ? (
                     <FiChevronDown className="w-5 h-5 text-muted-foreground" />
                   ) : (
                     <FiChevronRight className="w-5 h-5 text-muted-foreground" />
                   )}
-                  {expandedFolders.has('app') ? (
+                  {expandedFolders.has(rootFolder) ? (
                     <BsFolder2Open className="w-5 h-5 text-emerald-500" />
                   ) : (
                     <BsFolderFill className="w-5 h-5 text-emerald-500" />
                   )}
-                  <span className="font-medium text-foreground">app</span>
+                  <span className="font-medium text-foreground">{rootFolder}</span>
                 </div>
                 
-                {expandedFolders.has('app') && (
+                {expandedFolders.has(rootFolder) && (
                   <div className="ml-4">
                     {/* Group files by directory */}
                     {(() => {
-                      const fileTree: { [key: string]: Array<{ name: string; edited?: boolean }> } = {};
+                      const fileTree: { [key: string]: Array<{ name: string; path: string; edited?: boolean }> } = {};
                       
                       // Create a map of edited files
                        const editedFiles = new Set(
@@ -1321,14 +1391,15 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                        );
                       
                       // Process all files from generation progress
-                      generationProgress.files.forEach(file => {
-                        const parts = file.path.split('/');
+                      treeFiles.forEach(file => {
+                        const parts = file.displayPath.split('/');
                         const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '';
                         const fileName = parts[parts.length - 1];
                         
                         if (!fileTree[dir]) fileTree[dir] = [];
                          fileTree[dir].push({
                            name: fileName,
+                           path: file.fullPath,
                            edited: (file as any).edited || false
                          });
                       });
@@ -1356,7 +1427,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           {(!dir || expandedFolders.has(dir)) && (
                             <div className={dir ? 'ml-6' : ''}>
                               {files.sort((a, b) => a.name.localeCompare(b.name)).map(fileInfo => {
-                                const fullPath = dir ? `${dir}/${fileInfo.name}` : fileInfo.name;
+                                const fullPath = fileInfo.path;
                                 const isSelected = selectedFile === fullPath;
                                 
                                 return (
@@ -1447,7 +1518,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           <span className="font-mono text-sm">{selectedFile}</span>
                         </div>
                         <button
-                          onClick={() => setSelectedFile(null)}
+                          onClick={() => {
+                            userSelectedFileRef.current = false;
+                            setSelectedFile(null);
+                          }}
                           className="hover:bg-black/20 p-1 rounded transition-colors"
                         >
                           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1926,6 +2000,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     
     try {
       // Generation tab is already active from scraping phase
+      userSelectedFileRef.current = false;
+      setSelectedFile(null);
       setGenerationProgress(prev => ({
         ...prev,  // Preserve all existing state
         isGenerating: true,
@@ -2166,26 +2242,62 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   }
                 } else if (data.type === 'heartbeat') {
                   // Keep-alive event - always update status with current elapsed time
-                  setGenerationProgress(prev => ({
-                    ...prev,
-                    status: `Processing... (${Math.round(data.elapsed)}s)`
-                  }));
+                  setGenerationProgress(prev => {
+                    if (prev.status && !prev.status.startsWith('Processing')) {
+                      return prev;
+                    }
+                    return {
+                      ...prev,
+                      status: `Processing... (${Math.round(data.elapsed)}s)`
+                    };
+                  });
                 } else if (data.type === 'files-update') {
                   // Agent detected new files - add them to the file list
                   if (data.files && data.files.length > 0) {
                     console.log('[chat] Agent detected new files:', data.files);
+                    const changeTypeMap = new Map<string, 'created' | 'modified'>();
+                    if (Array.isArray(data.changes)) {
+                      for (const change of data.changes) {
+                        if (change?.path && change?.changeType) {
+                          changeTypeMap.set(change.path, change.changeType);
+                        }
+                      }
+                    }
+
+                    if (!userSelectedFileRef.current) {
+                      const lastFile = data.files[data.files.length - 1];
+                      const lastPath = typeof lastFile === 'string' ? lastFile : lastFile?.path;
+                      if (lastPath) {
+                        setSelectedFile(lastPath);
+                      }
+                    }
+
                     setGenerationProgress(prev => {
                       // Handle both old format (string[]) and new format ({path, content}[])
-                      const incomingFiles = data.files.map((fileEntry: string | {path: string; content: string}) => {
+                      const incomingFiles: Array<{
+                        path: string;
+                        content: string;
+                        type: string;
+                        completed: boolean;
+                        edited?: boolean;
+                        lastUpdated?: number;
+                      }> = data.files.map((fileEntry: string | {path: string; content: string}) => {
                         const filePath = typeof fileEntry === 'string' ? fileEntry : fileEntry.path;
                         const fileContent = typeof fileEntry === 'string' ? '' : (fileEntry.content || '');
+                        const entryChangeType = typeof fileEntry === 'string'
+                          ? changeTypeMap.get(filePath)
+                          : (fileEntry as any).changeType || changeTypeMap.get(filePath);
                         const ext = filePath.split('.').pop() || '';
                         return {
                           path: filePath,
                           content: fileContent,
                           type: ext === 'jsx' || ext === 'js' ? 'javascript' :
-                                ext === 'css' ? 'css' : 'text',
-                          completed: fileContent.length > 0
+                                ext === 'css' ? 'css' :
+                                ext === 'json' ? 'json' :
+                                ext === 'html' ? 'html' : 'text',
+                          completed: fileContent.length > 0,
+                          edited: entryChangeType === 'modified',
+                          lastUpdated: Date.now()
                         };
                       });
 
@@ -2197,11 +2309,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       for (const incoming of incomingFiles) {
                         const existing = existingPathsMap.get(incoming.path);
                         if (existing) {
-                          // Update content only if existing is empty and incoming has content
-                          if (!existing.content && incoming.content) {
+                          const hasNewContent = Boolean(incoming.content);
+                          const contentChanged = hasNewContent && incoming.content !== existing.content;
+                          if (contentChanged || (incoming.edited && !existing.edited)) {
                             const idx = updatedFiles.findIndex(f => f.path === incoming.path);
                             if (idx >= 0) {
-                              updatedFiles[idx] = { ...existing, content: incoming.content, completed: true };
+                              updatedFiles[idx] = {
+                                ...existing,
+                                content: hasNewContent ? incoming.content : existing.content,
+                                completed: hasNewContent ? true : existing.completed,
+                                edited: incoming.edited || existing.edited,
+                                lastUpdated: incoming.lastUpdated || Date.now()
+                              };
                             }
                           }
                         } else {
@@ -2209,10 +2328,35 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         }
                       }
 
+                      const changeSummary = (() => {
+                        const changes = Array.isArray(data.changes) && data.changes.length > 0
+                          ? data.changes
+                          : incomingFiles.map(file => ({
+                            path: file.path,
+                            changeType: file.edited ? 'modified' : 'created'
+                          }));
+                        if (changes.length === 1) {
+                          const action = changes[0].changeType === 'modified' ? 'Updated' : 'Created';
+                          return `${action} ${changes[0].path}`;
+                        }
+                        const createdCount = changes.filter((c: any) => c.changeType !== 'modified').length;
+                        const updatedCount = changes.filter((c: any) => c.changeType === 'modified').length;
+                        if (createdCount && updatedCount) {
+                          return `Created ${createdCount}, updated ${updatedCount} files...`;
+                        }
+                        if (createdCount) {
+                          return `Created ${createdCount} files...`;
+                        }
+                        if (updatedCount) {
+                          return `Updated ${updatedCount} files...`;
+                        }
+                        return data.totalFiles ? `Detected ${data.totalFiles} files...` : prev.status;
+                      })();
+
                       return {
                         ...prev,
                         files: [...updatedFiles, ...newFiles],
-                        status: `Created ${data.totalFiles} files...`
+                        status: changeSummary
                       };
                     });
                   }
@@ -2387,7 +2531,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
                       // Refresh file list from sandbox
                       console.log('[chat] Fetching sandbox files after agent completion');
-                      fetchSandboxFiles();
+                      fetchSandboxFiles(sandboxData?.sandboxId);
 
                       // Restart Vite to ensure preview works (agent may not have started it)
                       (async () => {
@@ -2395,7 +2539,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           console.log('[chat] Restarting Vite after agent completion');
                           const restartResponse = await fetch('/api/restart-vite', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ sandboxId: sandboxData?.sandboxId })
                           });
                           if (restartResponse.ok) {
                             const restartData = await restartResponse.json();
@@ -2422,7 +2567,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       addChatMessage('Agent encountered some issues. Check the output above for details.', 'system');
 
                       // Still refresh file list to show what was created
-                      fetchSandboxFiles();
+                      fetchSandboxFiles(sandboxData?.sandboxId);
                     }
                   } else {
                     // Builtin agent complete (has generatedCode)
@@ -2687,6 +2832,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
   };
 
   const handleFileClick = async (filePath: string) => {
+    userSelectedFileRef.current = true;
     setSelectedFile(filePath);
     // TODO: Add file content fetching logic here
   };

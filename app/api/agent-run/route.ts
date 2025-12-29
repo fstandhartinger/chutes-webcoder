@@ -530,12 +530,17 @@ CONFIGEOF`,
         // Buffer for incomplete JSON lines (Claude Code stream-json format)
         let jsonLineBuffer = '';
 
-        // Track known files for change detection
-        const knownFiles: Set<string> = new Set();
+        // Track known files and mtimes for change detection
+        const knownFileStats: Map<string, number> = new Map();
+        let lastActivityAt = Date.now();
+        let lastIdleStatusAt = 0;
 
         const processOutputChunk = async (rawChunk: string) => {
           if (!rawChunk) return;
           const cleanContent = stripAnsi(rawChunk);
+          if (cleanContent.trim()) {
+            lastActivityAt = Date.now();
+          }
 
           if (agent === 'claude-code') {
             jsonLineBuffer += cleanContent;
@@ -555,14 +560,15 @@ CONFIGEOF`,
                   const result = parsed.tool_use_result;
                   if (result.type === 'update' && result.filePath && result.content) {
                     const relativePath = result.filePath.replace('/workspace/', '');
-                    if (!knownFiles.has(result.filePath)) {
-                      knownFiles.add(result.filePath);
-                      await sendEvent({
-                        type: 'files-update',
-                        files: [{ path: relativePath, content: result.content }],
-                        totalFiles: knownFiles.size
-                      });
-                    }
+                    const changeType = knownFileStats.has(result.filePath) ? 'modified' : 'created';
+                    const nowSeconds = Date.now() / 1000;
+                    knownFileStats.set(result.filePath, nowSeconds);
+                    await sendEvent({
+                      type: 'files-update',
+                      files: [{ path: relativePath, content: result.content, changeType }],
+                      changes: [{ path: relativePath, changeType }],
+                      totalFiles: knownFileStats.size
+                    });
                   }
                 }
               } catch {
@@ -624,53 +630,81 @@ CONFIGEOF`,
             try {
               const fileListResult = await execInSandbox(
                 sandboxId,
-                'find /workspace/src -type f -name "*.jsx" -o -name "*.js" -o -name "*.css" 2>/dev/null | head -50',
+                'find /workspace/src -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.css" -o -name "*.json" -o -name "*.html" \\) -printf "%p\\t%T@\\n" 2>/dev/null | head -100',
                 {},
                 5000
               );
               if (fileListResult.exitCode === 0 && fileListResult.stdout.trim()) {
-                const currentFiles = new Set(fileListResult.stdout.trim().split('\n').filter(f => f));
-                // Find new files
-                const newFiles: string[] = [];
-                for (const file of currentFiles) {
-                  if (!knownFiles.has(file)) {
-                    newFiles.push(file);
-                    knownFiles.add(file);
+                const currentFiles = new Set<string>();
+                const changes: Array<{ path: string; changeType: 'created' | 'modified' }> = [];
+                const lines = fileListResult.stdout.trim().split('\n').filter(Boolean);
+
+                for (const line of lines) {
+                  const [path, mtimeRaw] = line.split('\t');
+                  if (!path) continue;
+                  currentFiles.add(path);
+
+                  const mtime = Number.parseFloat(mtimeRaw || '');
+                  const prevMtime = knownFileStats.get(path);
+
+                  if (prevMtime === undefined) {
+                    changes.push({ path, changeType: 'created' });
+                  } else if (Number.isFinite(mtime) && mtime > prevMtime + 0.0001) {
+                    changes.push({ path, changeType: 'modified' });
+                  }
+
+                  if (Number.isFinite(mtime)) {
+                    knownFileStats.set(path, mtime);
                   }
                 }
-                // Send file update event if we found new files, including content
-                if (newFiles.length > 0) {
-                  // Read content for each new file (limit to 10KB per file)
-                  const filesWithContent: Array<{path: string; content: string}> = [];
-                  for (const filePath of newFiles) {
+
+                if (changes.length > 0) {
+                  const filesWithContent: Array<{ path: string; content: string; changeType: 'created' | 'modified' }> = [];
+                  const limitedChanges = changes.slice(0, 10);
+
+                  for (const change of limitedChanges) {
+                    const relativePath = change.path.replace('/workspace/', '');
                     try {
                       const contentResult = await execInSandbox(
                         sandboxId,
-                        `head -c 10240 "${filePath}" 2>/dev/null || echo ""`,
+                        `head -c 10240 "${change.path}" 2>/dev/null || echo ""`,
                         {},
                         3000
                       );
                       filesWithContent.push({
-                        path: filePath.replace('/workspace/', ''),
-                        content: contentResult.stdout || ''
+                        path: relativePath,
+                        content: contentResult.stdout || '',
+                        changeType: change.changeType
                       });
                     } catch {
-                      // If file read fails, send with empty content
                       filesWithContent.push({
-                        path: filePath.replace('/workspace/', ''),
-                        content: ''
+                        path: relativePath,
+                        content: '',
+                        changeType: change.changeType
                       });
                     }
                   }
+
                   await sendEvent({
                     type: 'files-update',
                     files: filesWithContent,
+                    changes: limitedChanges.map(change => ({
+                      path: change.path.replace('/workspace/', ''),
+                      changeType: change.changeType
+                    })),
                     totalFiles: currentFiles.size
                   });
+                  lastActivityAt = Date.now();
                 }
               }
             } catch {
               // Ignore file check errors
+            }
+
+            const now = Date.now();
+            if (now - lastActivityAt > 20000 && now - lastIdleStatusAt > 20000) {
+              await sendEvent({ type: 'status', message: 'Agent is still working inside the sandbox...' });
+              lastIdleStatusAt = now;
             }
           }
         }
@@ -804,7 +838,6 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
-
 
 
 

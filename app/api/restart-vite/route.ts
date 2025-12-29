@@ -6,8 +6,10 @@ const sandboxRestartState = new Map<string, { lastRestart: number; inProgress: b
 const RESTART_COOLDOWN_MS = 5000; // 5 second cooldown between restarts
 
 export async function POST(request: NextRequest) {
+  let sandboxId: string | null = null;
   try {
-    const { sandboxId } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    sandboxId = (body as { sandboxId?: string })?.sandboxId ?? null;
 
     // sandboxId is REQUIRED for session isolation
     if (!sandboxId) {
@@ -106,9 +108,8 @@ export async function POST(request: NextRequest) {
     console.error('[restart-vite] Error:', error);
 
     // Clear the restart flag on error (if we have sandboxId and state)
-    const { sandboxId: sId } = await request.json().catch(() => ({ sandboxId: null }));
-    if (sId) {
-      const s = sandboxRestartState.get(sId);
+    if (sandboxId) {
+      const s = sandboxRestartState.get(sandboxId);
       if (s) s.inProgress = false;
     }
 

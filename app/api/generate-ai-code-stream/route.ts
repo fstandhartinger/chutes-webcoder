@@ -338,8 +338,14 @@ User request: "${prompt}"`;
               await sendProgress({ type: 'status', message: 'Fetching current files from sandbox...' });
               
               try {
+                const sandboxId = context?.sandboxId;
+                if (!sandboxId) {
+                  console.warn('[generate-ai-code-stream] Missing sandboxId for file fetch');
+                  await sendProgress({ type: 'status', message: '⚠️ Missing sandbox ID for file sync' });
+                  return;
+                }
                 // Fetch files directly from sandbox
-                const filesResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/get-sandbox-files`, {
+                const filesResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/get-sandbox-files?sandboxId=${encodeURIComponent(sandboxId)}`, {
                   method: 'GET',
                   headers: { 'Content-Type': 'application/json' }
                 });
@@ -982,7 +988,13 @@ MORPH FAST APPLY MODE (EDIT-ONLY):
             console.log('[generate-ai-code-stream] No backend files, attempting to fetch from sandbox...');
             
             try {
-              const filesResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/get-sandbox-files`, {
+              const sandboxId = context?.sandboxId;
+              if (!sandboxId) {
+                console.warn('[generate-ai-code-stream] Missing sandboxId for file fetch');
+                await sendProgress({ type: 'status', message: '⚠️ Missing sandbox ID for file sync' });
+                return;
+              }
+              const filesResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/get-sandbox-files?sandboxId=${encodeURIComponent(sandboxId)}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
               });
