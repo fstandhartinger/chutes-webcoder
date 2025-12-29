@@ -113,7 +113,7 @@ export const appConfig = {
   // Coding Agent Configuration
   agents: {
     // Default coding agent
-    defaultAgent: 'builtin' as const,
+    defaultAgent: 'codex' as const,
     
     // Available agents
     availableAgents: [

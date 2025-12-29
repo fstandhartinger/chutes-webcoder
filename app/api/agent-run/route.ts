@@ -26,10 +26,11 @@ const AGENTS = {
       NO_COLOR: '1',
       TERM: 'dumb',
     }),
-    buildCommand: (prompt: string, _model: string) => [
+    buildCommand: (prompt: string, model: string) => [
       'claude', '-p', prompt,
       '--output-format', 'stream-json',
       '--verbose',
+      '--model', model,
       '--allowedTools', 'Read,Write,Edit,Bash',
       '--permission-mode', 'acceptEdits'
     ],
@@ -610,11 +611,33 @@ CONFIGEOF`,
                     knownFiles.add(file);
                   }
                 }
-                // Send file update event if we found new files
+                // Send file update event if we found new files, including content
                 if (newFiles.length > 0) {
+                  // Read content for each new file (limit to 10KB per file)
+                  const filesWithContent: Array<{path: string; content: string}> = [];
+                  for (const filePath of newFiles) {
+                    try {
+                      const contentResult = await execInSandbox(
+                        sandboxId,
+                        `head -c 10240 "${filePath}" 2>/dev/null || echo ""`,
+                        {},
+                        3000
+                      );
+                      filesWithContent.push({
+                        path: filePath.replace('/workspace/', ''),
+                        content: contentResult.stdout || ''
+                      });
+                    } catch {
+                      // If file read fails, send with empty content
+                      filesWithContent.push({
+                        path: filePath.replace('/workspace/', ''),
+                        content: ''
+                      });
+                    }
+                  }
                   await sendEvent({
                     type: 'files-update',
-                    files: newFiles.map(f => f.replace('/workspace/', '')),
+                    files: filesWithContent,
                     totalFiles: currentFiles.size
                   });
                 }
@@ -754,6 +777,7 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
+
 
 
 

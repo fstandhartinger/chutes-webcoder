@@ -2075,16 +2075,23 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     console.log('[chat] Agent detected new files:', data.files);
                     setGenerationProgress(prev => {
                       const existingPaths = new Set(prev.files.map(f => f.path));
+                      // Handle both old format (string[]) and new format ({path, content}[])
                       const newFileEntries = data.files
-                        .filter((filePath: string) => !existingPaths.has(filePath))
-                        .map((filePath: string) => {
+                        .map((fileEntry: string | {path: string; content: string}) => {
+                          // Handle both string and object formats
+                          const filePath = typeof fileEntry === 'string' ? fileEntry : fileEntry.path;
+                          const fileContent = typeof fileEntry === 'string' ? '' : (fileEntry.content || '');
+                          return { filePath, fileContent };
+                        })
+                        .filter(({ filePath }: { filePath: string }) => !existingPaths.has(filePath))
+                        .map(({ filePath, fileContent }: { filePath: string; fileContent: string }) => {
                           const ext = filePath.split('.').pop() || '';
                           return {
                             path: filePath,
-                            content: '', // Content will be fetched later
+                            content: fileContent,
                             type: ext === 'jsx' || ext === 'js' ? 'javascript' :
                                   ext === 'css' ? 'css' : 'text',
-                            completed: false
+                            completed: fileContent.length > 0
                           };
                         });
                       return {
