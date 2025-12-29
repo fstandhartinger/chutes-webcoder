@@ -15,60 +15,24 @@ declare global {
 }
 
 export async function POST() {
-  // Check if sandbox creation is already in progress
-  if (global.sandboxCreationInProgress && global.sandboxCreationPromise) {
-    console.log('[create-ai-sandbox] Sandbox creation already in progress, waiting for existing creation...');
-    try {
-      const existingResult = await global.sandboxCreationPromise;
-      console.log('[create-ai-sandbox] Returning existing sandbox creation result');
-      return NextResponse.json(existingResult);
-    } catch (error) {
-      console.error('[create-ai-sandbox] Existing sandbox creation failed:', error);
-      // Continue with new creation if the existing one failed
-    }
-  }
+  // NOTE: Each call ALWAYS creates a new sandbox for session isolation
+  // This prevents sandbox sharing between different users/sessions
 
-  // Check if we already have an active sandbox
-  if (global.sandboxProvider && global.sandboxData) {
-    const providerInfo = global.sandboxProvider.getSandboxInfo?.();
-    if (providerInfo) {
-      const { previewUrl, sandboxUrl } = resolveSandboxUrls(providerInfo);
-      global.sandboxData = {
-        sandboxId: providerInfo.sandboxId,
-        url: previewUrl,
-        sandboxUrl,
-        provider: providerInfo.provider
-      };
-    }
-    console.log('[create-ai-sandbox] Returning existing active sandbox');
-    return NextResponse.json({
-      success: true,
-      sandboxId: global.sandboxData.sandboxId,
-      url: global.sandboxData.url
-    });
-  }
+  console.log('[create-ai-sandbox] Creating NEW sandbox (session isolation enabled)');
 
-  // Set the creation flag
-  global.sandboxCreationInProgress = true;
-  
-  // Create the promise that other requests can await (with retry logic)
-  global.sandboxCreationPromise = createSandboxWithRetry(3);
-  
   try {
-    const result = await global.sandboxCreationPromise;
+    const result = await createSandboxWithRetry(3);
+    console.log('[create-ai-sandbox] New sandbox created:', result.sandboxId);
     return NextResponse.json(result);
   } catch (error) {
     console.error('[create-ai-sandbox] Sandbox creation failed:', error);
     return NextResponse.json(
-      { 
+      {
         error: error instanceof Error ? error.message : 'Failed to create sandbox',
         details: error instanceof Error ? error.stack : undefined
       },
       { status: 500 }
     );
-  } finally {
-    global.sandboxCreationInProgress = false;
-    global.sandboxCreationPromise = null;
   }
 }
 
@@ -108,32 +72,17 @@ async function createSandboxWithRetry(maxRetries: number = 3): Promise<any> {
 async function createSandboxInternal() {
   console.log('[create-ai-sandbox] Creating sandbox via factory...');
 
-  // Clean up any existing sandbox first
-  if (global.sandboxProvider) {
-    console.log('[create-ai-sandbox] Terminating existing sandbox provider before recreation');
-    try {
-      await global.sandboxProvider.terminate();
-    } catch (error) {
-      console.error('[create-ai-sandbox] Failed to terminate existing sandbox provider:', error);
-    }
-    global.sandboxProvider = null;
-    global.sandboxData = null;
-  }
-
-  if (global.existingFiles) {
-    global.existingFiles.clear();
-  } else {
-    global.existingFiles = new Set<string>();
-  }
+  // NOTE: No longer cleaning up global state - each sandbox is independent
+  // Previous code would terminate another user's sandbox!
 
   const provider = SandboxFactory.create();
-  
+
   // Create sandbox with timeout
   const createPromise = provider.createSandbox();
-  const timeoutPromise = new Promise<never>((_, reject) => 
+  const timeoutPromise = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error('Sandbox creation timeout (60s)')), 60000)
   );
-  
+
   const sandboxInfo = await Promise.race([createPromise, timeoutPromise]);
   console.log('[create-ai-sandbox] Sandbox created:', sandboxInfo.sandboxId, sandboxInfo.url);
 
@@ -146,10 +95,10 @@ async function createSandboxInternal() {
 
   // Setup Vite with timeout
   const setupPromise = provider.setupViteApp();
-  const setupTimeoutPromise = new Promise<never>((_, reject) => 
+  const setupTimeoutPromise = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error('Vite setup timeout (30s)')), 30000)
   );
-  
+
   await Promise.race([setupPromise, setupTimeoutPromise]);
   console.log('[create-ai-sandbox] Vite app prepared in sandbox');
 
@@ -165,43 +114,20 @@ async function createSandboxInternal() {
     throw new Error('Sandbox health check failed - sandbox may be unresponsive');
   }
 
+  // Register in sandbox manager (by ID, not as "active")
   sandboxManager.registerSandbox(sandboxInfo.sandboxId, provider);
-
-  global.sandboxProvider = provider;
-  global.sandboxData = {
-    sandboxId: sandboxInfo.sandboxId,
-    url: previewUrl,
-    sandboxUrl,
-    provider: sandboxInfo.provider
-  };
-
-  global.sandboxState = {
-    fileCache: {
-      files: {},
-      lastSync: Date.now(),
-      sandboxId: sandboxInfo.sandboxId
-    },
-    sandbox: provider,
-    sandboxData: {
-      sandboxId: sandboxInfo.sandboxId,
-      url: previewUrl,
-      sandboxUrl,
-      provider: sandboxInfo.provider
-    }
-  };
 
   const result = {
     success: true,
     sandboxId: sandboxInfo.sandboxId,
     url: previewUrl,
+    sandboxUrl,
     provider: sandboxInfo.provider,
     message: 'Sandbox created and Vite React app initialized'
   };
 
-  global.sandboxData = {
-    ...global.sandboxData,
-    ...result
-  };
+  // NOTE: No longer setting global.sandboxProvider, global.sandboxData, global.sandboxState
+  // Each session stores sandboxId in frontend state and passes it in requests
 
   return result;
 }

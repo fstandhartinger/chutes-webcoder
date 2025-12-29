@@ -1,51 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 
-declare global {
-  var activeSandbox: any;
-  var activeSandboxProvider: any;
-  var sandboxData: any;
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const { packages } = await request.json();
-    // sandboxId not used - using global sandbox
-    
-    if (!packages || !Array.isArray(packages) || packages.length === 0) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Packages array is required' 
+    const { packages, sandboxId } = await request.json();
+
+    // sandboxId is REQUIRED for session isolation
+    if (!sandboxId) {
+      return NextResponse.json({
+        success: false,
+        error: 'sandboxId is required for session isolation'
       }, { status: 400 });
     }
-    
+
+    if (!packages || !Array.isArray(packages) || packages.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'Packages array is required'
+      }, { status: 400 });
+    }
+
     // Validate and deduplicate package names
     const validPackages = [...new Set(packages)]
       .filter(pkg => pkg && typeof pkg === 'string' && pkg.trim() !== '')
       .map(pkg => pkg.trim());
-    
+
     if (validPackages.length === 0) {
       return NextResponse.json({
         success: false,
         error: 'No valid package names provided'
       }, { status: 400 });
     }
-    
+
     // Log if duplicates were found
     if (packages.length !== validPackages.length) {
       console.log(`[install-packages] Cleaned packages: removed ${packages.length - validPackages.length} invalid/duplicate entries`);
       console.log(`[install-packages] Original:`, packages);
       console.log(`[install-packages] Cleaned:`, validPackages);
     }
-    
-    // Get active sandbox provider
-    const provider = sandboxManager.getActiveProvider() || global.activeSandboxProvider;
-    
+
+    // Get provider by explicit sandboxId (no global fallback)
+    const provider = sandboxManager.getProvider(sandboxId);
+
     if (!provider) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'No active sandbox provider available' 
-      }, { status: 400 });
+      return NextResponse.json({
+        success: false,
+        error: `Sandbox ${sandboxId} not found`
+      }, { status: 404 });
     }
     
     console.log('[install-packages] Installing packages:', validPackages);

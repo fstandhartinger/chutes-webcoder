@@ -1,49 +1,61 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 
-declare global {
-  var activeSandbox: any;
-  var activeSandboxProvider: any;
-  var lastViteRestartTime: number;
-  var viteRestartInProgress: boolean;
-}
-
+// Per-sandbox restart tracking for session isolation
+const sandboxRestartState = new Map<string, { lastRestart: number; inProgress: boolean }>();
 const RESTART_COOLDOWN_MS = 5000; // 5 second cooldown between restarts
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    // Check both v1 and v2 global references
-    const provider = sandboxManager.getActiveProvider() || global.activeSandbox || global.activeSandboxProvider;
-    
-    if (!provider) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'No active sandbox' 
+    const { sandboxId } = await request.json();
+
+    // sandboxId is REQUIRED for session isolation
+    if (!sandboxId) {
+      return NextResponse.json({
+        success: false,
+        error: 'sandboxId is required for session isolation'
       }, { status: 400 });
     }
+
+    // Get provider by explicit sandboxId (no global fallback)
+    const provider = sandboxManager.getProvider(sandboxId);
+
+    if (!provider) {
+      return NextResponse.json({
+        success: false,
+        error: `Sandbox ${sandboxId} not found`
+      }, { status: 404 });
+    }
+
+    // Get or create per-sandbox state
+    let state = sandboxRestartState.get(sandboxId);
+    if (!state) {
+      state = { lastRestart: 0, inProgress: false };
+      sandboxRestartState.set(sandboxId, state);
+    }
     
-    // Check if restart is already in progress
-    if (global.viteRestartInProgress) {
-      console.log('[restart-vite] Vite restart already in progress, skipping...');
+    // Check if restart is already in progress (per-sandbox)
+    if (state.inProgress) {
+      console.log(`[restart-vite] Vite restart already in progress for ${sandboxId}, skipping...`);
       return NextResponse.json({
         success: true,
         message: 'Vite restart already in progress'
       });
     }
-    
-    // Check cooldown
+
+    // Check cooldown (per-sandbox)
     const now = Date.now();
-    if (global.lastViteRestartTime && (now - global.lastViteRestartTime) < RESTART_COOLDOWN_MS) {
-      const remainingTime = Math.ceil((RESTART_COOLDOWN_MS - (now - global.lastViteRestartTime)) / 1000);
-      console.log(`[restart-vite] Cooldown active, ${remainingTime}s remaining`);
+    if (state.lastRestart && (now - state.lastRestart) < RESTART_COOLDOWN_MS) {
+      const remainingTime = Math.ceil((RESTART_COOLDOWN_MS - (now - state.lastRestart)) / 1000);
+      console.log(`[restart-vite] Cooldown active for ${sandboxId}, ${remainingTime}s remaining`);
       return NextResponse.json({
         success: true,
         message: `Vite was recently restarted, cooldown active (${remainingTime}s remaining)`
       });
     }
-    
-    // Set the restart flag
-    global.viteRestartInProgress = true;
+
+    // Set the restart flag (per-sandbox)
+    state.inProgress = true;
     
     console.log('[restart-vite] Using provider method to restart Vite...');
     
@@ -81,24 +93,28 @@ export async function POST() {
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
     
-    // Update global state
-    global.lastViteRestartTime = Date.now();
-    global.viteRestartInProgress = false;
-    
+    // Update per-sandbox state
+    state.lastRestart = Date.now();
+    state.inProgress = false;
+
     return NextResponse.json({
       success: true,
-      message: 'Vite restarted successfully'
+      message: `Vite restarted successfully for sandbox ${sandboxId}`
     });
-    
+
   } catch (error) {
     console.error('[restart-vite] Error:', error);
-    
-    // Clear the restart flag on error
-    global.viteRestartInProgress = false;
-    
-    return NextResponse.json({ 
-      success: false, 
-      error: (error as Error).message 
+
+    // Clear the restart flag on error (if we have sandboxId and state)
+    const { sandboxId: sId } = await request.json().catch(() => ({ sandboxId: null }));
+    if (sId) {
+      const s = sandboxRestartState.get(sId);
+      if (s) s.inProgress = false;
+    }
+
+    return NextResponse.json({
+      success: false,
+      error: (error as Error).message
     }, { status: 500 });
   }
 }

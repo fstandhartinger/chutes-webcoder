@@ -25,6 +25,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // sandboxId is now REQUIRED for session isolation
+    if (!sandboxId) {
+      console.error('[apply-ai-code-stream] Missing sandboxId - required for session isolation');
+      return NextResponse.json({
+        error: 'sandboxId is required for session isolation'
+      }, { status: 400 });
+    }
+
     // Debug log the response
     console.log('[apply-ai-code-stream] Received response to parse:');
     console.log('[apply-ai-code-stream] Response length:', response.length);
@@ -51,21 +59,12 @@ export async function POST(request: NextRequest) {
     }
     console.log('[apply-ai-code-stream] Packages found:', parsed.packages);
 
-    // Initialize existingFiles if not already
-    if (!global.existingFiles) {
-      global.existingFiles = new Set<string>();
-    }
+    // Get provider from sandbox manager by explicit sandboxId (no fallback to globals)
+    console.log(`[apply-ai-code-stream] Looking up provider for sandbox: ${sandboxId}`);
+    let provider = sandboxManager.getProvider(sandboxId);
 
-    // Try to get provider from sandbox manager first
-    let provider = sandboxId ? sandboxManager.getProvider(sandboxId) : sandboxManager.getActiveProvider();
-
-    // Fall back to global state if not found in manager
+    // If no provider found, try to reconnect or create
     if (!provider) {
-      provider = global.activeSandboxProvider;
-    }
-
-    // If we have a sandboxId but no provider, try to get or create one
-    if (!provider && sandboxId) {
       console.log(`[apply-ai-code-stream] No provider found for sandbox ${sandboxId}, attempting to get or create...`);
 
       try {
@@ -79,8 +78,7 @@ export async function POST(request: NextRequest) {
           sandboxManager.registerSandbox(sandboxId, provider);
         }
 
-        // Update legacy global state
-        global.activeSandboxProvider = provider;
+        // NOTE: No longer updating legacy global state for session isolation
         console.log(`[apply-ai-code-stream] Successfully got provider for sandbox ${sandboxId}`);
       } catch (providerError) {
         console.error(`[apply-ai-code-stream] Failed to get or create provider for sandbox ${sandboxId}:`, providerError);
@@ -101,46 +99,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // If we still don't have a provider, create a new one
+    // If we still don't have a provider, return error (don't create a new sandbox with different ID)
     if (!provider) {
-      console.log(`[apply-ai-code-stream] No active provider found, creating new sandbox...`);
-      try {
-        const { SandboxFactory } = await import('@/lib/sandbox/factory');
-        provider = SandboxFactory.create();
-        const sandboxInfo = await provider.createSandbox();
-        await provider.setupViteApp();
-        const { previewUrl, sandboxUrl } = resolveSandboxUrls(sandboxInfo);
-
-        // Register with sandbox manager
-        sandboxManager.registerSandbox(sandboxInfo.sandboxId, provider);
-
-        // Store in legacy global state
-        global.activeSandboxProvider = provider;
-        global.sandboxData = {
-          sandboxId: sandboxInfo.sandboxId,
-          url: previewUrl,
-          sandboxUrl,
-          provider: sandboxInfo.provider
-        };
-
-        console.log(`[apply-ai-code-stream] Created new sandbox successfully`);
-      } catch (createError) {
-        console.error(`[apply-ai-code-stream] Failed to create new sandbox:`, createError);
-        return NextResponse.json({
-          success: false,
-          error: `Failed to create new sandbox: ${createError instanceof Error ? createError.message : 'Unknown error'}`,
-          results: {
-            filesCreated: [],
-            packagesInstalled: [],
-            commandsExecuted: [],
-            errors: [`Sandbox creation failed: ${createError instanceof Error ? createError.message : 'Unknown error'}`]
-          },
-          explanation: parsed.explanation,
-          structure: parsed.structure,
-          parsedFiles: parsed.files,
-          message: `Parsed ${parsed.files.length} files but couldn't apply them - sandbox creation failed.`
-        }, { status: 500 });
-      }
+      console.error(`[apply-ai-code-stream] Sandbox ${sandboxId} not found and could not be reconnected`);
+      return NextResponse.json({
+        success: false,
+        error: `Sandbox ${sandboxId} not found. The sandbox may have expired. Please create a new sandbox.`,
+        results: {
+          filesCreated: [],
+          packagesInstalled: [],
+          commandsExecuted: [],
+          errors: [`Sandbox ${sandboxId} not found - please create a new sandbox`]
+        },
+        explanation: parsed.explanation,
+        structure: parsed.structure,
+        parsedFiles: parsed.files,
+        message: `Parsed ${parsed.files.length} files but couldn't apply them - sandbox not found.`
+      }, { status: 404 });
     }
 
     // Create a response stream for real-time updates

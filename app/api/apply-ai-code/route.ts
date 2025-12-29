@@ -1,28 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseMorphEdits, applyMorphEditToFile } from '@/lib/morph-fast-apply';
 import { parseAIResponse } from '@/lib/ai-response';
-import type { SandboxState } from '@/types/sandbox';
-import type { ConversationState } from '@/types/conversation';
+import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 
-declare global {
-  var conversationState: ConversationState | null;
-}
-
-declare global {
-  var activeSandbox: any;
-  var activeSandboxProvider: any;
-  var existingFiles: Set<string>;
-  var sandboxState: SandboxState;
-}
+// Per-sandbox file tracking for session isolation
+const sandboxFilesMap = new Map<string, Set<string>>();
 
 export async function POST(request: NextRequest) {
   try {
-    const { response, isEdit = false, packages = [] } = await request.json();
-    
+    const { response, isEdit = false, packages = [], sandboxId } = await request.json();
+
     if (!response) {
       return NextResponse.json({
         error: 'response is required'
       }, { status: 400 });
+    }
+
+    // sandboxId is REQUIRED for session isolation
+    if (!sandboxId) {
+      return NextResponse.json({
+        error: 'sandboxId is required for session isolation'
+      }, { status: 400 });
+    }
+
+    // Get or create per-sandbox file tracking
+    let existingFiles = sandboxFilesMap.get(sandboxId);
+    if (!existingFiles) {
+      existingFiles = new Set<string>();
+      sandboxFilesMap.set(sandboxId, existingFiles);
     }
     
     // Parse the AI response
@@ -34,29 +39,25 @@ export async function POST(request: NextRequest) {
       console.log('[apply-ai-code] Morph edits found:', morphEdits.length);
     }
     
-    // Initialize existingFiles if not already
-    if (!global.existingFiles) {
-      global.existingFiles = new Set<string>();
-    }
-    
-    // Get the active sandbox or provider
-    const sandbox = global.activeSandbox || global.activeSandboxProvider;
-    
-    // If no active sandbox, just return parsed results
+    // Get sandbox provider by explicit sandboxId (no global fallback)
+    const sandbox = sandboxManager.getProvider(sandboxId);
+
+    // If sandbox not found, return error
     if (!sandbox) {
       return NextResponse.json({
-        success: true,
+        success: false,
+        error: `Sandbox ${sandboxId} not found`,
         results: {
-          filesCreated: parsed.files.map(f => f.path),
-          packagesInstalled: parsed.packages,
-          commandsExecuted: parsed.commands,
-          errors: []
+          filesCreated: [],
+          packagesInstalled: [],
+          commandsExecuted: [],
+          errors: [`Sandbox ${sandboxId} not found`]
         },
         explanation: parsed.explanation,
         structure: parsed.structure,
         parsedFiles: parsed.files,
-        message: `Parsed ${parsed.files.length} files successfully. Create a sandbox to apply them.`
-      });
+        message: `Parsed ${parsed.files.length} files but sandbox not found.`
+      }, { status: 404 });
     }
     
     // Verify sandbox is ready before applying code
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
     console.log('[apply-ai-code] Applying code to sandbox...');
     console.log('[apply-ai-code] Is edit mode:', isEdit);
     console.log('[apply-ai-code] Files to write:', parsed.files.map(f => f.path));
-    console.log('[apply-ai-code] Existing files:', Array.from(global.existingFiles));
+    console.log('[apply-ai-code] Existing files:', Array.from(existingFiles));
     if (morphEnabled) {
       console.log('[apply-ai-code] Morph Fast Apply enabled');
       if (morphEdits.length > 0) {
@@ -224,7 +225,7 @@ export async function POST(request: NextRequest) {
     const morphUpdatedPaths = new Set<string>();
 
     if (morphEnabled && morphEdits.length > 0) {
-      const morphSandbox = global.activeSandbox || global.activeSandboxProvider;
+      const morphSandbox = sandbox; // Use the sandbox we already got by sandboxId
       if (!morphSandbox) {
         console.warn('[apply-ai-code] Morph edits found but no active sandbox; skipping Morph application');
       } else {
@@ -305,7 +306,7 @@ export async function POST(request: NextRequest) {
         }
         
         const fullPath = `/home/user/app/${normalizedPath}`;
-        const isUpdate = global.existingFiles.has(normalizedPath);
+        const isUpdate = existingFiles.has(normalizedPath);
         
         // Remove any CSS imports from JSX/JS files (we're using Tailwind)
         let fileContent = file.content;
@@ -325,26 +326,12 @@ export async function POST(request: NextRequest) {
         console.log(`[apply-ai-code] Writing file to sandbox: ${fullPath}`);
         
         try {
-          // Check if we're using provider pattern (v2) or direct sandbox (v1)
-          if (sandbox.writeFile) {
-            // V2: Provider pattern (Vercel/Sandy/E2B provider)
-            await sandbox.writeFile(file.path, fileContent);
-          } else if (sandbox.files?.write) {
-            // V1: Direct sandbox
-            await sandbox.files.write(fullPath, fileContent);
-          } else {
-            throw new Error('Unsupported sandbox type');
-          }
+          // Use provider's writeFile method
+          await sandbox.writeFile(file.path, fileContent);
           console.log(`[apply-ai-code] Successfully wrote file: ${fullPath}`);
           
-          // Update file cache
-          if (global.sandboxState?.fileCache) {
-            global.sandboxState.fileCache.files[normalizedPath] = {
-              content: fileContent,
-              lastModified: Date.now()
-            };
-            console.log(`[apply-ai-code] Updated file cache for: ${normalizedPath}`);
-          }
+          // NOTE: File cache is no longer stored globally for session isolation
+          // The sandbox manager maintains state per-sandbox
           
         } catch (writeError) {
           console.error(`[apply-ai-code] Sandbox file write error:`, writeError);
@@ -356,7 +343,7 @@ export async function POST(request: NextRequest) {
           results.filesUpdated.push(normalizedPath);
         } else {
           results.filesCreated.push(normalizedPath);
-          global.existingFiles.add(normalizedPath);
+          existingFiles.add(normalizedPath);
         }
       } catch (error) {
         results.errors.push(`Failed to create ${file.path}: ${(error as Error).message}`);
@@ -369,10 +356,10 @@ export async function POST(request: NextRequest) {
       return normalized === 'App.jsx' || normalized === 'App.tsx';
     });
     
-    const appFileExists = global.existingFiles.has('src/App.jsx') || 
-                         global.existingFiles.has('src/App.tsx') ||
-                         global.existingFiles.has('App.jsx') ||
-                         global.existingFiles.has('App.tsx');
+    const appFileExists = existingFiles.has('src/App.jsx') || 
+                         existingFiles.has('src/App.tsx') ||
+                         existingFiles.has('App.jsx') ||
+                         existingFiles.has('App.tsx');
     
     if (!isEdit && !appFileInParsed && !appFileExists && parsed.files.length > 0) {
       // Find all component files
@@ -426,16 +413,7 @@ function App() {
 export default App;`;
       
       try {
-        // Use provider pattern if available
-        if (sandbox.writeFile) {
-          await sandbox.writeFile('src/App.jsx', appContent);
-        } else if (sandbox.writeFiles) {
-          await sandbox.writeFiles([{
-            path: 'src/App.jsx',
-            content: Buffer.from(appContent)
-          }]);
-        }
-        
+        await sandbox.writeFile('src/App.jsx', appContent);
         console.log('Auto-generated: src/App.jsx');
         results.filesCreated.push('src/App.jsx (auto-generated)');
       } catch (error) {
@@ -450,8 +428,8 @@ export default App;`;
         return normalized === 'index.css' || f.path === 'src/index.css';
       });
       
-      const indexCssExists = global.existingFiles.has('src/index.css') || 
-                            global.existingFiles.has('index.css');
+      const indexCssExists = existingFiles.has('src/index.css') || 
+                            existingFiles.has('index.css');
       
       if (!isEdit && !indexCssInParsed && !indexCssExists) {
         try {
@@ -479,16 +457,7 @@ body {
   min-height: 100vh;
 }`;
 
-          // Use provider pattern if available
-          if (sandbox.writeFile) {
-            await sandbox.writeFile('src/index.css', indexCssContent);
-          } else if (sandbox.writeFiles) {
-            await sandbox.writeFiles([{
-              path: 'src/index.css',
-              content: Buffer.from(indexCssContent)
-            }]);
-          }
-          
+          await sandbox.writeFile('src/index.css', indexCssContent);
           console.log('Auto-generated: src/index.css');
           results.filesCreated.push('src/index.css (with Tailwind)');
         } catch (error) {
@@ -501,47 +470,15 @@ body {
     // Execute commands
     for (const cmd of parsed.commands) {
       try {
-        // Parse command and arguments
-        const commandParts = cmd.trim().split(/\s+/);
-        const cmdName = commandParts[0];
-        const args = commandParts.slice(1);
-        
-        // Execute command using sandbox
-        let result;
-        if (sandbox.runCommand && typeof sandbox.runCommand === 'function') {
-          // Check if this is a provider pattern sandbox
-          const testResult = await sandbox.runCommand(cmd);
-          if (testResult && typeof testResult === 'object' && 'stdout' in testResult) {
-            // Provider returns CommandResult directly
-            result = testResult;
-          } else {
-            // Direct sandbox - expects object with cmd and args
-            result = await sandbox.runCommand({
-              cmd: cmdName,
-              args
-            });
-          }
-        }
-        
+        // Execute command using sandbox provider
+        const result = await sandbox.runCommand(cmd);
+
         console.log(`Executed: ${cmd}`);
-        
-        // Handle result based on type
-        let stdout = '';
-        let stderr = '';
-        
-        if (result) {
-          if (typeof result.stdout === 'string') {
-            stdout = result.stdout;
-            stderr = result.stderr || '';
-          } else if (typeof result.stdout === 'function') {
-            stdout = await result.stdout();
-            stderr = await result.stderr();
-          }
-        }
-        
-        if (stdout) console.log(stdout);
-        if (stderr) console.log(`Errors: ${stderr}`);
-        
+
+        // Handle result
+        if (result.stdout) console.log(result.stdout);
+        if (result.stderr) console.log(`Errors: ${result.stderr}`);
+
         results.commandsExecuted.push(cmd);
       } catch (error) {
         results.errors.push(`Failed to execute ${cmd}: ${(error as Error).message}`);
@@ -641,35 +578,9 @@ body {
       }
     }
     
-    // Track applied files in conversation state
-    if (global.conversationState && results.filesCreated.length > 0) {
-      // Update the last message metadata with edited files
-      const messages = global.conversationState.context.messages;
-      if (messages.length > 0) {
-        const lastMessage = messages[messages.length - 1];
-        if (lastMessage.role === 'user') {
-          lastMessage.metadata = {
-            ...lastMessage.metadata,
-            editedFiles: results.filesCreated
-          };
-        }
-      }
-      
-      // Track applied code in project evolution
-      if (global.conversationState.context.projectEvolution) {
-        global.conversationState.context.projectEvolution.majorChanges.push({
-          timestamp: Date.now(),
-          description: parsed.explanation || 'Code applied',
-          filesAffected: results.filesCreated
-        });
-      }
-      
-      // Update last updated timestamp
-      global.conversationState.lastUpdated = Date.now();
-      
-      console.log('[apply-ai-code] Updated conversation state with applied files:', results.filesCreated);
-    }
-    
+    // NOTE: Conversation state tracking removed for session isolation
+    // Each session manages its own context through frontend state
+
     return NextResponse.json(responseData);
     
   } catch (error) {

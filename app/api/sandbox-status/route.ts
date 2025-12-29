@@ -1,17 +1,23 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 
-declare global {
-  var activeSandboxProvider: any;
-  var sandboxData: any;
-  var existingFiles: Set<string>;
-}
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Check sandbox manager first, then fall back to global state
-    const provider = sandboxManager.getActiveProvider() || global.activeSandboxProvider;
+    // Get sandboxId from query parameter (required for session isolation)
+    const sandboxId = request.nextUrl.searchParams.get('sandboxId');
+
+    if (!sandboxId) {
+      return NextResponse.json({
+        success: false,
+        active: false,
+        error: 'sandboxId query parameter is required for session isolation',
+        message: 'No sandbox specified'
+      }, { status: 400 });
+    }
+
+    // Get provider by explicit sandboxId (no global fallback)
+    const provider = sandboxManager.getProvider(sandboxId);
     const sandboxExists = !!provider;
 
     let sandboxHealthy = false;
@@ -24,16 +30,15 @@ export async function GET() {
         sandboxHealthy = !!providerInfo;
 
         const resolvedUrls = providerInfo ? resolveSandboxUrls(providerInfo) : null;
-        const previewUrl = global.sandboxData?.url || resolvedUrls?.previewUrl || providerInfo?.url;
-        const sandboxUrl = global.sandboxData?.sandboxUrl || resolvedUrls?.sandboxUrl || providerInfo?.url;
-        const providerName = providerInfo?.provider || global.sandboxData?.provider;
+        const previewUrl = resolvedUrls?.previewUrl || providerInfo?.url;
+        const sandboxUrl = resolvedUrls?.sandboxUrl || providerInfo?.url;
+        const providerName = providerInfo?.provider;
 
         sandboxInfo = {
-          sandboxId: providerInfo?.sandboxId || global.sandboxData?.sandboxId,
+          sandboxId: providerInfo?.sandboxId || sandboxId,
           url: previewUrl,
           sandboxUrl,
           provider: providerName,
-          filesTracked: global.existingFiles ? Array.from(global.existingFiles) : [],
           lastHealthCheck: new Date().toISOString()
         };
       } catch (error) {
@@ -41,25 +46,25 @@ export async function GET() {
         sandboxHealthy = false;
       }
     }
-    
+
     return NextResponse.json({
       success: true,
       active: sandboxExists,
       healthy: sandboxHealthy,
       sandboxData: sandboxInfo,
-      message: sandboxHealthy 
-        ? 'Sandbox is active and healthy' 
-        : sandboxExists 
-          ? 'Sandbox exists but is not responding' 
-          : 'No active sandbox'
+      message: sandboxHealthy
+        ? 'Sandbox is active and healthy'
+        : sandboxExists
+          ? 'Sandbox exists but is not responding'
+          : `Sandbox ${sandboxId} not found`
     });
-    
+
   } catch (error) {
     console.error('[sandbox-status] Error:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: false,
       active: false,
-      error: (error as Error).message 
+      error: (error as Error).message
     }, { status: 500 });
   }
 }

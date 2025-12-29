@@ -1,24 +1,28 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { parseJavaScriptFile, buildComponentTree } from '@/lib/file-parser';
 import { FileManifest, FileInfo, RouteInfo } from '@/types/file-manifest';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 import { appConfig } from '@/config/app.config';
-// SandboxState type used implicitly through global.activeSandbox
 
-declare global {
-  var activeSandbox: any;
-  var activeSandboxProvider: any;
-  var sandboxData: any;
-}
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const provider = sandboxManager.getActiveProvider() || global.activeSandboxProvider;
-    
+    // Get sandboxId from query parameter (required for session isolation)
+    const sandboxId = request.nextUrl.searchParams.get('sandboxId');
+
+    if (!sandboxId) {
+      return NextResponse.json({
+        success: false,
+        error: 'sandboxId query parameter is required for session isolation'
+      }, { status: 400 });
+    }
+
+    // Get provider by explicit sandboxId (no global fallback)
+    const provider = sandboxManager.getProvider(sandboxId);
+
     if (!provider) {
       return NextResponse.json({
         success: false,
-        error: 'No active sandbox'
+        error: `Sandbox ${sandboxId} not found`
       }, { status: 404 });
     }
 
@@ -133,10 +137,8 @@ export async function GET() {
     // Extract routes (simplified - looks for Route components or page pattern)
     fileManifest.routes = extractRoutes(fileManifest.files);
     
-    // Update global file cache with manifest
-    if (global.sandboxState?.fileCache) {
-      global.sandboxState.fileCache.manifest = fileManifest;
-    }
+    // NOTE: No longer updating global.sandboxState for session isolation
+    // Each sandbox maintains its own state via sandboxManager
 
     return NextResponse.json({
       success: true,

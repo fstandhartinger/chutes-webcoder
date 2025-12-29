@@ -10,7 +10,8 @@ interface SandboxInfo {
 
 class SandboxManager {
   private sandboxes: Map<string, SandboxInfo> = new Map();
-  private activeSandboxId: string | null = null;
+  // NOTE: activeSandboxId removed - each session must track its own sandboxId
+  // to prevent sandbox sharing between concurrent users/sessions
 
   /**
    * Get or create a sandbox provider for the given sandbox ID
@@ -24,10 +25,10 @@ class SandboxManager {
     }
 
     // Try to reconnect to existing sandbox
-    
+
     try {
       const provider = SandboxFactory.create();
-      
+
       if (typeof (provider as any).reconnect === 'function') {
         const reconnected = await (provider as any).reconnect(sandboxId);
         if (reconnected) {
@@ -37,11 +38,11 @@ class SandboxManager {
             createdAt: new Date(),
             lastAccessed: new Date()
           });
-          this.activeSandboxId = sandboxId;
+          // NOTE: No longer setting activeSandboxId - session isolation
           return provider;
         }
       }
-      
+
       // For Vercel or if reconnection failed, return the new provider
       // The caller will need to handle creating a new sandbox
       return provider;
@@ -61,23 +62,17 @@ class SandboxManager {
       createdAt: new Date(),
       lastAccessed: new Date()
     });
-    this.activeSandboxId = sandboxId;
+    // NOTE: No longer setting activeSandboxId - each session tracks its own
+    console.log(`[SandboxManager] Registered sandbox ${sandboxId}. Total sandboxes: ${this.sandboxes.size}`);
   }
 
   /**
    * Get the active sandbox provider
+   * @deprecated Use getProvider(sandboxId) instead - this method returns null to enforce session isolation
    */
   getActiveProvider(): SandboxProvider | null {
-    if (!this.activeSandboxId) {
-      return null;
-    }
-    
-    const sandbox = this.sandboxes.get(this.activeSandboxId);
-    if (sandbox) {
-      sandbox.lastAccessed = new Date();
-      return sandbox.provider;
-    }
-    
+    console.warn('[SandboxManager] DEPRECATED: getActiveProvider() called - use getProvider(sandboxId) instead for session isolation');
+    // Return null to force callers to use explicit sandboxId
     return null;
   }
 
@@ -95,13 +90,12 @@ class SandboxManager {
 
   /**
    * Set the active sandbox
+   * @deprecated No longer used - each session tracks its own sandboxId
    */
   setActiveSandbox(sandboxId: string): boolean {
-    if (this.sandboxes.has(sandboxId)) {
-      this.activeSandboxId = sandboxId;
-      return true;
-    }
-    return false;
+    console.warn('[SandboxManager] DEPRECATED: setActiveSandbox() called - no-op for session isolation');
+    // No-op - each session should track its own sandboxId
+    return this.sandboxes.has(sandboxId);
   }
 
   /**
@@ -112,14 +106,11 @@ class SandboxManager {
     if (sandbox) {
       try {
         await sandbox.provider.terminate();
+        console.log(`[SandboxManager] Terminated sandbox ${sandboxId}`);
       } catch (error) {
         console.error(`[SandboxManager] Error terminating sandbox ${sandboxId}:`, error);
       }
       this.sandboxes.delete(sandboxId);
-      
-      if (this.activeSandboxId === sandboxId) {
-        this.activeSandboxId = null;
-      }
     }
   }
 
@@ -127,15 +118,15 @@ class SandboxManager {
    * Terminate all sandboxes
    */
   async terminateAll(): Promise<void> {
-    const promises = Array.from(this.sandboxes.values()).map(sandbox => 
-      sandbox.provider.terminate().catch(err => 
+    console.log(`[SandboxManager] Terminating all ${this.sandboxes.size} sandboxes`);
+    const promises = Array.from(this.sandboxes.values()).map(sandbox =>
+      sandbox.provider.terminate().catch(err =>
         console.error(`[SandboxManager] Error terminating sandbox ${sandbox.sandboxId}:`, err)
       )
     );
-    
+
     await Promise.all(promises);
     this.sandboxes.clear();
-    this.activeSandboxId = null;
   }
 
   /**
