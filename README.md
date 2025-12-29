@@ -15,6 +15,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
   - **OpenAI Codex** (`@openai/codex`) – via `responses.chutes.ai` Responses API proxy
   - **Aider** (`aider-chat`) – Python-based coding assistant via OpenAI-compatible endpoint
   - **OpenCode** (`opencode-ai`) – terminal-native AI coding agent with custom provider support
+  - **Factory Droid** (`droid`) – Factory AI CLI (requires `FACTORY_API_KEY`)
 - **Upstream Enhancements** – AI Builder UI, morph fast-apply edits, GitHub integration hooks, CLI scaffolding (`packages/create-open-lovable`).
 - **Render-ready deployment** – `render.yaml` and sensible `NEXT_PUBLIC_APP_URL` defaults for local routing.
 
@@ -59,6 +60,16 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
    # Optional: Morph fast apply key
    MORPH_API_KEY=...
+
+   # Optional: GitHub import/export
+   GITHUB_TOKEN=your_github_token
+
+   # Optional: Netlify deployment
+   NETLIFY_API_TOKEN=your_netlify_api_token
+
+   # Optional: Factory Droid CLI
+   FACTORY_API_KEY=your_factory_api_key
+   DROID_MODEL=glm-4.6
    ```
 
 3. **Run dev server**
@@ -83,6 +94,8 @@ The `/api/agent-run` endpoint enables running external CLI coding agents inside 
 | **Aider** | `aider-chat` (Python) | `llm.chutes.ai/v1` | ✅ Tested | ~10s |
 | **Codex** | `@openai/codex` | `responses.chutes.ai/v1` | ✅ Tested | ~15-160s |
 | **Claude Code** | `@anthropic-ai/claude-code` | `claude.chutes.ai` | ⚠️ Slower | >60s |
+| **OpenCode** | `opencode-ai` | `llm.chutes.ai/v1` | ✅ Tested | ~20s |
+| **Factory Droid** | `droid` | `factory.ai` | ⚠️ Requires key | Varies |
 
 ### Tested Model Combinations
 
@@ -101,7 +114,7 @@ The agent-run API uses a polling-based streaming mechanism to provide real-time 
 - Output is sent line-by-line for immediate visual feedback
 - Users see progress immediately instead of waiting for completion
 
-> **Note:** Factory Droid was evaluated but requires a proprietary `FACTORY_API_KEY` and cannot use Chutes models. OpenCode was tested but requires pre-registered models and doesn't support dynamic model configuration.
+> **Note:** Factory Droid requires a proprietary `FACTORY_API_KEY` and uses Factory-hosted models. OpenCode uses the OpenAI-compatible endpoint and supports Chutes models via `OPENAI_BASE_URL`.
 
 ### Agent API Usage
 

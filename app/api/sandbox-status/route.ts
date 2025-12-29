@@ -11,14 +11,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: false,
         active: false,
+        healthy: false,
         error: 'sandboxId query parameter is required for session isolation',
         message: 'No sandbox specified'
-      }, { status: 400 });
+      });
     }
 
-    // Get provider by explicit sandboxId (no global fallback)
-    const provider = sandboxManager.getProvider(sandboxId);
-    const sandboxExists = !!provider;
+    // Get provider by explicit sandboxId (attempt restore if missing)
+    let provider = sandboxManager.getProvider(sandboxId);
+    if (!provider) {
+      try {
+        provider = await sandboxManager.getOrCreateProvider(sandboxId);
+      } catch {
+        provider = null;
+      }
+    }
+    const sandboxExists = !!provider?.getSandboxInfo?.();
 
     let sandboxHealthy = false;
     let sandboxInfo = null;

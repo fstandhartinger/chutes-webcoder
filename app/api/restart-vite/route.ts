@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import { readProjectState } from '@/lib/project-state';
 
 // Per-sandbox restart tracking for session isolation
 const sandboxRestartState = new Map<string, { lastRestart: number; inProgress: boolean }>();
@@ -61,8 +62,31 @@ export async function POST(request: NextRequest) {
     
     console.log('[restart-vite] Using provider method to restart Vite...');
     
-    // Use the provider's restartViteServer method if available
-    if (typeof provider.restartViteServer === 'function') {
+    const projectState = await readProjectState(provider, sandboxId).catch(() => null);
+    const devServer = projectState?.devServer;
+
+    if (devServer?.command) {
+      const match = devServer.processMatch || 'vite';
+      const workdir = provider.getSandboxInfo?.()?.workdir || '/workspace';
+      console.log(`[restart-vite] Restarting dev server with command: ${devServer.command}`);
+
+      try {
+        await provider.runCommand(`pkill -f "${match}" || true`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } catch {
+        console.log('[restart-vite] No existing dev server processes found');
+      }
+
+      try {
+        await provider.runCommand('bash -c "echo \'{\\"errors\\": [], \\"lastChecked\\": '+ Date.now() +'}\' > /tmp/vite-errors.json"');
+      } catch {
+        // Ignore if this fails
+      }
+
+      const safeCommand = devServer.command.replace(/"/g, '\\"');
+      await provider.runCommand(`sh -c "cd ${workdir} && nohup ${safeCommand} > /tmp/devserver.log 2>&1 &"`);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    } else if (typeof provider.restartViteServer === 'function') {
       await provider.restartViteServer();
       console.log('[restart-vite] Vite restarted via provider method');
     } else {

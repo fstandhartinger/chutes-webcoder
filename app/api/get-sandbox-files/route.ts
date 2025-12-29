@@ -16,10 +16,17 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Get provider by explicit sandboxId (no global fallback)
-    const provider = sandboxManager.getProvider(sandboxId);
-
+    // Get provider by explicit sandboxId (attempt restore if missing)
+    let provider = sandboxManager.getProvider(sandboxId);
     if (!provider) {
+      try {
+        provider = await sandboxManager.getOrCreateProvider(sandboxId);
+      } catch {
+        provider = null;
+      }
+    }
+
+    if (!provider?.getSandboxInfo?.()) {
       return NextResponse.json({
         success: false,
         error: `Sandbox ${sandboxId} not found`

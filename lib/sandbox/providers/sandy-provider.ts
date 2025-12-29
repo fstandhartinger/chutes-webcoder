@@ -86,7 +86,15 @@ export class SandyProvider extends SandboxProvider {
         throw new Error(`Sandy API error ${response.status}: ${text || response.statusText}`);
       }
 
-      return (await response.json()) as T;
+      const text = await response.text();
+      if (!text.trim()) {
+        return {} as T;
+      }
+      try {
+        return JSON.parse(text) as T;
+      } catch (error) {
+        throw new Error('Sandy API returned non-JSON response');
+      }
     } finally {
       clearTimeout(timeout);
     }

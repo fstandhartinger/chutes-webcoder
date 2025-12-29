@@ -9,9 +9,31 @@ import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 
 declare global {
   var conversationState: ConversationState | null;
+  var conversationStateBySandbox: Record<string, ConversationState> | undefined;
   var activeSandboxProvider: any;
   var existingFiles: Set<string>;
   var sandboxState: SandboxState;
+}
+
+function getConversationState(sandboxId: string): ConversationState | null {
+  if (!sandboxId) return global.conversationState;
+  if (!global.conversationStateBySandbox) {
+    global.conversationStateBySandbox = {};
+  }
+  if (!global.conversationStateBySandbox[sandboxId]) {
+    global.conversationStateBySandbox[sandboxId] = {
+      conversationId: `conv-${sandboxId}-${Date.now()}`,
+      startedAt: Date.now(),
+      lastUpdated: Date.now(),
+      context: {
+        messages: [],
+        edits: [],
+        projectEvolution: { majorChanges: [] },
+        userPreferences: {}
+      }
+    };
+  }
+  return global.conversationStateBySandbox[sandboxId];
 }
 
 
@@ -32,6 +54,8 @@ export async function POST(request: NextRequest) {
         error: 'sandboxId is required for session isolation'
       }, { status: 400 });
     }
+
+    const conversationState = getConversationState(sandboxId);
 
     // Debug log the response
     console.log('[apply-ai-code-stream] Received response to parse:');
@@ -70,12 +94,22 @@ export async function POST(request: NextRequest) {
       try {
         provider = await sandboxManager.getOrCreateProvider(sandboxId);
 
-        // If we got a new provider (not reconnected), we need to create a new sandbox
         if (!provider.getSandboxInfo()) {
-          console.log(`[apply-ai-code-stream] Creating new sandbox since reconnection failed for ${sandboxId}`);
-          await provider.createSandbox();
-          await provider.setupViteApp();
-          sandboxManager.registerSandbox(sandboxId, provider);
+          console.error(`[apply-ai-code-stream] Sandbox ${sandboxId} not found after reconnection attempt`);
+          return NextResponse.json({
+            success: false,
+            error: `Sandbox ${sandboxId} not found. The sandbox may have expired.`,
+            results: {
+              filesCreated: [],
+              packagesInstalled: [],
+              commandsExecuted: [],
+              errors: [`Sandbox ${sandboxId} not found - please create a new sandbox`]
+            },
+            explanation: parsed.explanation,
+            structure: parsed.structure,
+            parsedFiles: parsed.files,
+            message: `Parsed ${parsed.files.length} files but couldn't apply them - sandbox not found.`
+          }, { status: 404 });
         }
 
         // NOTE: No longer updating legacy global state for session isolation
@@ -478,8 +512,8 @@ export async function POST(request: NextRequest) {
         });
 
         // Track applied files in conversation state
-        if (global.conversationState && results.filesCreated.length > 0) {
-          const messages = global.conversationState.context.messages;
+        if (conversationState && results.filesCreated.length > 0) {
+          const messages = conversationState.context.messages;
           if (messages.length > 0) {
             const lastMessage = messages[messages.length - 1];
             if (lastMessage.role === 'user') {
@@ -491,15 +525,15 @@ export async function POST(request: NextRequest) {
           }
 
           // Track applied code in project evolution
-          if (global.conversationState.context.projectEvolution) {
-            global.conversationState.context.projectEvolution.majorChanges.push({
+          if (conversationState.context.projectEvolution) {
+            conversationState.context.projectEvolution.majorChanges.push({
               timestamp: Date.now(),
               description: parsed.explanation || 'Code applied',
               filesAffected: results.filesCreated || []
             });
           }
 
-          global.conversationState.lastUpdated = Date.now();
+          conversationState.lastUpdated = Date.now();
         }
 
       } catch (error) {

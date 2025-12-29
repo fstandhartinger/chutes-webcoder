@@ -23,20 +23,19 @@ import {
   SiJson 
 } from '@/lib/icons';
 import { motion } from 'framer-motion';
-import { MessageSquare, Code2, Eye, ExternalLink, Clipboard } from 'lucide-react';
+import { MessageSquare, Code2, Eye, ExternalLink, Clipboard, RotateCcw, Plus, Square, Github, Share2, CloudUpload } from 'lucide-react';
 import CodeApplicationProgress, { type CodeApplicationState } from '@/components/CodeApplicationProgress';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { parseClaudeCodeOutput, SSEJsonBuffer, shouldDisplayMessage } from '@/lib/agent-output-parser';
+import type { ProjectCheckpoint, ProjectState, ProjectChatMessage } from '@/types/project';
 // Lazy-load the wave to avoid impacting TTI
 const ParticleWave = dynamic(() => import('@/components/ParticleWave'), { ssr: false });
 
 // V2 Design System Components
-import { HomeScreen } from '@/components/v2/HomeScreen';
-import { WorkspaceToolbar } from '@/components/v2/WorkspaceToolbar';
-import { ChatInput } from '@/components/v2/ChatInput';
 import { Header2, ChutesLogo } from '@/components/layout/Header2';
 import { UserAvatar2 } from '@/components/auth/UserAvatar2';
+import { Dialog, AppDialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/shared/ui/app-dialog';
 
 const FILE_ICON_SIZE = 16;
 const CODE_PANEL_COLLAPSED_MAX_HEIGHT = '24rem';
@@ -62,6 +61,7 @@ interface ChatMessage {
     generatedCode?: string;
     appliedFiles?: string[];
     commandType?: 'input' | 'output' | 'error' | 'success';
+    systemTag?: string;
   };
 }
 
@@ -229,6 +229,21 @@ function AISandboxPageContent() {
     currentProject: '',
     lastGeneratedCode: undefined
   });
+
+  const [projectState, setProjectState] = useState<ProjectState | null>(null);
+  const [checkpoints, setCheckpoints] = useState<ProjectCheckpoint[]>([]);
+  const [githubDialogOpen, setGithubDialogOpen] = useState(false);
+  const [githubRepoInput, setGithubRepoInput] = useState('');
+  const [githubBranchInput, setGithubBranchInput] = useState('');
+  const [githubExportName, setGithubExportName] = useState('');
+  const [githubOwnerInput, setGithubOwnerInput] = useState('');
+  const [githubPrivate, setGithubPrivate] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [netlifyDialogOpen, setNetlifyDialogOpen] = useState(false);
+  const [netlifySiteName, setNetlifySiteName] = useState('');
+  const [netlifyDeploying, setNetlifyDeploying] = useState(false);
+  const projectSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadProjectStateRef = useRef<((sandboxId: string) => Promise<void>) | null>(null);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
@@ -237,9 +252,16 @@ function AISandboxPageContent() {
   const sandboxRecreationCountRef = useRef<number>(0);
   const isMountedRef = useRef<boolean>(true);
   const streamAbortRef = useRef<AbortController | null>(null);
-  const createSandboxRef = useRef<((fromHomeScreen?: boolean, suppressUrlPush?: boolean) => Promise<any>) | null>(null);
+  const createSandboxRef = useRef<((fromHomeScreen?: boolean, suppressUrlPush?: boolean, sandboxIdOverride?: string | null) => Promise<any>) | null>(null);
   const sendChatMessageRef = useRef<((message?: string, retryCount?: number) => Promise<void>) | null>(null);
   const captureUrlScreenshotRef = useRef<((url: string) => Promise<void>) | null>(null);
+  const lastUserPromptRef = useRef<string>('');
+  const agentAbortRef = useRef<AbortController | null>(null);
+  const fileUpdateQueueRef = useRef<{ created: Set<string>; modified: Set<string> }>({
+    created: new Set(),
+    modified: new Set()
+  });
+  const fileUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
@@ -249,6 +271,17 @@ function AISandboxPageContent() {
           streamAbortRef.current.abort();
         }
       } catch {}
+      try {
+        if (agentAbortRef.current) {
+          agentAbortRef.current.abort();
+        }
+      } catch {}
+      if (projectSaveTimerRef.current) {
+        clearTimeout(projectSaveTimerRef.current);
+      }
+      if (fileUpdateTimerRef.current) {
+        clearTimeout(fileUpdateTimerRef.current);
+      }
     };
   }, []);
   
@@ -257,8 +290,14 @@ function AISandboxPageContent() {
   });
 
   const getActiveSandboxId = useCallback(
-    (override?: string | null) => override || sandboxData?.sandboxId || searchParams.get('sandbox') || null,
-    [sandboxData?.sandboxId, searchParams]
+    (override?: string | null) =>
+      override ||
+      sandboxData?.sandboxId ||
+      projectState?.projectId ||
+      searchParams.get('sandbox') ||
+      searchParams.get('project') ||
+      null,
+    [sandboxData?.sandboxId, projectState?.projectId, searchParams]
   );
   const buildSandboxStatusUrl = useCallback(
     (sandboxId: string) => `/api/sandbox-status?sandboxId=${encodeURIComponent(sandboxId)}`,
@@ -268,6 +307,32 @@ function AISandboxPageContent() {
     (sandboxId: string) => `/api/get-sandbox-files?sandboxId=${encodeURIComponent(sandboxId)}`,
     []
   );
+  const getPreviewUrl = useCallback(
+    (override?: string | null) => {
+      const sandboxId = getActiveSandboxId(override);
+      if (!sandboxId) return null;
+      if (sandboxData?.sandboxId === sandboxId && sandboxData?.url) {
+        return sandboxData.url;
+      }
+      return buildFallbackSandboxUrl(sandboxId);
+    },
+    [getActiveSandboxId, sandboxData?.sandboxId, sandboxData?.url]
+  );
+  const syncUrlWithSandbox = useCallback((sandboxId: string, replace: boolean = true) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sandbox', sandboxId);
+    params.set('project', sandboxId);
+    params.set('model', aiModel);
+    params.set('agent', selectedAgent);
+    const next = `/?${params.toString()}`;
+    const current = `/?${searchParams.toString()}`;
+    if (next === current) return;
+    if (replace) {
+      router.replace(next, { scroll: false });
+    } else {
+      router.push(next, { scroll: false });
+    }
+  }, [aiModel, router, searchParams, selectedAgent]);
 
   // Helpers for robust preview readiness
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -329,7 +394,7 @@ function AISandboxPageContent() {
     thinkingText?: string;
     thinkingDuration?: number;
     currentFile?: { path: string; content: string; type: string };
-    files: Array<{ path: string; content: string; type: string; completed: boolean; edited?: boolean; lastUpdated?: number }>;
+    files: Array<{ path: string; content: string; type: string; completed: boolean; edited?: boolean; lastUpdated?: number; truncated?: boolean }>;
     lastProcessedPosition: number;
     isEdit?: boolean;
   }>({
@@ -348,11 +413,14 @@ function AISandboxPageContent() {
     const filePaths = generationProgress.files.map(file => file.path).filter(Boolean);
     if (filePaths.length === 0) return 'src';
     const topLevelDirs = new Set(filePaths.map(path => path.split('/')[0]).filter(Boolean));
+    const hasRootFiles = filePaths.some(path => !path.includes('/'));
+    if (hasRootFiles || topLevelDirs.size > 1) return 'workspace';
     if (topLevelDirs.has('src')) return 'src';
     if (topLevelDirs.has('app')) return 'app';
     if (topLevelDirs.size === 1) return Array.from(topLevelDirs)[0] as string;
     return 'workspace';
   }, [generationProgress.files]);
+  const rootFolderLabel = rootFolder === 'workspace' ? 'root' : rootFolder;
 
   const treeFiles = useMemo(() => {
     const rootPrefix = rootFolder === 'workspace' ? '' : `${rootFolder}/`;
@@ -365,7 +433,6 @@ function AISandboxPageContent() {
   }, [generationProgress.files, rootFolder]);
 
   useEffect(() => {
-    if (!rootFolder) return;
     setExpandedFolders(prev => {
       if (prev.has(rootFolder)) return prev;
       const next = new Set(prev);
@@ -450,45 +517,47 @@ function AISandboxPageContent() {
     initialSetupRef.current = true;
 
     const initializePage = async () => {
-      // Clear old conversation
-      try {
-        await fetch('/api/conversation-state', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'clear-old' })
-        });
-        console.log('[home] Cleared old conversation data on mount');
-      } catch (error) {
-        console.error('[ai-sandbox] Failed to clear old conversation:', error);
+      const sandboxIdParam = searchParams.get('sandbox') || searchParams.get('project');
+
+      if (!sandboxIdParam) {
+        try {
+          await fetch('/api/conversation-state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'clear-old' })
+          });
+          console.log('[home] Cleared old conversation data on mount');
+        } catch (error) {
+          console.error('[ai-sandbox] Failed to clear old conversation:', error);
+        }
       }
-      
-      // IMPORTANT: Clear any stale sandbox data from previous sessions
-      // A new page load should always start fresh unless restoring from URL
-      if (isMountedRef.current && !searchParams.get('sandbox')) {
+
+      if (isMountedRef.current && !sandboxIdParam) {
         console.log('[home] Clearing stale sandbox data on fresh page load');
         setSandboxData(null);
       }
-      
-      // Check if sandbox ID is in URL
-      const sandboxIdParam = searchParams.get('sandbox');
-      
+
       if (sandboxIdParam) {
-        // Try to restore existing sandbox
         console.log('[home] Attempting to restore sandbox:', sandboxIdParam);
         if (isMountedRef.current) setLoading(true);
+        setShowHomeScreen(false);
         try {
-          // For now, just create a new sandbox - you could enhance this to actually restore
-          // the specific sandbox if your backend supports it
-          await createSandboxRef.current?.(true, true);
+          const restored = await createSandboxRef.current?.(true, true, sandboxIdParam);
+          const effectiveId = restored?.sandboxId || sandboxIdParam;
+          await loadProjectStateRef.current?.(effectiveId);
         } catch (error) {
           console.error('[ai-sandbox] Failed to restore sandbox:', error);
-          // Create new sandbox on error
-          await createSandboxRef.current?.(true, true);
+          const created = await createSandboxRef.current?.(true, false);
+          if (created?.sandboxId) {
+            await loadProjectStateRef.current?.(created.sandboxId);
+          }
         }
       } else {
-        // Automatically create new sandbox
         console.log('[home] No sandbox in URL, creating new sandbox automatically...');
-        await createSandboxRef.current?.(true, true);
+        const created = await createSandboxRef.current?.(true, false);
+        if (created?.sandboxId) {
+          await loadProjectStateRef.current?.(created.sandboxId);
+        }
       }
     };
     
@@ -564,6 +633,11 @@ function AISandboxPageContent() {
     }
     try {
       const response = await fetch(buildSandboxStatusUrl(sandboxId));
+      if (!response.ok) {
+        console.warn('[sandbox-status] Non-OK response:', response.status);
+        updateStatus('Sandbox status unavailable', false);
+        return;
+      }
       const data = await response.json().catch(() => ({}));
       
       if (data.active && data.healthy && data.sandboxData) {
@@ -574,7 +648,7 @@ function AISandboxPageContent() {
         updateStatus('Sandbox not responding', false);
         // Optionally try to create a new one
       } else {
-        if (!sandboxData) {
+        if (!sandboxData && data?.message?.includes('not found')) {
           setSandboxData(null);
           updateStatus('No sandbox', false);
         } else {
@@ -611,7 +685,7 @@ function AISandboxPageContent() {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
   }, [chatMessages]);
-  
+
   // Clear "waiting_preview" state only after the UI has switched to the preview tab
   useEffect(() => {
     if (activeTab === 'preview' && codeApplicationState.stage === 'waiting_preview') {
@@ -623,7 +697,7 @@ function AISandboxPageContent() {
   useEffect(() => {
     const run = async () => {
       if (!pendingRefresh) return;
-      const url = sandboxData?.url;
+      const url = getPreviewUrl();
       if (!url) {
         console.warn('[refresh] No sandbox URL yet; waiting...');
         setTimeout(() => { if (isMountedRef.current) setPendingRefresh({ reason: pendingRefresh.reason }); }, 500);
@@ -663,9 +737,10 @@ function AISandboxPageContent() {
         if (!(finalActive && finalReachable) && sandboxRecreationCountRef.current < 3) {
           sandboxRecreationCountRef.current += 1;
           console.warn('[refresh] Recreating sandbox. attempt=', sandboxRecreationCountRef.current);
-          await createSandbox(true, true);
-          if (isMountedRef.current && sandboxData?.url && iframeRef.current) {
-            iframeRef.current.src = `${sandboxData.url}?t=${Date.now()}&deferredNewSandbox=1`;
+          await createSandbox(true, false);
+          const fallbackUrl = getPreviewUrl();
+          if (isMountedRef.current && fallbackUrl && iframeRef.current) {
+            iframeRef.current.src = `${fallbackUrl}?t=${Date.now()}&deferredNewSandbox=1`;
           }
         }
       } finally {
@@ -675,7 +750,7 @@ function AISandboxPageContent() {
     };
     void run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingRefresh, sandboxData?.url]);
+  }, [getPreviewUrl, pendingRefresh]);
 
   // Only auto-switch to Preview after iframe is fully loaded and user hasn't changed tabs
   useEffect(() => {
@@ -690,7 +765,7 @@ function AISandboxPageContent() {
     _setResponseArea(prev => [...prev, `[${type}] ${message}`]);
   };
 
-  const addChatMessage = (content: string, type: ChatMessage['type'], metadata?: ChatMessage['metadata']) => {
+  const addChatMessage = useCallback((content: string, type: ChatMessage['type'], metadata?: ChatMessage['metadata']) => {
     setChatMessages(prev => {
       // Ensure we never show this message twice by removing any previous ones before adding a new one
       let base = prev;
@@ -707,7 +782,73 @@ function AISandboxPageContent() {
       }
       return [...base, { content, type, timestamp: new Date(), metadata }];
     });
-  };
+  }, []);
+
+  const upsertSystemMessage = useCallback((content: string, systemTag: string) => {
+    setChatMessages(prev => {
+      const index = [...prev].reverse().findIndex(msg => msg.metadata?.systemTag === systemTag);
+      if (index === -1) {
+        return [...prev, { content, type: 'system', timestamp: new Date(), metadata: { systemTag } }];
+      }
+      const actualIndex = prev.length - 1 - index;
+      const target = prev[actualIndex];
+      if (target?.content === content) return prev;
+      const next = [...prev];
+      next[actualIndex] = { ...target, content, timestamp: new Date() };
+      return next;
+    });
+  }, []);
+
+  const clearSystemMessage = useCallback((systemTag: string) => {
+    setChatMessages(prev => prev.filter(msg => msg.metadata?.systemTag !== systemTag));
+  }, []);
+
+  const flushFileUpdates = useCallback(() => {
+    const queue = fileUpdateQueueRef.current;
+    const created = Array.from(queue.created);
+    const modified = Array.from(queue.modified);
+    queue.created.clear();
+    queue.modified.clear();
+    if (fileUpdateTimerRef.current) {
+      clearTimeout(fileUpdateTimerRef.current);
+      fileUpdateTimerRef.current = null;
+    }
+    if (created.length === 0 && modified.length === 0) return;
+
+    const list = (items: string[]) => items.slice(0, 4).map(item => item.split('/').pop()).filter(Boolean);
+    const createdList = list(created);
+    const modifiedList = list(modified);
+    const createdSuffix = created.length > createdList.length ? ` +${created.length - createdList.length} more` : '';
+    const modifiedSuffix = modified.length > modifiedList.length ? ` +${modified.length - modifiedList.length} more` : '';
+
+    if (createdList.length > 0 && modifiedList.length > 0) {
+      addChatMessage(
+        `Files created: ${createdList.join(', ')}${createdSuffix}. Updated: ${modifiedList.join(', ')}${modifiedSuffix}.`,
+        'system'
+      );
+    } else if (createdList.length > 0) {
+      addChatMessage(`Files created: ${createdList.join(', ')}${createdSuffix}.`, 'system');
+    } else if (modifiedList.length > 0) {
+      addChatMessage(`Files updated: ${modifiedList.join(', ')}${modifiedSuffix}.`, 'system');
+    }
+  }, [addChatMessage]);
+
+  const queueFileUpdates = useCallback((changes: Array<{ path: string; changeType: 'created' | 'modified' }>) => {
+    const queue = fileUpdateQueueRef.current;
+    for (const change of changes) {
+      if (!change?.path) continue;
+      if (change.changeType === 'modified') {
+        queue.modified.add(change.path);
+      } else {
+        queue.created.add(change.path);
+      }
+    }
+    if (!fileUpdateTimerRef.current) {
+      fileUpdateTimerRef.current = setTimeout(() => {
+        flushFileUpdates();
+      }, 1500);
+    }
+  }, [flushFileUpdates]);
   
   const checkAndInstallPackages = async () => {
     if (!sandboxData) {
@@ -796,7 +937,7 @@ function AISandboxPageContent() {
     }
   };
 
-  const createSandbox = async (fromHomeScreen = false, suppressUrlPush = false) => {
+  const createSandbox = async (fromHomeScreen = false, suppressUrlPush = false, sandboxIdOverride?: string | null) => {
     if (creatingSandboxRef.current) {
       console.log('[createSandbox] Reusing in-flight creation promise');
       return creatingSandboxRef.current;
@@ -813,7 +954,7 @@ function AISandboxPageContent() {
         const response = await fetch('/api/create-ai-sandbox-v2', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
+          body: JSON.stringify({ sandboxId: sandboxIdOverride || undefined })
         });
         const data = await response.json();
         console.log('[createSandbox] Response data:', data);
@@ -824,15 +965,17 @@ function AISandboxPageContent() {
           log('Sandbox created successfully!');
           log(`Sandbox ID: ${data.sandboxId}`);
           log(`URL: ${data.url}`);
-          // Update URL with sandbox ID
-          if (!suppressUrlPush) {
-            const newParams = new URLSearchParams(searchParams.toString());
-            newParams.set('sandbox', data.sandboxId);
-            newParams.set('model', aiModel);
-            console.log('[createSandbox] Updating URL with sandbox param');
-            router.push(`/?${newParams.toString()}`, { scroll: false });
-          } else {
-            console.log('[createSandbox] Suppressing URL push during active generation');
+          if (data.sandboxId) {
+            await loadProjectStateRef.current?.(data.sandboxId);
+          }
+          const hasSandboxParam = searchParams.get('sandbox');
+          const hasProjectParam = searchParams.get('project');
+          const shouldSyncUrl = !suppressUrlPush || !hasSandboxParam || !hasProjectParam;
+          if (data.sandboxId && shouldSyncUrl) {
+            console.log('[createSandbox] Syncing URL with sandbox param');
+            syncUrlWithSandbox(data.sandboxId, true);
+          } else if (!shouldSyncUrl) {
+            console.log('[createSandbox] Suppressing URL sync during active generation');
           }
           // Fade out loading background after sandbox loads
           setTimeout(() => {
@@ -901,6 +1044,129 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       setStructureContent(structure || 'No structure available');
     }
   };
+
+  const serializeChatMessages = useCallback((messages: ChatMessage[]): ProjectChatMessage[] => {
+    return messages.map((msg, index) => ({
+      id: `${msg.type}-${msg.timestamp.getTime()}-${index}`,
+      role: msg.type,
+      content: msg.content,
+      timestamp: msg.timestamp.getTime(),
+      metadata: msg.metadata
+    }));
+  }, []);
+
+  const deserializeChatMessages = useCallback((messages: ProjectChatMessage[] = []): ChatMessage[] => {
+    return messages.map((msg) => ({
+      content: msg.content,
+      type: msg.role,
+      timestamp: new Date(msg.timestamp),
+      metadata: msg.metadata
+    }));
+  }, []);
+
+  const buildProjectStatePayload = useCallback((sandboxId: string): ProjectState => {
+    const createdAt = projectState?.createdAt || new Date().toISOString();
+    return {
+      projectId: sandboxId,
+      createdAt,
+      updatedAt: new Date().toISOString(),
+      conversation: {
+        messages: serializeChatMessages(chatMessages)
+      },
+      conversationContext: {
+        scrapedWebsites: conversationContext.scrapedWebsites.map(site => ({
+          url: site.url,
+          content: site.content,
+          timestamp: site.timestamp.getTime()
+        })),
+        generatedComponents: conversationContext.generatedComponents,
+        appliedCode: conversationContext.appliedCode.map(entry => ({
+          files: entry.files,
+          timestamp: entry.timestamp.getTime()
+        })),
+        currentProject: conversationContext.currentProject,
+        lastGeneratedCode: conversationContext.lastGeneratedCode
+      },
+      checkpoints,
+      devServer: projectState?.devServer,
+      github: projectState?.github,
+      netlify: projectState?.netlify
+    };
+  }, [chatMessages, checkpoints, conversationContext, projectState?.createdAt, projectState?.devServer, projectState?.github, projectState?.netlify, serializeChatMessages]);
+
+  const persistProjectState = useCallback(async (sandboxIdOverride?: string | null) => {
+    const sandboxId = getActiveSandboxId(sandboxIdOverride);
+    if (!sandboxId) return;
+
+    const payload = buildProjectStatePayload(sandboxId);
+    try {
+      const response = await fetch('/api/project-state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sandboxId, state: payload })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.state) {
+          setProjectState(data.state);
+          setCheckpoints(data.state.checkpoints || []);
+        }
+      }
+    } catch (error) {
+      console.error('[project-state] Failed to persist:', error);
+    }
+  }, [buildProjectStatePayload, getActiveSandboxId]);
+
+  const scheduleProjectSave = useCallback((sandboxIdOverride?: string | null) => {
+    if (projectSaveTimerRef.current) {
+      clearTimeout(projectSaveTimerRef.current);
+    }
+    projectSaveTimerRef.current = setTimeout(() => {
+      void persistProjectState(sandboxIdOverride);
+    }, 800);
+  }, [persistProjectState]);
+
+  useEffect(() => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) return;
+    scheduleProjectSave(sandboxId);
+  }, [chatMessages, conversationContext, checkpoints, sandboxData?.sandboxId, scheduleProjectSave, searchParams, getActiveSandboxId]);
+
+  const loadProjectState = useCallback(async (sandboxId: string) => {
+    try {
+      const response = await fetch(`/api/project-state?sandboxId=${encodeURIComponent(sandboxId)}`);
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data?.state) {
+        const state: ProjectState = data.state;
+        setProjectState(state);
+        setCheckpoints(state.checkpoints || []);
+        setConversationContext({
+          scrapedWebsites: (state.conversationContext?.scrapedWebsites || []).map(site => ({
+            url: site.url,
+            content: site.content,
+            timestamp: new Date(site.timestamp)
+          })),
+          generatedComponents: state.conversationContext?.generatedComponents || [],
+          appliedCode: (state.conversationContext?.appliedCode || []).map(entry => ({
+            files: entry.files,
+            timestamp: new Date(entry.timestamp)
+          })),
+          currentProject: state.conversationContext?.currentProject || '',
+          lastGeneratedCode: state.conversationContext?.lastGeneratedCode
+        });
+
+        const restoredMessages = deserializeChatMessages(state.conversation?.messages || []);
+        if (restoredMessages.length > 0) {
+          setChatMessages(restoredMessages);
+        }
+      }
+    } catch (error) {
+      console.error('[project-state] Failed to load:', error);
+    }
+  }, [deserializeChatMessages]);
+
+  loadProjectStateRef.current = loadProjectState;
 
   const applyGeneratedCode = async (
     code: string,
@@ -1157,6 +1423,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         // Optionally handle extra fields if present in future
         
         log('Code applied successfully!');
+        const checkpointLabel = lastUserPromptRef.current
+          ? `Auto: ${lastUserPromptRef.current.slice(0, 60)}`
+          : 'Auto checkpoint';
+        void createCheckpoint(checkpointLabel);
         console.log('[applyGeneratedCode] Response data:', data);
         // Debug info may not always be present
         console.log('[applyGeneratedCode] Current sandboxData:', sandboxData);
@@ -1255,7 +1525,50 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
-  const fetchSandboxFiles = async (overrideSandboxId?: string | null) => {
+  const pickDefaultFile = useCallback((files: Record<string, string>) => {
+    const paths = Object.keys(files);
+    if (paths.length === 0) return null;
+    const preferred = [
+      'src/App.jsx',
+      'App.jsx',
+      'src/main.jsx',
+      'src/index.jsx',
+      'index.html'
+    ];
+    for (const candidate of preferred) {
+      if (paths.includes(candidate)) return candidate;
+    }
+    return paths[0];
+  }, []);
+
+  const applyFileSnapshot = useCallback((files: Record<string, string>) => {
+    setGenerationProgress(prev => {
+      const existingMap = new Map(prev.files.map(file => [file.path, file]));
+      for (const [path, content] of Object.entries(files)) {
+        const ext = path.split('.').pop() || '';
+        const type = ext === 'jsx' || ext === 'js' ? 'javascript' :
+          ext === 'css' ? 'css' :
+          ext === 'json' ? 'json' :
+          ext === 'html' ? 'html' : 'text';
+        const existing = existingMap.get(path);
+        existingMap.set(path, {
+          ...existing,
+          path,
+          content,
+          type,
+          completed: true,
+          lastUpdated: Date.now(),
+          truncated: false
+        });
+      }
+      return {
+        ...prev,
+        files: Array.from(existingMap.values())
+      };
+    });
+  }, []);
+
+  const fetchSandboxFiles = useCallback(async (overrideSandboxId?: string | null) => {
     const sandboxId = getActiveSandboxId(overrideSandboxId);
     if (!sandboxId) return;
     
@@ -1274,12 +1587,110 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           _setSandboxFiles(data.files || {});
           _setFileStructure(data.structure || '');
           console.log('[fetchSandboxFiles] Updated file list:', Object.keys(data.files || {}).length, 'files');
+          if (data.files) {
+            applyFileSnapshot(data.files);
+            if (!selectedFile && !userSelectedFileRef.current) {
+              const defaultFile = pickDefaultFile(data.files);
+              if (defaultFile) {
+                setSelectedFile(defaultFile);
+              }
+            }
+          }
         }
       }
     } catch (error) {
       console.error('[fetchSandboxFiles] Error fetching files:', error);
     }
-  };
+  }, [applyFileSnapshot, buildSandboxFilesUrl, getActiveSandboxId, pickDefaultFile, selectedFile]);
+
+  const fetchCheckpoints = useCallback(async (overrideSandboxId?: string | null) => {
+    const sandboxId = getActiveSandboxId(overrideSandboxId);
+    if (!sandboxId) return;
+    try {
+      const response = await fetch(`/api/checkpoints?sandboxId=${encodeURIComponent(sandboxId)}`);
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data?.checkpoints) {
+        setCheckpoints(data.checkpoints);
+      }
+    } catch (error) {
+      console.error('[checkpoints] Failed to fetch:', error);
+    }
+  }, [getActiveSandboxId]);
+
+  const createCheckpoint = useCallback(async (label?: string) => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) {
+      addChatMessage('No active sandbox to checkpoint.', 'system');
+      return;
+    }
+    try {
+      addChatMessage('Creating checkpoint...', 'system');
+      const response = await fetch('/api/checkpoints', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sandboxId,
+          action: 'create',
+          label: label || 'Checkpoint'
+        })
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        addChatMessage(`Failed to create checkpoint: ${err.error || response.statusText}`, 'error');
+        return;
+      }
+      const data = await response.json();
+      setCheckpoints(data.checkpoints || []);
+      addChatMessage('Checkpoint created!', 'system');
+      scheduleProjectSave(sandboxId);
+    } catch (error) {
+      console.error('[checkpoints] Create failed:', error);
+      addChatMessage('Failed to create checkpoint.', 'error');
+    }
+  }, [addChatMessage, getActiveSandboxId, scheduleProjectSave]);
+
+  const restoreCheckpoint = useCallback(async (checkpointId: string) => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) {
+      addChatMessage('No active sandbox to restore.', 'system');
+      return;
+    }
+    try {
+      addChatMessage('Restoring checkpoint...', 'system');
+      const response = await fetch('/api/checkpoints', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sandboxId,
+          action: 'restore',
+          checkpointId
+        })
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        addChatMessage(`Failed to restore checkpoint: ${err.error || response.statusText}`, 'error');
+        return;
+      }
+      const data = await response.json();
+      if (data?.state) {
+        setProjectState(data.state);
+        setCheckpoints(data.state.checkpoints || []);
+        await loadProjectStateRef.current?.(sandboxId);
+      }
+      await fetchSandboxFiles(sandboxId);
+      await fetch('/api/restart-vite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sandboxId })
+      });
+      addChatMessage('Checkpoint restored. Preview refreshed.', 'system');
+      setActiveTab('preview');
+    } catch (error) {
+      console.error('[checkpoints] Restore failed:', error);
+      addChatMessage('Failed to restore checkpoint.', 'error');
+    }
+  }, [addChatMessage, fetchSandboxFiles, getActiveSandboxId]);
   
   const _restartViteServer = async () => {
     try {
@@ -1298,8 +1709,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           
           // Refresh the iframe after a short delay
           setTimeout(() => {
-            if (iframeRef.current && sandboxData?.url) {
-              iframeRef.current.src = `${sandboxData.url}?t=${Date.now()}`;
+            const previewUrl = getPreviewUrl();
+            if (iframeRef.current && previewUrl) {
+              iframeRef.current.src = `${previewUrl}?t=${Date.now()}`;
             }
           }, 2000);
         } else {
@@ -1373,7 +1785,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   ) : (
                     <BsFolderFill className="w-5 h-5 text-emerald-500" />
                   )}
-                  <span className="font-medium text-foreground">{rootFolder}</span>
+                  <span className="font-medium text-foreground">{rootFolderLabel}</span>
                 </div>
                 
                 {expandedFolders.has(rootFolder) && (
@@ -1458,6 +1870,45 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       ));
                     })()}
                   </div>
+                )}
+              </div>
+            </div>
+
+            <div className="border-t border-[#262626] p-3">
+              <div className="flex items-center justify-between text-[#d4d4d4]">
+                <span className="text-xs font-semibold uppercase tracking-wider">Checkpoints</span>
+                <button
+                  type="button"
+                  onClick={() => createCheckpoint()}
+                  className="p-1 rounded hover:bg-[#2a2a2a] transition-colors"
+                  title="Create checkpoint"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="mt-2 space-y-1 max-h-40 overflow-y-auto scrollbar-hide">
+                {checkpoints.length === 0 ? (
+                  <div className="text-xs text-neutral-500">No checkpoints yet</div>
+                ) : (
+                  checkpoints.slice(-6).map((checkpoint) => (
+                    <div
+                      key={checkpoint.id}
+                      className="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs text-neutral-300 hover:bg-[#1f1f1f]"
+                    >
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="truncate">{checkpoint.label}</span>
+                        <span className="text-[10px] text-neutral-500">{new Date(checkpoint.createdAt).toLocaleString()}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => restoreCheckpoint(checkpoint.id)}
+                        className="p-1 rounded hover:bg-[#2a2a2a] transition-colors"
+                        title="Restore checkpoint"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
                 )}
               </div>
             </div>
@@ -1775,7 +2226,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       );
     } else if (activeTab === 'preview') {
       // Show screenshot when we have one and (loading OR generating OR no sandbox yet)
-      if (urlScreenshot && (loading || generationProgress.isGenerating || !sandboxData?.url || isPreparingDesign)) {
+      const previewUrl = getPreviewUrl();
+      if (urlScreenshot && (loading || generationProgress.isGenerating || !previewUrl || isPreparingDesign)) {
         return (
           <div className="absolute inset-0 w-full h-full bg-[#171717] relative">
             <NextImage
@@ -1825,13 +2277,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       }
       
       // Show sandbox iframe only when not in any loading state
-      if (sandboxData?.url && !loading) {
+      if (previewUrl && !loading) {
         return (
           <div className="absolute inset-0 w-full h-full">
             <iframe
               key={iframeRevision}
               ref={iframeRef}
-              src={sandboxData.url}
+              src={previewUrl}
               className="w-full h-full border-none"
               title="Chutes Webcoder Sandbox"
               allow="clipboard-write"
@@ -1841,9 +2293,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             {/* Refresh button */}
             <button
               onClick={() => {
-                if (iframeRef.current && sandboxData?.url) {
+                if (iframeRef.current && previewUrl) {
                   console.log('[Manual Refresh] Forcing iframe reload...');
-                  const newSrc = `${sandboxData.url}?t=${Date.now()}&manual=true`;
+                  const newSrc = `${previewUrl}?t=${Date.now()}&manual=true`;
                   iframeRef.current.src = newSrc;
                 }
               }}
@@ -1906,6 +2358,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       console.log('[sendChatMessage] Empty message, returning');
       return;
     }
+
+    lastUserPromptRef.current = message;
     
     // Prevent infinite retry loops
     if (retryCount > MAX_RETRIES) {
@@ -1942,7 +2396,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     if (lowerMessage === 'check packages' || lowerMessage === 'install packages' || lowerMessage === 'npm install') {
       if (!sandboxData) {
         // Start or wait for sandbox implicitly
-        await createSandbox(true, true);
+        await createSandbox(true, false);
       }
       await checkAndInstallPackages();
       return;
@@ -1962,7 +2416,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       sandboxCreating = true;
       console.log('[sendChatMessage] No sandbox, creating one...');
       addChatMessage('Creating sandbox...', 'system');
-      sandboxPromise = createSandbox(true, true).catch((error: any) => {
+      sandboxPromise = createSandbox(true, false).catch((error: any) => {
         console.error('[sendChatMessage] Sandbox creation failed:', error);
         addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
         throw error;
@@ -1976,7 +2430,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     
     // ALWAYS wait for sandbox creation if it's in progress
     let effectiveSandboxId = sandboxData?.sandboxId;
-    let effectiveSandboxUrl = sandboxData?.url;
+    let effectiveSandboxUrl = getPreviewUrl();
     
     if (sandboxCreating && sandboxPromise) {
       console.log('[sendChatMessage] Waiting for sandbox creation before AI call...');
@@ -2000,6 +2454,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     
     try {
       // Generation tab is already active from scraping phase
+      if (!isMobilePortraitLayout) {
+        setActiveTab('generation');
+      }
       userSelectedFileRef.current = false;
       setSelectedFile(null);
       setGenerationProgress(prev => ({
@@ -2062,10 +2519,17 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             isEdit: conversationContext.appliedCode.length > 0
           };
       
+      if (agentAbortRef.current) {
+        try {
+          agentAbortRef.current.abort();
+        } catch {}
+      }
+      agentAbortRef.current = new AbortController();
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        signal: agentAbortRef.current.signal
       });
       
       console.log('[chat] Fetch response received:', response.status, response.statusText);
@@ -2085,7 +2549,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             
             try {
               // Create a new sandbox
-              const newSandbox = await createSandbox(true, true);
+              const newSandbox = await createSandbox(true, false);
               if (newSandbox?.sandboxId) {
                 console.log('[chat] New sandbox created:', newSandbox.sandboxId, '- retrying request');
                 // Remove the "expired" message and retry with new sandbox (increment retry count)
@@ -2144,20 +2608,21 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   // Use the improved parser for Claude Code output
                   const parsed = parseClaudeCodeOutput(data.data);
 
-                  if (shouldDisplayMessage(parsed)) {
-                    if (parsed.type === 'user-friendly') {
-                      addChatMessage(parsed.content, 'ai');
-                    } else if (parsed.type === 'tool-use') {
-                      // Show tool use as status, not as chat message
-                      setGenerationProgress(prev => ({
-                        ...prev,
-                        status: parsed.content,
-                        isStreaming: true
-                      }));
-                      // Also extract file path for tracking
-                      if (parsed.metadata?.filePath) {
-                        const filePath = parsed.metadata.filePath;
-                        const fileName = filePath.split('/').pop() || filePath;
+                    if (shouldDisplayMessage(parsed)) {
+                      if (parsed.type === 'user-friendly') {
+                        addChatMessage(parsed.content, 'ai');
+                      } else if (parsed.type === 'tool-use') {
+                        // Show tool use as status, not as chat message
+                        setGenerationProgress(prev => ({
+                          ...prev,
+                          status: parsed.content,
+                          isStreaming: true
+                        }));
+                        upsertSystemMessage(parsed.content, 'progress');
+                        // Also extract file path for tracking
+                        if (parsed.metadata?.filePath) {
+                          const filePath = parsed.metadata.filePath;
+                          const fileName = filePath.split('/').pop() || filePath;
                         setGenerationProgress(prev => {
                           // Check if we already have this file
                           const exists = prev.files.some(f => f.path === filePath);
@@ -2186,6 +2651,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       }));
                     } else if (parsed.type === 'error') {
                       addChatMessage(parsed.content, 'error');
+                      clearSystemMessage('progress');
                     }
                   }
                 } else if (data.type === 'output') {
@@ -2204,6 +2670,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       const isExplanation = (
                         cleaned.includes('**') || // Markdown formatting
                         cleaned.includes('✓') || cleaned.includes('✅') || cleaned.includes('✔') || // Success indicators
+                        cleaned.includes('apply_patch') ||
+                        cleaned.includes('Updated the following files') ||
                         cleaned.includes('created') || cleaned.includes('Created') ||
                         cleaned.includes('built') || cleaned.includes('Built') ||
                         cleaned.includes('updated') || cleaned.includes('Updated') ||
@@ -2242,27 +2710,30 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   }
                 } else if (data.type === 'heartbeat') {
                   // Keep-alive event - always update status with current elapsed time
+                  const progressText = `Processing... (${Math.round(data.elapsed)}s)`;
                   setGenerationProgress(prev => {
                     if (prev.status && !prev.status.startsWith('Processing')) {
                       return prev;
                     }
                     return {
                       ...prev,
-                      status: `Processing... (${Math.round(data.elapsed)}s)`
+                      status: progressText
                     };
                   });
+                  upsertSystemMessage(progressText, 'progress');
                 } else if (data.type === 'files-update') {
                   // Agent detected new files - add them to the file list
-                  if (data.files && data.files.length > 0) {
-                    console.log('[chat] Agent detected new files:', data.files);
-                    const changeTypeMap = new Map<string, 'created' | 'modified'>();
-                    if (Array.isArray(data.changes)) {
-                      for (const change of data.changes) {
-                        if (change?.path && change?.changeType) {
-                          changeTypeMap.set(change.path, change.changeType);
+                    if (data.files && data.files.length > 0) {
+                      console.log('[chat] Agent detected new files:', data.files);
+                      const changeTypeMap = new Map<string, 'created' | 'modified'>();
+                      if (Array.isArray(data.changes)) {
+                        for (const change of data.changes) {
+                          if (change?.path && change?.changeType) {
+                            changeTypeMap.set(change.path, change.changeType);
+                          }
                         }
+                        queueFileUpdates(data.changes as Array<{ path: string; changeType: 'created' | 'modified' }>);
                       }
-                    }
 
                     if (!userSelectedFileRef.current) {
                       const lastFile = data.files[data.files.length - 1];
@@ -2297,7 +2768,8 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                 ext === 'html' ? 'html' : 'text',
                           completed: fileContent.length > 0,
                           edited: entryChangeType === 'modified',
-                          lastUpdated: Date.now()
+                          lastUpdated: Date.now(),
+                          truncated: fileContent.length >= 10240
                         };
                       });
 
@@ -2516,8 +2988,18 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       thinkingDuration: undefined,
                       isGenerating: false,
                       isStreaming: false,
-                      status: data.success ? 'Agent completed successfully!' : 'Agent finished with errors'
+                      status: data.cancelled
+                        ? 'Agent cancelled'
+                        : data.success
+                          ? 'Agent completed successfully!'
+                          : 'Agent finished with errors'
                     }));
+                    clearSystemMessage('progress');
+
+                    if (data.cancelled) {
+                      addChatMessage('Agent cancelled. You can resume by sending another message.', 'system');
+                      return;
+                    }
 
                     if (data.success) {
                       // Agent completed successfully - the app should be running in sandbox
@@ -2531,16 +3013,26 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
                       // Refresh file list from sandbox
                       console.log('[chat] Fetching sandbox files after agent completion');
-                      fetchSandboxFiles(sandboxData?.sandboxId);
+                      const activeSandboxId = getActiveSandboxId();
+                      if (activeSandboxId) {
+                        fetchSandboxFiles(activeSandboxId);
+                      }
+
+                      const checkpointLabel = lastUserPromptRef.current
+                        ? `Auto: ${lastUserPromptRef.current.slice(0, 60)}`
+                        : 'Auto checkpoint';
+                      void createCheckpoint(checkpointLabel);
 
                       // Restart Vite to ensure preview works (agent may not have started it)
                       (async () => {
                         try {
                           console.log('[chat] Restarting Vite after agent completion');
+                          const sandboxId = getActiveSandboxId();
+                          if (!sandboxId) return;
                           const restartResponse = await fetch('/api/restart-vite', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ sandboxId: sandboxData?.sandboxId })
+                            body: JSON.stringify({ sandboxId })
                           });
                           if (restartResponse.ok) {
                             const restartData = await restartResponse.json();
@@ -2556,8 +3048,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         console.log('[chat] Switching to preview after agent complete');
                         setActiveTab('preview');
                         // Trigger iframe refresh
-                        if (iframeRef.current && sandboxData?.url) {
-                          const refreshUrl = `${sandboxData.url}?t=${Date.now()}`;
+                        const previewUrl = getPreviewUrl();
+                        if (iframeRef.current && previewUrl) {
+                          const refreshUrl = `${previewUrl}?t=${Date.now()}`;
                           console.log('[chat] Refreshing iframe to:', refreshUrl);
                           iframeRef.current.src = refreshUrl;
                         }
@@ -2636,6 +3129,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           }
         }
       }
+      if (agentAbortRef.current) {
+        agentAbortRef.current = null;
+      }
       // Fallback if the model didn't send an explicit 'complete' event
       if (!generatedCode && aggregatedStream && aggregatedStream.includes('<file path="')) {
         console.warn('[chat] No explicit complete event; using aggregated streamed code as fallback');
@@ -2697,7 +3193,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         }
         
         // Apply using the freshest sandbox info available
-        const sandboxParam = searchParams.get('sandbox');
+        const sandboxParam = getActiveSandboxId();
         const effectiveSandbox = (sandboxData && sandboxData.sandboxId)
           ? sandboxData
           : (createdSandbox && createdSandbox.sandboxId)
@@ -2714,7 +3210,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       }
       
         // Show completion status; switch to preview happens after apply step confirms
-        setGenerationProgress(prev => ({
+      setGenerationProgress(prev => ({
         ...prev,
         isGenerating: false,
         isStreaming: false,
@@ -2725,10 +3221,29 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         thinkingText: undefined,
         thinkingDuration: undefined
       }));
+      clearSystemMessage('progress');
         // do not immediately switch to preview; wait for apply flow to refresh
     } catch (error: any) {
+      if (agentAbortRef.current) {
+        agentAbortRef.current = null;
+      }
       setChatMessages(prev => prev.filter(msg => msg.content !== 'Thinking...'));
+      if (error?.name === 'AbortError') {
+        addChatMessage('Agent run cancelled.', 'system');
+        setGenerationProgress(prev => ({
+          ...prev,
+          isGenerating: false,
+          isStreaming: false,
+          status: 'Agent cancelled',
+          isThinking: false,
+          thinkingText: undefined,
+          thinkingDuration: undefined
+        }));
+        clearSystemMessage('progress');
+        return;
+      }
       addChatMessage(`Error: ${error.message}`, 'system');
+      clearSystemMessage('progress');
       // Reset generation progress and switch back to preview on error
       setGenerationProgress({
         isGenerating: false,
@@ -2748,6 +3263,197 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
   sendChatMessageRef.current = sendChatMessage;
+
+  const cancelAgentRun = async () => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) {
+      addChatMessage('No active sandbox to cancel.', 'system');
+      return;
+    }
+    try {
+      addChatMessage('Cancelling agent run...', 'system');
+      await fetch('/api/agent-cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sandboxId })
+      });
+    } catch (error) {
+      console.error('[agent-cancel] Failed:', error);
+    }
+    try {
+      agentAbortRef.current?.abort();
+    } catch {}
+    clearSystemMessage('progress');
+    setGenerationProgress(prev => ({
+      ...prev,
+      isGenerating: false,
+      isStreaming: false,
+      status: 'Agent cancelled',
+      isThinking: false,
+      thinkingText: undefined,
+      thinkingDuration: undefined
+    }));
+  };
+
+  const shareSandbox = async () => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) {
+      toast.error('No sandbox to share yet.');
+      return;
+    }
+    const shareUrl = `${window.location.origin}/share/${sandboxId}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Share link copied to clipboard.');
+    } catch {
+      toast.success('Share link ready');
+      addChatMessage(`Share link: ${shareUrl}`, 'system');
+    }
+  };
+
+  const importGithubRepo = async () => {
+    const repoInput = githubRepoInput.trim();
+    if (!repoInput) {
+      toast.error('Enter a GitHub repo URL.');
+      return;
+    }
+    setGithubLoading(true);
+    try {
+      setShowHomeScreen(false);
+      let sandbox = sandboxData;
+      if (!sandbox) {
+        sandbox = await createSandbox(true, false);
+      }
+      const sandboxId = sandbox?.sandboxId || getActiveSandboxId();
+      if (!sandboxId) throw new Error('Sandbox not available');
+
+      const response = await fetch('/api/github/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sandboxId,
+          repoUrl: repoInput,
+          branch: githubBranchInput.trim() || undefined
+        })
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || response.statusText);
+      }
+      const data = await response.json();
+      if (data?.repo) {
+        setProjectState(prev => prev ? { ...prev, github: data.repo, devServer: data.devServer || prev.devServer } : prev);
+        setConversationContext(prev => ({
+          ...prev,
+          currentProject: `${data.repo.owner || ''}${data.repo.owner ? '/' : ''}${data.repo.repo}`
+        }));
+      }
+      await fetchSandboxFiles(sandboxId);
+      await fetch('/api/restart-vite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sandboxId })
+      });
+      setActiveTab('preview');
+      setGithubDialogOpen(false);
+      toast.success('GitHub repo imported.');
+      addChatMessage('GitHub repo imported. Preview refreshed.', 'system');
+    } catch (error: any) {
+      toast.error('GitHub import failed.');
+      addChatMessage(`GitHub import failed: ${error.message}`, 'error');
+    } finally {
+      setGithubLoading(false);
+    }
+  };
+
+  const exportGithubRepo = async () => {
+    const repoName = githubExportName.trim();
+    if (!repoName) {
+      toast.error('Enter a repository name.');
+      return;
+    }
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) {
+      toast.error('No sandbox available to export.');
+      return;
+    }
+    setGithubLoading(true);
+    try {
+      const response = await fetch('/api/github/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sandboxId,
+          repoName,
+          owner: githubOwnerInput.trim() || undefined,
+          private: githubPrivate
+        })
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || response.statusText);
+      }
+      const data = await response.json();
+      if (data?.repo) {
+        setProjectState(prev => prev ? { ...prev, github: data.repo } : prev);
+        setConversationContext(prev => ({
+          ...prev,
+          currentProject: `${data.repo.owner || ''}${data.repo.owner ? '/' : ''}${data.repo.repo}`
+        }));
+        toast.success('GitHub repo created.');
+        addChatMessage(`GitHub repo created: ${data.repo.url}`, 'system');
+      }
+      setGithubDialogOpen(false);
+    } catch (error: any) {
+      toast.error('GitHub export failed.');
+      addChatMessage(`GitHub export failed: ${error.message}`, 'error');
+    } finally {
+      setGithubLoading(false);
+    }
+  };
+
+  const deployToNetlify = async () => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) {
+      toast.error('No sandbox available to deploy.');
+      return;
+    }
+    setNetlifyDeploying(true);
+    try {
+      const response = await fetch('/api/netlify/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sandboxId,
+          siteName: netlifySiteName.trim() || undefined
+        })
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || response.statusText);
+      }
+      const data = await response.json();
+      if (data?.url) {
+        setProjectState(prev => prev ? {
+          ...prev,
+          netlify: {
+            siteId: data.siteId,
+            siteName: netlifySiteName || prev.netlify?.siteName,
+            url: data.url,
+            lastDeployAt: new Date().toISOString()
+          }
+        } : prev);
+        toast.success('Netlify deployment ready.');
+        addChatMessage(`Netlify deploy ready: ${data.url}`, 'system');
+      }
+      setNetlifyDialogOpen(false);
+    } catch (error: any) {
+      toast.error('Netlify deploy failed.');
+      addChatMessage(`Netlify deploy failed: ${error.message}`, 'error');
+    } finally {
+      setNetlifyDeploying(false);
+    }
+  };
 
 
   const downloadZip = async () => {
@@ -2831,10 +3537,35 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     setExpandedFolders(newExpanded);
   };
 
+  const fetchFileContent = useCallback(async (filePath: string) => {
+    const sandboxId = getActiveSandboxId();
+    if (!sandboxId) return;
+    try {
+      const response = await fetch(
+        `/api/sandbox-file?sandboxId=${encodeURIComponent(sandboxId)}&path=${encodeURIComponent(filePath)}`
+      );
+      if (!response.ok) return;
+      const data = await response.json();
+      if (!data?.content && data?.content !== '') return;
+      setGenerationProgress(prev => ({
+        ...prev,
+        files: prev.files.map(file => file.path === filePath
+          ? { ...file, content: data.content, completed: true, truncated: false, lastUpdated: Date.now() }
+          : file
+        )
+      }));
+    } catch (error) {
+      console.error('[file] Failed to read file:', error);
+    }
+  }, [getActiveSandboxId]);
+
   const handleFileClick = async (filePath: string) => {
     userSelectedFileRef.current = true;
     setSelectedFile(filePath);
-    // TODO: Add file content fetching logic here
+    const existing = generationProgress.files.find(file => file.path === filePath);
+    if (!existing || existing.truncated || !existing.content) {
+      await fetchFileContent(filePath);
+    }
   };
 
   const getFileIcon = (fileName: string) => {
@@ -3812,8 +4543,10 @@ Focus on the key sections and content, making it clean and modern.`;
                         setSelectedAgent(newAgent);
                         const params = new URLSearchParams(searchParams);
                         params.set('agent', newAgent);
-                        if (sandboxData?.sandboxId) {
-                          params.set('sandbox', sandboxData.sandboxId);
+                        const activeId = getActiveSandboxId();
+                        if (activeId) {
+                          params.set('sandbox', activeId);
+                          params.set('project', activeId);
                         }
                         router.push(`/?${params.toString()}`);
                       }}
@@ -3846,8 +4579,10 @@ Focus on the key sections and content, making it clean and modern.`;
                         setAiModel(newModel);
                         const params = new URLSearchParams(searchParams);
                         params.set('model', newModel);
-                        if (sandboxData?.sandboxId) {
-                          params.set('sandbox', sandboxData.sandboxId);
+                        const activeId = getActiveSandboxId();
+                        if (activeId) {
+                          params.set('sandbox', activeId);
+                          params.set('project', activeId);
                         }
                         router.push(`/?${params.toString()}`);
                       }}
@@ -3871,6 +4606,22 @@ Focus on the key sections and content, making it clean and modern.`;
                     </select>
                   </div>
                 </div>
+              </motion.div>
+
+              <motion.div
+                className="mt-6 flex justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.7 }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setGithubDialogOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-900 px-5 py-3 text-sm font-semibold text-white hover:bg-neutral-800"
+                >
+                  <Github className="h-4 w-4" />
+                  Import from GitHub
+                </button>
               </motion.div>
 
               {showStyleSelector && (
@@ -3996,8 +4747,10 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 setSelectedAgent(newAgent);
                 const params = new URLSearchParams(searchParams);
                 params.set('agent', newAgent);
-                if (sandboxData?.sandboxId) {
-                  params.set('sandbox', sandboxData.sandboxId);
+                const activeId = getActiveSandboxId();
+                if (activeId) {
+                  params.set('sandbox', activeId);
+                  params.set('project', activeId);
                 }
                 router.push(`/?${params.toString()}`);
               }}
@@ -4023,8 +4776,10 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 setAiModel(newModel);
                 const params = new URLSearchParams(searchParams);
                 params.set('model', newModel);
-                if (sandboxData?.sandboxId) {
-                  params.set('sandbox', sandboxData.sandboxId);
+                const activeId = getActiveSandboxId();
+                if (activeId) {
+                  params.set('sandbox', activeId);
+                  params.set('project', activeId);
                 }
                 router.push(`/?${params.toString()}`);
               }}
@@ -4052,6 +4807,34 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
+          </button>
+
+          {/* Share Button */}
+          <button
+            onClick={shareSandbox}
+            disabled={!sandboxData}
+            title="Copy share link"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+
+          {/* GitHub Button */}
+          <button
+            onClick={() => setGithubDialogOpen(true)}
+            title="GitHub import/export"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors"
+          >
+            <Github className="w-5 h-5" />
+          </button>
+
+          {/* Netlify Button */}
+          <button
+            onClick={() => setNetlifyDialogOpen(true)}
+            title="Deploy to Netlify"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-800 text-white border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-600 transition-colors"
+          >
+            <CloudUpload className={`w-5 h-5 ${netlifyDeploying ? 'animate-pulse' : ''}`} />
           </button>
           
           {/* Sandbox Status */}
@@ -4375,29 +5158,40 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
                 }}
                 rows={3}
               />
-              <button
-                onClick={() => void sendChatMessage()}
-                className="absolute right-3 bottom-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/25"
-                title="Send message (Enter)"
-              >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 shrink-0"
-                      style={{ width: '16px', height: '16px' }}
-                      aria-hidden="true"
-                    >
-                  <polyline points="9 10 4 15 9 20"></polyline>
-                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                </svg>
-              </button>
+              <div className="absolute right-3 bottom-3 flex items-center gap-2">
+                {generationProgress.isGenerating && (
+                  <button
+                    onClick={() => void cancelAgentRun()}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-800 text-white hover:bg-neutral-700 transition-colors border border-neutral-700"
+                    title="Stop agent"
+                  >
+                    <Square className="h-4 w-4" />
+                  </button>
+                )}
+                <button
+                  onClick={() => void sendChatMessage()}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/25"
+                  title="Send message (Enter)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4 shrink-0"
+                    style={{ width: '16px', height: '16px' }}
+                    aria-hidden="true"
+                  >
+                    <polyline points="9 10 4 15 9 20"></polyline>
+                    <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -4410,6 +5204,112 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
       </div>
       </>
       )}
+
+      <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
+        <AppDialogContent className="sm:max-w-[520px]" bodyClassName="space-y-6">
+          <DialogHeader>
+            <DialogTitle>GitHub integration</DialogTitle>
+            <DialogDescription>
+              Import an existing repository or create a new one from this sandbox.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="text-xs uppercase tracking-widest text-neutral-500">Import repository</div>
+            <input
+              value={githubRepoInput}
+              onChange={(e) => setGithubRepoInput(e.target.value)}
+              placeholder="owner/repo or https://github.com/owner/repo"
+              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+            <input
+              value={githubBranchInput}
+              onChange={(e) => setGithubBranchInput(e.target.value)}
+              placeholder="branch (optional)"
+              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+            <button
+              type="button"
+              onClick={() => void importGithubRepo()}
+              disabled={githubLoading || !githubRepoInput.trim()}
+              className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
+            >
+              {githubLoading ? 'Importing…' : 'Import repo'}
+            </button>
+          </div>
+
+          <div className="border-t border-neutral-800 pt-5 space-y-3">
+            <div className="text-xs uppercase tracking-widest text-neutral-500">Export repository</div>
+            <input
+              value={githubExportName}
+              onChange={(e) => setGithubExportName(e.target.value)}
+              placeholder="new repo name"
+              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+            <input
+              value={githubOwnerInput}
+              onChange={(e) => setGithubOwnerInput(e.target.value)}
+              placeholder="org (optional)"
+              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+            <label className="flex items-center gap-2 text-sm text-neutral-300">
+              <input
+                type="checkbox"
+                checked={githubPrivate}
+                onChange={(e) => setGithubPrivate(e.target.checked)}
+                className="h-4 w-4 rounded border-neutral-700 bg-neutral-900"
+              />
+              Create as private repo
+            </label>
+            <button
+              type="button"
+              onClick={() => void exportGithubRepo()}
+              disabled={githubLoading || !githubExportName.trim()}
+              className="w-full rounded-xl bg-neutral-800 py-3 text-sm font-semibold text-white hover:bg-neutral-700 disabled:opacity-50"
+            >
+              {githubLoading ? 'Exporting…' : 'Create repo & push'}
+            </button>
+          </div>
+
+          <DialogFooter>
+            <DialogClose className="rounded-xl border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800">
+              Close
+            </DialogClose>
+          </DialogFooter>
+        </AppDialogContent>
+      </Dialog>
+
+      <Dialog open={netlifyDialogOpen} onOpenChange={setNetlifyDialogOpen}>
+        <AppDialogContent className="sm:max-w-[480px]" bodyClassName="space-y-6">
+          <DialogHeader>
+            <DialogTitle>Deploy to Netlify</DialogTitle>
+            <DialogDescription>
+              Build the sandbox and publish the static bundle to Netlify.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <input
+              value={netlifySiteName}
+              onChange={(e) => setNetlifySiteName(e.target.value)}
+              placeholder="site name (optional)"
+              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+            <button
+              type="button"
+              onClick={() => void deployToNetlify()}
+              disabled={netlifyDeploying}
+              className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
+            >
+              {netlifyDeploying ? 'Deploying…' : 'Deploy now'}
+            </button>
+          </div>
+          <DialogFooter>
+            <DialogClose className="rounded-xl border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800">
+              Close
+            </DialogClose>
+          </DialogFooter>
+        </AppDialogContent>
+      </Dialog>
     </div>
     </>
   );

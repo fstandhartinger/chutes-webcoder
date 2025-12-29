@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus, Clipboard, Download } from 'lucide-react';
+import { Plus, Clipboard, Download, Github, Share2, CloudUpload } from 'lucide-react';
 import { appConfig } from '@/config/app.config';
 
 interface WorkspaceToolbarProps {
@@ -10,8 +10,13 @@ interface WorkspaceToolbarProps {
   onCreateSandbox: () => void;
   onReapply: () => void;
   onDownload: () => void;
+  onShare: () => void;
+  onOpenGithub: () => void;
+  onOpenNetlify: () => void;
   canReapply: boolean;
   canDownload: boolean;
+  canShare: boolean;
+  isDeploying?: boolean;
   status: {
     text: string;
     active: boolean;
@@ -24,8 +29,13 @@ export function WorkspaceToolbar({
   onCreateSandbox,
   onReapply,
   onDownload,
+  onShare,
+  onOpenGithub,
+  onOpenNetlify,
   canReapply,
   canDownload,
+  canShare,
+  isDeploying,
   status
 }: WorkspaceToolbarProps) {
   return (
@@ -90,6 +100,31 @@ export function WorkspaceToolbar({
           <Download className="w-5 h-5" />
         </button>
 
+        <button
+          onClick={onShare}
+          disabled={!canShare}
+          title="Copy share link"
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#262626] text-white border border-neutral-700 hover:bg-[#333333] hover:border-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Share2 className="w-5 h-5" />
+        </button>
+
+        <button
+          onClick={onOpenGithub}
+          title="GitHub import/export"
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#262626] text-white border border-neutral-700 hover:bg-[#333333] hover:border-neutral-600 transition-colors"
+        >
+          <Github className="w-5 h-5" />
+        </button>
+
+        <button
+          onClick={onOpenNetlify}
+          title="Deploy to Netlify"
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#262626] text-white border border-neutral-700 hover:bg-[#333333] hover:border-neutral-600 transition-colors"
+        >
+          <CloudUpload className={`w-5 h-5 ${isDeploying ? 'animate-pulse' : ''}`} />
+        </button>
+
         {/* Status */}
         <div className="flex items-center gap-2 px-4 h-10 bg-[#262626] text-white border border-neutral-700 rounded-xl text-sm font-medium">
           <span>{status.text}</span>
@@ -99,6 +134,10 @@ export function WorkspaceToolbar({
     </div>
   );
 }
+
+
+
+
 
 
 

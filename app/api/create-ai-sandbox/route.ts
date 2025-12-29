@@ -3,6 +3,7 @@ import type { SandboxState } from '@/types/sandbox';
 import { SandboxFactory } from '@/lib/sandbox/factory';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
+import { buildDefaultProjectState, writeProjectState } from '@/lib/project-state';
 
 // Store active sandbox globally
 declare global {
@@ -116,6 +117,8 @@ async function createSandboxInternal() {
 
   // Register in sandbox manager (by ID, not as "active")
   sandboxManager.registerSandbox(sandboxInfo.sandboxId, provider);
+
+  await writeProjectState(provider, sandboxInfo.sandboxId, buildDefaultProjectState(sandboxInfo.sandboxId));
 
   const result = {
     success: true,

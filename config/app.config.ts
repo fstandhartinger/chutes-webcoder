@@ -51,7 +51,7 @@ export const appConfig = {
   // Sandy Sandbox Configuration
   sandy: {
     // Sandbox timeout in minutes
-    timeoutMinutes: 45,
+    timeoutMinutes: 10,
 
     // Convert to milliseconds for Sandy API
     get timeoutMs() {
@@ -121,6 +121,8 @@ export const appConfig = {
       'claude-code',  // Claude Code CLI
       'codex',        // OpenAI Codex CLI
       'aider',        // Aider AI coding assistant
+      'opencode',     // OpenCode CLI
+      'droid',        // Factory AI Droid CLI
     ] as const,
     
     // Agent display names
@@ -129,6 +131,8 @@ export const appConfig = {
       'claude-code': 'Claude Code',
       'codex': 'OpenAI Codex',
       'aider': 'Aider',
+      'opencode': 'OpenCode',
+      'droid': 'Factory Droid',
     } as Record<string, string>,
     
     // Agent descriptions
@@ -137,6 +141,8 @@ export const appConfig = {
       'claude-code': 'Anthropic\'s powerful coding agent with full project understanding',
       'codex': 'OpenAI\'s code execution agent with autonomous capabilities',
       'aider': 'Open-source AI pair programming assistant',
+      'opencode': 'OpenCode terminal agent with multi-provider support',
+      'droid': 'Factory AI Droid agent (requires Factory API key)',
     } as Record<string, string>,
   },
   
