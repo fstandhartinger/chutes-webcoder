@@ -3813,15 +3813,15 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
         {/* Right section: All controls - above the code/preview area */}
         <div className="hidden md:flex flex-1 items-center justify-between px-4">
           {/* Left: Code/Preview Toggle */}
-          <div className="flex relative bg-neutral-800 border border-neutral-700 rounded-xl p-1">
-            <div 
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-emerald-500/20 rounded-lg transition-all duration-200 ease-out ${
+          <div className="flex relative bg-neutral-800/80 border border-neutral-700/50 rounded-full p-1 shadow-inner">
+            <div
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gradient-to-r from-emerald-500/30 to-emerald-400/20 rounded-full shadow-sm border border-emerald-500/30 transition-all duration-200 ease-out ${
                 activeTab === 'generation' ? 'left-1' : 'left-[calc(50%+2px)]'
               }`}
             />
             <button
               onClick={() => setActiveTab('generation')}
-              className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
+              className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-200 text-sm font-medium ${
                 activeTab === 'generation' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
               }`}
             >
@@ -3830,7 +3830,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             </button>
             <button
               onClick={() => setActiveTab('preview')}
-              className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
+              className={`relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-200 text-sm font-medium ${
                 activeTab === 'preview' ? 'text-emerald-400' : 'text-neutral-400 hover:text-neutral-200'
               }`}
             >
@@ -4134,9 +4134,12 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             
             {/* File generation progress - inline display (during generation) */}
             {generationProgress.isGenerating && (
-              <div className="inline-block bg-[#171717] rounded-xl p-4 border border-[#262626]/70 shadow-sm">
-                <div className="text-sm font-medium mb-3 text-[#a3a3a3]">
-                  {generationProgress.status}
+              <div className="inline-block bg-[#171717] rounded-xl p-4 border border-emerald-500/30 shadow-lg shadow-emerald-500/5 animate-pulse-subtle">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="text-sm font-medium text-emerald-400">
+                    {generationProgress.status || 'Agent is working...'}
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-start gap-2">
                   {/* Show completed files */}

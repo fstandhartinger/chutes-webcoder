@@ -479,6 +479,21 @@
   }
 }
 
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    opacity: 0.9;
+    border-color: rgba(16, 185, 129, 0.5);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
 /* Dark gradient for sandbox panels */
 .sandbox-panel,
 iframe {
