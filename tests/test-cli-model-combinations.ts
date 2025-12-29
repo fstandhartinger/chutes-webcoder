@@ -14,6 +14,8 @@ interface TestResult {
   duration: number;
   firstOutputAt: number | null;
   outputCount: number;
+  previewOk: boolean;
+  previewErrors: string[];
   error?: string;
 }
 
@@ -144,8 +146,49 @@ async function runAgent(
     duration: Date.now() - startTime,
     firstOutputAt,
     outputCount,
+    previewOk: false,
+    previewErrors: [],
     error,
   };
+}
+
+async function checkPreview(sandboxId: string, previewUrl: string): Promise<{ ok: boolean; errors: string[] }> {
+  const errors: string[] = [];
+
+  let html = '';
+  try {
+    const response = await fetch(previewUrl);
+    if (!response.ok) {
+      errors.push(`Preview HTTP ${response.status}`);
+    } else {
+      html = await response.text();
+    }
+  } catch (e: any) {
+    errors.push(`Preview request failed: ${e.message || String(e)}`);
+  }
+
+  if (html && !html.includes('/@vite/client')) {
+    errors.push('Preview HTML missing /@vite/client');
+  }
+  if (html && !html.includes('/src/main.jsx')) {
+    errors.push('Preview HTML missing /src/main.jsx');
+  }
+
+  const cookie = `sandySandboxId=${sandboxId}`;
+  const assetPaths = ['/@vite/client', '/src/main.jsx'];
+  for (const assetPath of assetPaths) {
+    try {
+      const assetUrl = new URL(assetPath, API_URL).toString();
+      const assetResponse = await fetch(assetUrl, { headers: { Cookie: cookie } });
+      if (!assetResponse.ok) {
+        errors.push(`Asset ${assetPath} HTTP ${assetResponse.status}`);
+      }
+    } catch (e: any) {
+      errors.push(`Asset ${assetPath} request failed: ${e.message || String(e)}`);
+    }
+  }
+
+  return { ok: errors.length === 0, errors };
 }
 
 async function testCombination(agent: string, model: string): Promise<TestResult> {
@@ -166,7 +209,21 @@ async function testCombination(agent: string, model: string): Promise<TestResult
   log(`    Running agent...`, 'blue');
   
   const result = await runAgent(agent, model, prompt, sandboxId, 180000);
-  
+
+  log(`    Checking preview...`, 'cyan');
+  const previewCheck = await checkPreview(sandboxId, url);
+  const previewStatus = previewCheck.ok ? 'OK' : 'FAIL';
+  log(`    Preview: ${previewStatus}`, previewCheck.ok ? 'green' : 'red');
+  if (!previewCheck.ok) {
+    for (const previewError of previewCheck.errors) {
+      log(`    Preview error: ${previewError}`, 'red');
+    }
+  }
+
+  result.previewOk = previewCheck.ok;
+  result.previewErrors = previewCheck.errors;
+  result.success = result.success && previewCheck.ok;
+
   const status = result.success ? '✅ PASS' : '❌ FAIL';
   const color = result.success ? 'green' : 'red';
   
@@ -250,6 +307,9 @@ async function main() {
     if (result.error) {
       log(`       Error: ${result.error}`, 'red');
     }
+    if (!result.previewOk) {
+      log(`       Preview: ${result.previewErrors.join('; ') || 'failed'}`, 'red');
+    }
   }
   
   log('\n' + '═'.repeat(70), 'bold');
@@ -261,9 +321,6 @@ main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-
-
-
 
 
 

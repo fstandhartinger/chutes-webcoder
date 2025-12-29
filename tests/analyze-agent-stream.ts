@@ -10,7 +10,7 @@ import fetch from 'node-fetch';
 
 // Configuration
 const API_URL = process.env.API_URL || 'https://chutes-webcoder.onrender.com';
-const TIMEOUT_MS = 180000; // 3 minutes
+const TIMEOUT_MS = 600000; // 10 minutes
 
 interface StreamEvent {
   timestamp: number;
@@ -392,7 +392,6 @@ async function main() {
 }
 
 main();
-
 
 
 
