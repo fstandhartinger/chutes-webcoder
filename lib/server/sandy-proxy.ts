@@ -65,8 +65,9 @@ export async function proxySandyRequest(
   const targetUrl = new URL(pathWithSearch, baseUrl).toString();
   const headers = filterRequestHeaders(request.headers);
 
-  headers.set('host', buildSandboxHost(sandboxId));
-  headers.set('x-forwarded-host', request.headers.get('host') || '');
+  const sandboxHost = buildSandboxHost(sandboxId);
+  headers.set('host', sandboxHost);
+  headers.set('x-forwarded-host', sandboxHost);
   headers.set('x-forwarded-proto', request.nextUrl.protocol.replace(':', ''));
 
   const init: RequestInit = {
