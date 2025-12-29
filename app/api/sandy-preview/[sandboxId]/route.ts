@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { proxySandyRequest } from '@/lib/server/sandy-proxy';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 async function handlePreview(
   request: NextRequest,

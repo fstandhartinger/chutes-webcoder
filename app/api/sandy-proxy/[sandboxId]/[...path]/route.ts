@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { proxySandyRequest } from '@/lib/server/sandy-proxy';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 function getProxyPath(request: NextRequest, sandboxId: string): string {
   const prefix = `/api/sandy-proxy/${sandboxId}`;
