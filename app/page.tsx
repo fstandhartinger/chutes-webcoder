@@ -44,7 +44,15 @@ const CODE_PANEL_MIN_HEIGHT = '12rem';
 const CHAT_STREAM_MIN_HEIGHT = '8rem';
 const CHAT_STREAM_MAX_HEIGHT = '18rem';
 const GITHUB_REPO_MANUAL = '__manual__';
-const buildFallbackSandboxUrl = (sandboxId: string) => `/api/sandy-preview/${sandboxId}`;
+const buildFallbackSandboxUrl = (sandboxId: string) => {
+  const rawSuffix = (process.env.NEXT_PUBLIC_SANDBOX_HOST_SUFFIX || '').trim();
+  if (!rawSuffix) {
+    return `/api/sandy-preview/${sandboxId}`;
+  }
+  const suffix = rawSuffix.startsWith('.') ? rawSuffix : `.${rawSuffix}`;
+  const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+  return `${protocol}//${sandboxId}${suffix}`;
+};
 
 interface SandboxData {
   sandboxId: string;
@@ -417,7 +425,7 @@ function AISandboxPageContent() {
     if (!sandboxId) return false;
     const now = Date.now();
     const throttle = sandboxStatusThrottleRef.current;
-    if (throttle.inFlight || now - throttle.lastCheckedAt < 800) {
+    if (throttle.inFlight || now - throttle.lastCheckedAt < 1000) {
       return false;
     }
     throttle.inFlight = true;

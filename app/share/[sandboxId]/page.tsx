@@ -33,7 +33,11 @@ export default function ShareSandboxPage() {
           throw new Error(text || response.statusText);
         }
         const data = await response.json().catch(() => ({}));
-        const url = data?.sandboxUrl || data?.url || `/api/sandy-preview/${sandboxId}`;
+        const rawSuffix = (process.env.NEXT_PUBLIC_SANDBOX_HOST_SUFFIX || '').trim();
+        const fallbackUrl = rawSuffix
+          ? `${window.location.protocol}//${sandboxId}${rawSuffix.startsWith('.') ? rawSuffix : `.${rawSuffix}`}`
+          : `/api/sandy-preview/${sandboxId}`;
+        const url = data?.sandboxUrl || data?.url || fallbackUrl;
         if (!cancelled) {
           setPreviewUrl(url);
           setStatus('Loading preview...');

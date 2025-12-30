@@ -510,21 +510,6 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Verify sandbox exists before proceeding
-    try {
-      await sandyRequest<{ sandboxId: string }>(`/api/sandboxes/${sandboxId}`);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage.includes('404') || errorMessage.includes('not found')) {
-        return NextResponse.json(
-          { error: `Sandbox ${sandboxId} not found. Please create a new sandbox.` },
-          { status: 404 }
-        );
-      }
-      // Re-throw other errors
-      throw error;
-    }
-    
     const agentConfig = AGENTS[agent];
     const resolvedModel = 'resolveModel' in agentConfig && typeof agentConfig.resolveModel === 'function'
       ? agentConfig.resolveModel(model)
