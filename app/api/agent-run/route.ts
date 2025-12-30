@@ -771,6 +771,7 @@ chmod +x ${scriptFile}`,
 
         // Track known files and mtimes for change detection
         const knownFileStats: Map<string, number> = new Map();
+        const knownFileContents: Map<string, string> = new Map();
         let lastActivityAt = Date.now();
         let lastIdleStatusAt = 0;
         let hasClaudeToolUse = false;
@@ -854,6 +855,9 @@ chmod +x ${scriptFile}`,
                         changes: [{ path: relativePath, changeType }],
                         totalFiles: knownFileStats.size
                       });
+                      if (content !== null) {
+                        knownFileContents.set(filePath, content);
+                      }
                       hasFileChanges = true;
                     }
                   }
@@ -964,11 +968,13 @@ chmod +x ${scriptFile}`,
                         {},
                         3000
                       );
+                      const fileContent = contentResult.stdout || '';
                       filesWithContent.push({
                         path: relativePath,
-                        content: contentResult.stdout || '',
+                        content: fileContent,
                         changeType: change.changeType
                       });
+                      knownFileContents.set(change.path, fileContent);
                     } catch {
                       filesWithContent.push({
                         path: relativePath,
@@ -1101,6 +1107,37 @@ chmod +x ${scriptFile}`,
             message: `Agent finished with warnings (exit ${exitCode}), but updates were detected.`
           });
         }
+
+        const restoreMissingAppFile = async () => {
+          const appPath = '/workspace/src/App.jsx';
+          try {
+            const existsResult = await execInSandbox(
+              sandboxId,
+              `test -f ${appPath} && echo "exists" || echo "missing"`,
+              {},
+              5000
+            );
+            if (existsResult.stdout.trim() === 'exists') {
+              return;
+            }
+            const cached = knownFileContents.get(appPath);
+            if (!cached) {
+              return;
+            }
+            const encoded = Buffer.from(cached, 'utf-8').toString('base64');
+            await execInSandbox(
+              sandboxId,
+              `python3 - << 'PY'\nimport base64\ncontent = base64.b64decode('${encoded}').decode('utf-8')\nwith open('${appPath}', 'w', encoding='utf-8') as f:\n    f.write(content)\nPY`,
+              {},
+              10000
+            );
+            await sendEvent({ type: 'status', message: 'Restored App.jsx after an unexpected deletion.' });
+          } catch {
+            // Ignore restore failures
+          }
+        };
+
+        await restoreMissingAppFile();
 
         if (cancelled) {
           await sendEvent({ type: 'status', message: 'Agent cancelled.' });
