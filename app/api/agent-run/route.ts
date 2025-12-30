@@ -545,9 +545,16 @@ export async function POST(request: NextRequest) {
     }
     
     const agentConfig = AGENTS[agent];
-    const resolvedModel = 'resolveModel' in agentConfig && typeof agentConfig.resolveModel === 'function'
+    const requestedModel = model;
+    let resolvedModel = 'resolveModel' in agentConfig && typeof agentConfig.resolveModel === 'function'
       ? agentConfig.resolveModel(model)
       : model;
+    let fallbackNote: string | null = null;
+
+    if (agent === 'claude-code' && requestedModel === 'zai-org/GLM-4.7-TEE') {
+      resolvedModel = 'deepseek-ai/DeepSeek-V3.2-TEE';
+      fallbackNote = `Claude Code is currently unstable with ${appConfig.ai.modelDisplayNames[requestedModel] || requestedModel}. Using ${appConfig.ai.modelDisplayNames[resolvedModel] || resolvedModel} for this run.`;
+    }
 
     // Get API key per agent
     const apiKey = ('getApiKey' in agentConfig && typeof agentConfig.getApiKey === 'function')
@@ -583,6 +590,9 @@ export async function POST(request: NextRequest) {
       
       try {
         await sendEvent({ type: 'status', message: `Starting ${agentConfig.name}...` });
+        if (fallbackNote) {
+          await sendEvent({ type: 'status', message: fallbackNote });
+        }
         
         // Build environment variables
         const env = agentConfig.setupEnv(resolvedModel, apiKey);
