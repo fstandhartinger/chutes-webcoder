@@ -2,10 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 
+function resolveSandboxId(request: NextRequest): string | null {
+  return (
+    request.nextUrl.searchParams.get('sandboxId') ||
+    request.cookies.get('sandySandboxId')?.value ||
+    request.headers.get('x-sandbox-id')
+  );
+}
+
 export async function GET(request: NextRequest) {
   try {
-    // Get sandboxId from query parameter (required for session isolation)
-    const sandboxId = request.nextUrl.searchParams.get('sandboxId');
+    // Get sandboxId from query parameter or sandbox cookie (required for session isolation)
+    const sandboxId = resolveSandboxId(request);
 
     if (!sandboxId) {
       return NextResponse.json({

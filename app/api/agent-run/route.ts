@@ -32,6 +32,9 @@ const AGENTS = {
       '--output-format', 'stream-json',
       '--verbose',
       '--model', model,
+      '--dangerously-skip-permissions',
+      '--add-dir', '/workspace',
+      '--tools', 'Read,Write,Edit,Bash',
       '--allowedTools', 'Read,Write,Edit,Bash',
       '--permission-mode', 'acceptEdits'
     ],

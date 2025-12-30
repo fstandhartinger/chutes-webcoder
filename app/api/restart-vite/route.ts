@@ -6,11 +6,32 @@ import { readProjectState } from '@/lib/project-state';
 const sandboxRestartState = new Map<string, { lastRestart: number; inProgress: boolean }>();
 const RESTART_COOLDOWN_MS = 5000; // 5 second cooldown between restarts
 
+async function safeJson(request: NextRequest): Promise<Record<string, any>> {
+  try {
+    const text = await request.text();
+    if (!text) return {};
+    const parsed = JSON.parse(text);
+    return typeof parsed === 'object' && parsed ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function resolveSandboxId(request: NextRequest, body: Record<string, any>): string | null {
+  return (
+    body?.sandboxId ||
+    request.nextUrl.searchParams.get('sandboxId') ||
+    request.cookies.get('sandySandboxId')?.value ||
+    request.headers.get('x-sandbox-id') ||
+    null
+  );
+}
+
 export async function POST(request: NextRequest) {
   let sandboxId: string | null = null;
   try {
-    const body = await request.json().catch(() => ({}));
-    sandboxId = (body as { sandboxId?: string })?.sandboxId ?? null;
+    const body = await safeJson(request);
+    sandboxId = resolveSandboxId(request, body);
 
     // sandboxId is REQUIRED for session isolation
     if (!sandboxId) {
@@ -20,10 +41,17 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Get provider by explicit sandboxId (no global fallback)
-    const provider = sandboxManager.getProvider(sandboxId);
-
+    // Get provider by explicit sandboxId (attempt restore if missing)
+    let provider = sandboxManager.getProvider(sandboxId);
     if (!provider) {
+      try {
+        provider = await sandboxManager.getOrCreateProvider(sandboxId);
+      } catch {
+        provider = null;
+      }
+    }
+
+    if (!provider || !provider.getSandboxInfo?.()) {
       return NextResponse.json({
         success: false,
         error: `Sandbox ${sandboxId} not found`

@@ -24,7 +24,19 @@ export async function POST() {
   try {
     const result = await createSandboxWithRetry(3);
     console.log('[create-ai-sandbox] New sandbox created:', result.sandboxId);
-    return NextResponse.json(result);
+    const response = NextResponse.json(result);
+    if (result?.provider === 'sandy' && result?.sandboxId) {
+      response.cookies.set({
+        name: 'sandySandboxId',
+        value: result.sandboxId,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        maxAge: 60 * 60
+      });
+    }
+    return response;
   } catch (error) {
     console.error('[create-ai-sandbox] Sandbox creation failed:', error);
     return NextResponse.json(

@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       const state = await readProjectState(provider, sandboxId);
       await writeProjectState(provider, sandboxId, state);
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         sandboxId: providerInfo?.sandboxId || sandboxId,
         url: previewUrl,
@@ -107,10 +107,34 @@ export async function POST(request: NextRequest) {
         provider: providerInfo?.provider,
         message: 'Sandbox restored'
       });
+      if (providerInfo?.provider === 'sandy') {
+        response.cookies.set({
+          name: 'sandySandboxId',
+          value: providerInfo?.sandboxId || sandboxId,
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          path: '/',
+          maxAge: 60 * 60
+        });
+      }
+      return response;
     }
 
     const result = await createSandboxWithRetry();
-    return NextResponse.json(result);
+    const response = NextResponse.json(result);
+    if (result?.provider === 'sandy' && result?.sandboxId) {
+      response.cookies.set({
+        name: 'sandySandboxId',
+        value: result.sandboxId,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        maxAge: 60 * 60
+      });
+    }
+    return response;
   } catch (error) {
     console.error('[create-ai-sandbox-v2] Sandbox creation failed:', error);
     return NextResponse.json(

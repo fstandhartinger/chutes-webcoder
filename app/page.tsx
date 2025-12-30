@@ -295,9 +295,9 @@ function AISandboxPageContent() {
     (override?: string | null) =>
       override ||
       sandboxData?.sandboxId ||
-      projectState?.projectId ||
       searchParams.get('sandbox') ||
       searchParams.get('project') ||
+      projectState?.projectId ||
       null,
     [sandboxData?.sandboxId, projectState?.projectId, searchParams]
   );
@@ -335,6 +335,16 @@ function AISandboxPageContent() {
       router.push(next, { scroll: false });
     }
   }, [aiModel, router, searchParams, selectedAgent]);
+
+  useEffect(() => {
+    const sandboxId = sandboxData?.sandboxId;
+    if (!sandboxId) return;
+    const urlSandbox = searchParams.get('sandbox');
+    const urlProject = searchParams.get('project');
+    if (urlSandbox !== sandboxId || urlProject !== sandboxId) {
+      syncUrlWithSandbox(sandboxId, true);
+    }
+  }, [sandboxData?.sandboxId, searchParams, syncUrlWithSandbox]);
 
   // Helpers for robust preview readiness
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -2728,13 +2738,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                     if (data.files && data.files.length > 0) {
                       console.log('[chat] Agent detected new files:', data.files);
                       const changeTypeMap = new Map<string, 'created' | 'modified'>();
+                      let changeList: Array<{ path: string; changeType: 'created' | 'modified' }> = [];
                       if (Array.isArray(data.changes)) {
                         for (const change of data.changes) {
                           if (change?.path && change?.changeType) {
                             changeTypeMap.set(change.path, change.changeType);
                           }
                         }
-                        queueFileUpdates(data.changes as Array<{ path: string; changeType: 'created' | 'modified' }>);
+                        changeList = data.changes as Array<{ path: string; changeType: 'created' | 'modified' }>;
                       }
 
                     if (!userSelectedFileRef.current) {
@@ -2802,13 +2813,19 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         }
                       }
 
+                      const fallbackChanges: Array<{ path: string; changeType: 'created' | 'modified' }> =
+                        incomingFiles.map(file => ({
+                          path: file.path,
+                          changeType: (file.edited ? 'modified' : 'created')
+                        }));
+                      const effectiveChanges = changeList.length > 0 ? changeList : fallbackChanges;
+
+                      if (effectiveChanges.length > 0) {
+                        queueFileUpdates(effectiveChanges);
+                      }
+
                       const changeSummary = (() => {
-                        const changes = Array.isArray(data.changes) && data.changes.length > 0
-                          ? data.changes
-                          : incomingFiles.map(file => ({
-                            path: file.path,
-                            changeType: file.edited ? 'modified' : 'created'
-                          }));
+                        const changes = effectiveChanges;
                         if (changes.length === 1) {
                           const action = changes[0].changeType === 'modified' ? 'Updated' : 'Created';
                           return `${action} ${changes[0].path}`;
@@ -3049,13 +3066,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       setTimeout(() => {
                         console.log('[chat] Switching to preview after agent complete');
                         setActiveTab('preview');
-                        // Trigger iframe refresh
-                        const previewUrl = getPreviewUrl();
-                        if (iframeRef.current && previewUrl) {
-                          const refreshUrl = `${previewUrl}?t=${Date.now()}`;
-                          console.log('[chat] Refreshing iframe to:', refreshUrl);
-                          iframeRef.current.src = refreshUrl;
-                        }
+                        setPendingRefresh({ reason: 'agent-complete' });
                       }, 3000); // Wait longer for Vite to start
                     } else {
                       // Agent finished with errors

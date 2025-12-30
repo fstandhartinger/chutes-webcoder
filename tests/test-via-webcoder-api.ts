@@ -20,11 +20,13 @@ import { parseArgs } from 'util';
 const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrender.com';
 
 // Test prompt - creates a simple file to verify agent functionality
-const TEST_PROMPT = 'Create a file called Game.jsx with a simple React component that displays "Hello from AI" as a heading';
+const TEST_PROMPT = 'Update src/App.jsx to render a centered h1 that says "Hello from AI" using Tailwind classes.';
 
 // All agents and models
-// Note: opencode is experimental and excluded from default tests
-const ALL_AGENTS = ['codex', 'aider', 'claude-code'] as const;
+// Note: opencode/droid are opt-in (run with --agent=opencode or --agent=droid)
+const DEFAULT_AGENTS = ['codex', 'aider', 'claude-code'] as const;
+const EXTRA_AGENTS = ['opencode', 'droid'] as const;
+const ALL_AGENTS = [...DEFAULT_AGENTS, ...EXTRA_AGENTS] as const;
 const ALL_MODELS = [
   'zai-org/GLM-4.7-TEE',
   'deepseek-ai/DeepSeek-V3.2-TEE',
@@ -44,6 +46,10 @@ interface TestResult {
   duration: number;
   streamedEvents: number;
   hasOutput: boolean;
+  fileCheck?: {
+    fileFound: boolean;
+    contentMatch: boolean;
+  };
   exitCode?: number;
   error?: string;
   outputPreview?: string;
@@ -87,7 +93,7 @@ async function createSandbox(forceNew: boolean = false): Promise<{ sandboxId: st
     await killSandbox();
   }
   
-  const response = await fetch(`${API_BASE_URL}/api/create-ai-sandbox`, {
+  const response = await fetch(`${API_BASE_URL}/api/create-ai-sandbox-v2`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });
@@ -102,6 +108,23 @@ async function createSandbox(forceNew: boolean = false): Promise<{ sandboxId: st
     ? new URL(data.url, API_BASE_URL).toString()
     : data.url;
   return { sandboxId: data.sandboxId, url: resolvedUrl };
+}
+
+async function fetchSandboxFiles(sandboxId: string): Promise<Record<string, string>> {
+  const response = await fetch(`${API_BASE_URL}/api/get-sandbox-files?sandboxId=${sandboxId}`);
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Failed to fetch sandbox files: ${response.status} ${text}`);
+  }
+  const data = await response.json();
+  return data.files || {};
+}
+
+function checkAppUpdate(files: Record<string, string>): { fileFound: boolean; contentMatch: boolean } {
+  const appContent = files['src/App.jsx'] || files['App.jsx'] || '';
+  const fileFound = Boolean(appContent);
+  const contentMatch = /Hello from AI/i.test(appContent);
+  return { fileFound, contentMatch };
 }
 
 // Run agent and stream results
@@ -215,15 +238,30 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
     const duration = Date.now() - startTime;
     const hasOutput = events.some(e => e.type === 'output' || e.type === 'agent-output');
     const outputText = events.filter(e => e.type === 'output').map(e => e.text).join('\n');
+
+    let fileCheck: { fileFound: boolean; contentMatch: boolean } | undefined;
+    try {
+      const files = await fetchSandboxFiles(sandboxId);
+      fileCheck = checkAppUpdate(files);
+      if (fileCheck.fileFound) {
+        log(`    📁 App.jsx found (${fileCheck.contentMatch ? 'contains' : 'missing'} \"Hello from AI\")`, fileCheck.contentMatch ? 'green' : 'yellow');
+      } else {
+        log('    📁 App.jsx not found in sandbox files', 'yellow');
+      }
+    } catch (fileError: any) {
+      log(`    ⚠️ File check failed: ${fileError.message}`, 'yellow');
+    }
+    const success = result.success && (!fileCheck || fileCheck.contentMatch);
     
     return {
       agent,
       model,
       sandboxId,
-      success: result.success,
+      success,
       duration,
       streamedEvents: events.length,
       hasOutput,
+      fileCheck,
       exitCode: result.exitCode,
       error: result.error,
       outputPreview: outputText.slice(0, 300),
@@ -261,9 +299,12 @@ async function main() {
 Usage: npx tsx tests/test-via-webcoder-api.ts [options]
 
 Options:
-  --agent=<agent>   Test only this agent (claude-code, aider)
+  --agent=<agent>   Test only this agent (codex, aider, claude-code, opencode, droid)
   --model=<model>   Test only this model (e.g., zai-org/GLM-4.7-TEE)
   -h, --help        Show this help
+
+Notes:
+  Default agents: codex, aider, claude-code. Use --agent for opencode/droid.
 
 Environment:
   TEST_API_URL      Optional - Webcoder API URL (default: https://chutes-webcoder.onrender.com)
@@ -272,7 +313,7 @@ Environment:
   }
   
   // Determine which tests to run
-  let agents: Agent[] = values.agent ? [values.agent as Agent] : [...ALL_AGENTS];
+  let agents: Agent[] = values.agent ? [values.agent as Agent] : [...DEFAULT_AGENTS];
   let models: Model[] = values.model ? [values.model as Model] : [...ALL_MODELS];
   
   // Validate
@@ -319,6 +360,9 @@ Environment:
       log(`    Duration: ${(result.duration / 1000).toFixed(1)}s`, 'cyan');
       log(`    Events streamed: ${result.streamedEvents}`, 'cyan');
       log(`    Has output: ${result.hasOutput ? 'Yes' : 'No'}`, result.hasOutput ? 'green' : 'yellow');
+      if (result.fileCheck) {
+        log(`    App.jsx updated: ${result.fileCheck.contentMatch ? 'Yes' : 'No'}`, result.fileCheck.contentMatch ? 'green' : 'yellow');
+      }
       log(`    Result: ${result.success ? '✅ PASSED' : '❌ FAILED'}`, result.success ? 'green' : 'red');
       if (result.error) {
         log(`    Error: ${result.error}`, 'red');
@@ -344,8 +388,8 @@ Environment:
   log(`  Failed: ${failed.length}/${results.length}`, failed.length > 0 ? 'red' : 'green');
   
   // Results table
-  log(`\n${'Agent'.padEnd(15)} ${'Model'.padEnd(25)} ${'Status'.padEnd(8)} ${'Events'.padEnd(8)} ${'Output'.padEnd(8)} ${'Time'.padEnd(10)}`, 'bright');
-  log(`${'-'.repeat(15)} ${'-'.repeat(25)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(10)}`, 'reset');
+  log(`\n${'Agent'.padEnd(15)} ${'Model'.padEnd(25)} ${'Status'.padEnd(8)} ${'Events'.padEnd(8)} ${'Output'.padEnd(8)} ${'Files'.padEnd(8)} ${'Time'.padEnd(10)}`, 'bright');
+  log(`${'-'.repeat(15)} ${'-'.repeat(25)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(10)}`, 'reset');
   
   for (const r of results) {
     const status = r.success ? '✅ PASS' : '❌ FAIL';
@@ -353,9 +397,10 @@ Environment:
     const modelShort = r.model.split('/').pop()?.slice(0, 22) || r.model;
     const duration = `${(r.duration / 1000).toFixed(1)}s`;
     const hasOutput = r.hasOutput ? '✓' : '✗';
+    const filesOk = r.fileCheck?.contentMatch ? '✓' : '✗';
     
     log(
-      `${r.agent.padEnd(15)} ${modelShort.padEnd(25)} ${status.padEnd(8)} ${String(r.streamedEvents).padEnd(8)} ${hasOutput.padEnd(8)} ${duration.padEnd(10)}`,
+      `${r.agent.padEnd(15)} ${modelShort.padEnd(25)} ${status.padEnd(8)} ${String(r.streamedEvents).padEnd(8)} ${hasOutput.padEnd(8)} ${filesOk.padEnd(8)} ${duration.padEnd(10)}`,
       color
     );
   }
@@ -388,13 +433,3 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
-
-
-
-
-
-
-
-
-
