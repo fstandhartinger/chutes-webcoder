@@ -4,6 +4,12 @@ import { appConfig } from '@/config/app.config';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 600; // 10 minutes max for agent execution
 
+const CLAUDE_TOOL_PROMPT = [
+  'You are running in a non-interactive sandbox session.',
+  'Always apply the requested changes by using the available tools (Edit/Write/Bash).',
+  'Do not stop after planning or analysis—make the edits before finishing.'
+].join(' ');
+
 // Agent configurations
 const AGENTS = {
   'claude-code': {
@@ -32,6 +38,7 @@ const AGENTS = {
       '--output-format', 'stream-json',
       '--verbose',
       '--no-session-persistence',
+      '--append-system-prompt', CLAUDE_TOOL_PROMPT,
       '--model', model,
       '--add-dir', '/workspace',
       '--tools', 'Read,Write,Edit,Bash',
