@@ -33,7 +33,7 @@ export default function ShareSandboxPage() {
           throw new Error(text || response.statusText);
         }
         const data = await response.json().catch(() => ({}));
-        const url = data?.url || `/api/sandy-preview/${sandboxId}`;
+        const url = data?.sandboxUrl || data?.url || `/api/sandy-preview/${sandboxId}`;
         if (!cancelled) {
           setPreviewUrl(url);
           setStatus('Loading preview...');

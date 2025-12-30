@@ -95,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
         const pendingRequest = JSON.parse(decodeURIComponent(pendingRequestParam));
         // Store pending request for the app to handle
         sessionStorage.setItem('pendingAuthRequest', JSON.stringify(pendingRequest));
+        window.dispatchEvent(new Event('pendingAuthRequest'));
         
         // Clean up URL
         const newUrl = new URL(window.location.href);
@@ -126,6 +127,12 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     }
     
     if (pendingRequest) {
+      try {
+        sessionStorage.setItem('pendingAuthRequest', JSON.stringify(pendingRequest));
+        window.dispatchEvent(new Event('pendingAuthRequest'));
+      } catch (error) {
+        console.error('[useAuth] Failed to persist pending request:', error);
+      }
       params.set('pendingRequestType', pendingRequest.type);
       params.set('pendingRequestPayload', encodeURIComponent(JSON.stringify(pendingRequest.payload)));
     }
@@ -214,14 +221,29 @@ export function usePendingAuthRequest(): {
   const [pendingRequest, setPendingRequest] = useState<PendingRequest | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('pendingAuthRequest');
-    if (stored) {
-      try {
-        setPendingRequest(JSON.parse(stored));
-      } catch (e) {
-        console.error('[usePendingAuthRequest] Failed to parse:', e);
+    const syncPendingRequest = () => {
+      const stored = sessionStorage.getItem('pendingAuthRequest');
+      if (stored) {
+        try {
+          setPendingRequest(JSON.parse(stored));
+          return;
+        } catch (e) {
+          console.error('[usePendingAuthRequest] Failed to parse:', e);
+        }
       }
-    }
+      setPendingRequest(null);
+    };
+
+    syncPendingRequest();
+
+    const handlePending = () => syncPendingRequest();
+    window.addEventListener('pendingAuthRequest', handlePending);
+    window.addEventListener('storage', handlePending);
+
+    return () => {
+      window.removeEventListener('pendingAuthRequest', handlePending);
+      window.removeEventListener('storage', handlePending);
+    };
   }, []);
 
   const clearPendingRequest = useCallback(() => {

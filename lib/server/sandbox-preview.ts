@@ -11,9 +11,10 @@ export function resolveSandboxUrls(sandboxInfo: SandboxInfo): {
   sandboxUrl: string;
 } {
   if (sandboxInfo.provider === 'sandy') {
+    const sandboxUrl = sandboxInfo.url || buildSandyPreviewUrl(sandboxInfo.sandboxId);
     return {
-      previewUrl: buildSandyPreviewUrl(sandboxInfo.sandboxId),
-      sandboxUrl: sandboxInfo.url
+      previewUrl: sandboxUrl,
+      sandboxUrl
     };
   }
 

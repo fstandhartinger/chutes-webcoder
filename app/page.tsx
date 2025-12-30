@@ -336,12 +336,12 @@ function AISandboxPageContent() {
     (override?: string | null) => {
       const sandboxId = getActiveSandboxId(override);
       if (!sandboxId) return null;
-      if (sandboxData?.sandboxId === sandboxId && sandboxData?.url) {
-        return sandboxData.url;
+      if (sandboxData?.sandboxId === sandboxId && (sandboxData?.sandboxUrl || sandboxData?.url)) {
+        return sandboxData.sandboxUrl || sandboxData.url;
       }
       return buildFallbackSandboxUrl(sandboxId);
     },
-    [getActiveSandboxId, sandboxData?.sandboxId, sandboxData?.url]
+    [getActiveSandboxId, sandboxData?.sandboxId, sandboxData?.sandboxUrl, sandboxData?.url]
   );
   useEffect(() => {
     const candidate =
@@ -636,28 +636,45 @@ function AISandboxPageContent() {
   const pendingRequestProcessedRef = useRef(false);
   
   useEffect(() => {
-    // If user just authenticated and there's a pending request, resume it
-    // Wait for sandbox to be ready first
-    if (isAuthenticated && pendingRequest && !pendingRequestProcessedRef.current && !isAuthLoading && sandboxData) {
-      pendingRequestProcessedRef.current = true;
-      console.log('[auth] Resuming pending request after login:', pendingRequest, 'sandbox:', sandboxData?.sandboxId);
-      
-      if (pendingRequest.type === 'generate' && pendingRequest.payload?.prompt) {
-        // Close the home screen and start generation
-        setShowHomeScreen(false);
-        setActiveTab('generation');
-        
-        // Small delay to ensure state is updated
-        setTimeout(() => {
-          void sendChatMessageRef.current?.(pendingRequest.payload.prompt);
-          clearPendingRequest();
-          toast.success(`Welcome back, ${user?.username}! Continuing with your request...`);
-        }, 300);
-      } else {
-        clearPendingRequest();
-      }
+    if (!isAuthenticated || !pendingRequest || pendingRequestProcessedRef.current || isAuthLoading) {
+      return;
     }
-  }, [isAuthenticated, pendingRequest, isAuthLoading, clearPendingRequest, user, sandboxData]);
+
+    const resumePending = async () => {
+      if (pendingRequest.type !== 'generate' || !pendingRequest.payload?.prompt) {
+        clearPendingRequest();
+        return;
+      }
+
+      let activeSandboxId = getActiveSandboxId();
+      if (!activeSandboxId) {
+        try {
+          const created = await createSandboxRef.current?.(true, false);
+          activeSandboxId = created?.sandboxId || getActiveSandboxId();
+        } catch (error) {
+          console.error('[auth] Failed to create sandbox for pending request:', error);
+        }
+      }
+
+      if (!activeSandboxId) {
+        return;
+      }
+
+      pendingRequestProcessedRef.current = true;
+      console.log('[auth] Resuming pending request after login:', pendingRequest, 'sandbox:', activeSandboxId);
+
+      setShowHomeScreen(false);
+      setActiveTab('generation');
+
+      setTimeout(() => {
+        void sendChatMessageRef.current?.(pendingRequest.payload.prompt);
+        clearPendingRequest();
+        toast.success(`Welcome back, ${user?.username}! Continuing with your request...`);
+      }, 300);
+    };
+
+    void resumePending();
+  }, [isAuthenticated, pendingRequest, isAuthLoading, clearPendingRequest, user, sandboxData, getActiveSandboxId]);
   
   useEffect(() => {
     // Handle Escape key for home screen
@@ -1042,12 +1059,13 @@ function AISandboxPageContent() {
         const data = await response.json();
         console.log('[createSandbox] Response data:', data);
         if (data.success) {
-          console.log('[createSandbox] SUCCESS sandboxId=', data.sandboxId, 'url=', data.url);
+          const previewUrl = data.sandboxUrl || data.url;
+          console.log('[createSandbox] SUCCESS sandboxId=', data.sandboxId, 'url=', previewUrl);
           if (isMountedRef.current) setSandboxData(data);
           if (isMountedRef.current) updateStatus('Sandbox active', true);
           log('Sandbox created successfully!');
           log(`Sandbox ID: ${data.sandboxId}`);
-          log(`URL: ${data.url}`);
+          log(`URL: ${previewUrl}`);
           if (data.sandboxId) {
             await loadProjectStateRef.current?.(data.sandboxId);
           }
@@ -1097,7 +1115,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           setTimeout(() => {
             if (isMountedRef.current && iframeRef.current) {
               console.log('[createSandbox] Setting iframe src to sandbox URL');
-              iframeRef.current.src = data.url;
+              iframeRef.current.src = previewUrl;
             }
           }, 100);
           return data;
@@ -2493,7 +2511,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     
     // IMPORTANT: Always check if sandbox creation is in progress
     // This prevents race conditions where we use an old sandboxId while a new one is being created
-    let sandboxPromise: Promise<{ sandboxId: string; url: string }> | null = null;
+    let sandboxPromise: Promise<{ sandboxId: string; url: string; sandboxUrl?: string }> | null = null;
     let sandboxCreating = false;
     
     // Check if there's already a sandbox creation in progress (from home page auto-create, etc.)
@@ -2509,17 +2527,20 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         console.error('[sendChatMessage] Sandbox creation failed:', error);
         addChatMessage(`Failed to create sandbox: ${error.message}`, 'system');
         throw error;
-      }) as Promise<{ sandboxId: string; url: string }>;
+      }) as Promise<{ sandboxId: string; url: string; sandboxUrl?: string }>;
     } else {
       console.log('[sendChatMessage] Using existing sandbox:', sandboxData.sandboxId);
     }
     
     // Determine if this is an edit
     const isEdit = conversationContext.appliedCode.length > 0;
-    
-    // ALWAYS wait for sandbox creation if it's in progress
-    let effectiveSandboxId = sandboxData?.sandboxId;
+
+    let useExternalAgent = false;
+    let effectiveSandboxId: string | null = null;
     let effectiveSandboxUrl = getPreviewUrl();
+
+    // ALWAYS wait for sandbox creation if it's in progress
+    effectiveSandboxId = sandboxData?.sandboxId || null;
     
     if (sandboxCreating && sandboxPromise) {
       console.log('[sendChatMessage] Waiting for sandbox creation before AI call...');
@@ -2530,7 +2551,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         const createdSandbox = await sandboxPromise;
         // ALWAYS use the newly created sandbox, not the old one
         effectiveSandboxId = createdSandbox.sandboxId;
-        effectiveSandboxUrl = createdSandbox.url;
+        effectiveSandboxUrl = createdSandbox.sandboxUrl || createdSandbox.url;
         console.log('[sendChatMessage] Sandbox ready:', effectiveSandboxId);
         // Remove the "Creating sandbox..." message
         setChatMessages(prev => prev.filter(msg => msg.content !== 'Creating sandbox...'));
@@ -2589,7 +2610,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       console.log('[chat] - prompt:', message.substring(0, 100));
       
       // Determine which API to use based on selected agent
-      const useExternalAgent = selectedAgent !== 'builtin' && effectiveSandboxId;
+      useExternalAgent = selectedAgent !== 'builtin' && Boolean(effectiveSandboxId);
       const apiEndpoint = useExternalAgent ? '/api/agent-run' : '/api/generate-ai-code-stream';
       
       console.log(`[chat] Making fetch request to ${apiEndpoint}...`);
@@ -3291,7 +3312,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         // setLeftPanelVisible(true);
         
         // Wait for sandbox creation if it's still in progress
-        let createdSandbox: { sandboxId: string; url: string } | null = null;
+        let createdSandbox: { sandboxId: string; url: string; sandboxUrl?: string } | null = null;
         if (sandboxPromise) {
           addChatMessage('Waiting for sandbox to be ready...', 'system');
           try {
@@ -3361,6 +3382,36 @@ Tip: I automatically detect and install npm packages from your code imports (lik
           thinkingDuration: undefined
         }));
         clearSystemMessage('progress');
+        return;
+      }
+      const errorMessage = error?.message || '';
+      const isNetworkError = error?.name === 'TypeError' ||
+        /QUIC|NetworkError|Failed to fetch/i.test(errorMessage);
+      if (useExternalAgent && isNetworkError) {
+        addChatMessage('Agent stream interrupted. Recovering from sandbox...', 'system');
+        clearSystemMessage('progress');
+        setGenerationProgress(prev => ({
+          ...prev,
+          isGenerating: false,
+          isStreaming: false,
+          status: 'Finalizing preview...',
+          isThinking: false,
+          thinkingText: undefined,
+          thinkingDuration: undefined
+        }));
+        const fallbackSandboxId = effectiveSandboxId || getActiveSandboxId();
+        if (fallbackSandboxId) {
+          await fetchSandboxFiles(fallbackSandboxId);
+          try {
+            await fetch('/api/restart-vite', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sandboxId: fallbackSandboxId })
+            });
+          } catch {}
+          setActiveTab('preview');
+          setPendingRefresh({ reason: 'stream-error' });
+        }
         return;
       }
       addChatMessage(`Error: ${error.message}`, 'system');
