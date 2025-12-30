@@ -663,8 +663,9 @@ CONFIGEOF`,
         let forcedExitReason: string | null = null;
         const claudeToolUseMap = new Map<string, { name: string; filePath?: string }>();
         let baselineFilesInitialized = false;
-        const CLAUDE_IDLE_AFTER_EDIT_MS = 45000;
-        const CLAUDE_IDLE_NO_EDIT_MS = 90000;
+        const CLAUDE_IDLE_AFTER_EDIT_MS = 120000;
+        const CLAUDE_IDLE_NO_EDIT_MS = 180000;
+        const CLAUDE_IDLE_NO_TOOL_MS = 150000;
 
         const processOutputChunk = async (rawChunk: string) => {
           if (!rawChunk) return;
@@ -885,12 +886,15 @@ CONFIGEOF`,
               const idleFor = now - lastActivityAt;
               const shouldForceComplete =
                 (hasFileChanges && idleFor > CLAUDE_IDLE_AFTER_EDIT_MS) ||
-                (!hasFileChanges && hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_EDIT_MS);
+                (!hasFileChanges && hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_EDIT_MS) ||
+                (!hasFileChanges && !hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_TOOL_MS);
 
               if (shouldForceComplete && !forcedExitReason) {
                 forcedExitReason = hasFileChanges
                   ? 'Claude Code became idle after applying edits.'
-                  : 'Claude Code became idle after tool execution without edits.';
+                  : hasClaudeToolUse
+                    ? 'Claude Code became idle after tool execution without edits.'
+                    : 'Claude Code stalled before tool execution.';
                 forcedExitCode = hasFileChanges ? 0 : 1;
                 await sendEvent({ type: 'status', message: forcedExitReason });
                 try {

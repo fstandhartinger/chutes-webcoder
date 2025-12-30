@@ -268,6 +268,21 @@ export class SandyProvider extends SandboxProvider {
       }
     };
 
+    const sandboxId = this.sandboxInfo?.sandboxId || '';
+    const hostSuffix = this.resolveHostSuffix();
+    const sandboxHost = sandboxId ? `${sandboxId}${hostSuffix}` : '';
+    const baseProtocol = this.getBaseUrl().startsWith('https') ? 'https' : 'http';
+    const hmrProtocol = baseProtocol === 'https' ? 'wss' : 'ws';
+    const hmrClientPort = baseProtocol === 'https' ? 443 : 80;
+    const hmrConfig = sandboxHost
+      ? `hmr: {
+    host: '${sandboxHost}',
+    protocol: '${hmrProtocol}',
+    clientPort: ${hmrClientPort}
+  },
+  origin: '${baseProtocol}://${sandboxHost}',`
+      : 'hmr: false,';
+
     const viteConfig = `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -277,7 +292,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: ${appConfig.sandy.vitePort},
     strictPort: true,
-    hmr: false,
+    ${hmrConfig}
     allowedHosts: true
   }
 })`;
