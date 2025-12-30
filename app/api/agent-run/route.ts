@@ -41,8 +41,8 @@ const AGENTS = {
       '--append-system-prompt', CLAUDE_TOOL_PROMPT,
       '--model', model,
       '--add-dir', '/workspace',
-      '--tools', 'Read,Write,Edit,Bash,Glob,Grep,Task,TaskOutput,ExitPlan',
-      '--allowedTools', 'Read,Write,Edit,Bash,Glob,Grep,Task,TaskOutput,ExitPlan',
+      '--tools', 'Write,Edit,Bash,Glob,Grep,Task,TaskOutput,ExitPlan',
+      '--allowedTools', 'Write,Edit,Bash,Glob,Grep,Task,TaskOutput,ExitPlan',
       '--permission-mode', 'acceptEdits'
     ],
   },
