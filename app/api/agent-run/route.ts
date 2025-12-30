@@ -31,6 +31,7 @@ const AGENTS = {
       'claude', '-p', prompt,
       '--output-format', 'stream-json',
       '--verbose',
+      '--no-session-persistence',
       '--model', model,
       '--add-dir', '/workspace',
       '--tools', 'Read,Write,Edit,Bash',
@@ -418,6 +419,25 @@ function filterPlainTextLines(lines: string[]): string[] {
   return meaningfulLines;
 }
 
+function resolveClaudeFilePath(toolResult: any, fallback?: string | null): string | null {
+  if (fallback && typeof fallback === 'string') return fallback;
+  if (!toolResult || typeof toolResult !== 'object') return null;
+  const candidate =
+    toolResult.filePath ||
+    toolResult.file?.filePath ||
+    toolResult.file_path ||
+    toolResult.path ||
+    null;
+  return typeof candidate === 'string' && candidate.length > 0 ? candidate : null;
+}
+
+function resolveClaudeFileContent(toolResult: any): string | null {
+  if (!toolResult || typeof toolResult !== 'object') return null;
+  if (typeof toolResult.content === 'string') return toolResult.content;
+  if (typeof toolResult.file?.content === 'string') return toolResult.file.content;
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
   const requestId = Math.random().toString(36).substring(7);
@@ -591,6 +611,13 @@ CONFIGEOF`,
         const knownFileStats: Map<string, number> = new Map();
         let lastActivityAt = Date.now();
         let lastIdleStatusAt = 0;
+        let hasClaudeToolUse = false;
+        let hasFileChanges = false;
+        let forcedExitCode: number | null = null;
+        let forcedExitReason: string | null = null;
+        const claudeToolUseMap = new Map<string, { name: string; filePath?: string }>();
+        const CLAUDE_IDLE_AFTER_EDIT_MS = 45000;
+        const CLAUDE_IDLE_NO_EDIT_MS = 90000;
 
         const processOutputChunk = async (rawChunk: string) => {
           if (!rawChunk) return;
@@ -612,20 +639,57 @@ CONFIGEOF`,
                 const parsed = JSON.parse(trimmedLine);
                 await sendEvent({ type: 'agent-output', data: parsed });
 
+                if (parsed?.type === 'assistant' && Array.isArray(parsed.message?.content)) {
+                  for (const block of parsed.message.content) {
+                    if (block?.type === 'tool_use' && block?.id) {
+                      hasClaudeToolUse = true;
+                      const filePath = block?.input?.file_path || block?.input?.path || undefined;
+                      claudeToolUseMap.set(block.id, { name: block.name, filePath });
+                    }
+                  }
+                }
+
                 // Extract file content from Write tool results immediately
                 if (parsed.type === 'user' && parsed.tool_use_result) {
+                  hasClaudeToolUse = true;
+
+                  const toolResults = Array.isArray(parsed.message?.content)
+                    ? parsed.message.content.filter((entry: any) => entry?.type === 'tool_result')
+                    : [];
+                  const toolMeta = toolResults.length > 0
+                    ? claudeToolUseMap.get(toolResults[toolResults.length - 1]?.tool_use_id)
+                    : null;
+                  if (toolMeta?.name && toolResults.length > 0) {
+                    claudeToolUseMap.delete(toolResults[toolResults.length - 1]?.tool_use_id);
+                  }
+
                   const result = parsed.tool_use_result;
-                  if (result.type === 'update' && result.filePath && result.content) {
-                    const relativePath = result.filePath.replace('/workspace/', '');
-                    const changeType = knownFileStats.has(result.filePath) ? 'modified' : 'created';
-                    const nowSeconds = Date.now() / 1000;
-                    knownFileStats.set(result.filePath, nowSeconds);
-                    await sendEvent({
-                      type: 'files-update',
-                      files: [{ path: relativePath, content: result.content, changeType }],
-                      changes: [{ path: relativePath, changeType }],
-                      totalFiles: knownFileStats.size
-                    });
+                  const toolName = toolMeta?.name || result?.tool || '';
+                  const shouldTrack =
+                    toolName === 'Edit' ||
+                    toolName === 'Write' ||
+                    toolName === 'write_to_file' ||
+                    Boolean(result?.structuredPatch) ||
+                    Boolean(result?.newString) ||
+                    Boolean(result?.oldString) ||
+                    result?.type === 'update';
+
+                  if (shouldTrack) {
+                    const filePath = resolveClaudeFilePath(result, toolMeta?.filePath || null);
+                    if (filePath) {
+                      const relativePath = filePath.replace('/workspace/', '');
+                      const changeType = knownFileStats.has(filePath) ? 'modified' : 'created';
+                      const nowSeconds = Date.now() / 1000;
+                      knownFileStats.set(filePath, nowSeconds);
+                      const content = resolveClaudeFileContent(result);
+                      await sendEvent({
+                        type: 'files-update',
+                        files: [{ path: relativePath, content: content || '', changeType }],
+                        changes: [{ path: relativePath, changeType }],
+                        totalFiles: knownFileStats.size
+                      });
+                      hasFileChanges = true;
+                    }
                   }
                 }
               } catch {
@@ -716,6 +780,7 @@ CONFIGEOF`,
                 }
 
                 if (changes.length > 0) {
+                  hasFileChanges = true;
                   const filesWithContent: Array<{ path: string; content: string; changeType: 'created' | 'modified' }> = [];
                   const limitedChanges = changes.slice(0, 10);
 
@@ -763,6 +828,33 @@ CONFIGEOF`,
               await sendEvent({ type: 'status', message: 'Agent is still working inside the sandbox...' });
               lastIdleStatusAt = now;
             }
+
+            if (agent === 'claude-code' && running) {
+              const idleFor = now - lastActivityAt;
+              const shouldForceComplete =
+                (hasFileChanges && idleFor > CLAUDE_IDLE_AFTER_EDIT_MS) ||
+                (!hasFileChanges && hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_EDIT_MS);
+
+              if (shouldForceComplete && !forcedExitReason) {
+                forcedExitReason = hasFileChanges
+                  ? 'Claude Code became idle after applying edits.'
+                  : 'Claude Code became idle after tool execution without edits.';
+                forcedExitCode = hasFileChanges ? 0 : 1;
+                await sendEvent({ type: 'status', message: forcedExitReason });
+                try {
+                  await execInSandbox(
+                    sandboxId,
+                    `if [ -f ${pidFile} ]; then kill -TERM $(cat ${pidFile}) 2>/dev/null || true; sleep 1; kill -KILL $(cat ${pidFile}) 2>/dev/null || true; fi; echo ${forcedExitCode} > ${doneFile}`,
+                    {},
+                    5000
+                  );
+                } catch {
+                  // Ignore kill errors; we'll still exit the loop
+                }
+                running = false;
+                break;
+              }
+            }
           }
         }
         
@@ -801,7 +893,7 @@ CONFIGEOF`,
         }
         
         // Get exit code
-        const exitCode = await getExitCode(sandboxId, doneFile);
+        const exitCode = forcedExitCode ?? await getExitCode(sandboxId, doneFile);
         const cancelled = exitCode === 130;
         if (!cancelled && exitCode !== 0) {
           try {
