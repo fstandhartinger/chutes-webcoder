@@ -784,6 +784,25 @@ chmod +x ${scriptFile}`,
         const CLAUDE_IDLE_AFTER_EDIT_MS = 240000;
         const CLAUDE_IDLE_NO_EDIT_MS = 300000;
         const CLAUDE_IDLE_NO_TOOL_MS = 240000;
+        const AGENT_IDLE_AFTER_EDIT_MS = 180000;
+        const AGENT_IDLE_NO_EDIT_MS = 240000;
+
+        const terminateAgent = async (reason: string, exitCode: number) => {
+          if (forcedExitReason) return;
+          forcedExitReason = reason;
+          forcedExitCode = exitCode;
+          await sendEvent({ type: 'status', message: reason });
+          try {
+            await execInSandbox(
+              sandboxId,
+              `if [ -f ${pidFile} ]; then kill -TERM $(cat ${pidFile}) 2>/dev/null || true; sleep 1; kill -KILL $(cat ${pidFile}) 2>/dev/null || true; fi; echo ${exitCode} > ${doneFile}`,
+              {},
+              5000
+            );
+          } catch {
+            // Ignore kill errors; we'll still exit the loop
+          }
+        };
 
         const processOutputChunk = async (rawChunk: string) => {
           if (!rawChunk) return;
@@ -1010,19 +1029,7 @@ chmod +x ${scriptFile}`,
               const idleFor = now - lastActivityAt;
               const shouldForceComplete = hasFileChanges && idleFor > CLAUDE_IDLE_AFTER_EDIT_MS;
               if (shouldForceComplete && !forcedExitReason) {
-                forcedExitReason = 'Claude Code became idle after applying edits.';
-                forcedExitCode = 0;
-                await sendEvent({ type: 'status', message: forcedExitReason });
-                try {
-                  await execInSandbox(
-                    sandboxId,
-                    `if [ -f ${pidFile} ]; then kill -TERM $(cat ${pidFile}) 2>/dev/null || true; sleep 1; kill -KILL $(cat ${pidFile}) 2>/dev/null || true; fi; echo ${forcedExitCode} > ${doneFile}`,
-                    {},
-                    5000
-                  );
-                } catch {
-                  // Ignore kill errors; we'll still exit the loop
-                }
+                await terminateAgent('Claude Code became idle after applying edits.', 0);
                 running = false;
                 break;
               }
@@ -1038,10 +1045,27 @@ chmod +x ${scriptFile}`,
                   message: 'Claude Code is taking longer than usual. Still waiting for edits...'
                 });
               }
+            } else if (running) {
+              const idleFor = now - lastActivityAt;
+              if (hasFileChanges && idleFor > AGENT_IDLE_AFTER_EDIT_MS) {
+                await terminateAgent('Agent became idle after applying edits.', 0);
+                running = false;
+                break;
+              }
+              if (!hasFileChanges && idleFor > AGENT_IDLE_NO_EDIT_MS) {
+                await terminateAgent('Agent timed out without applying edits.', 1);
+                running = false;
+                break;
+              }
             }
           }
         }
         
+        if (running && pollCount >= maxPolls) {
+          await terminateAgent('Agent timed out after reaching the maximum run time.', 124);
+          running = false;
+        }
+
         // Check if we exited due to too many errors
         if (consecutiveErrors >= maxConsecutiveErrors) {
           console.error('[agent-run] Too many consecutive polling errors');
