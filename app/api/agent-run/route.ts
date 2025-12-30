@@ -41,8 +41,8 @@ const AGENTS = {
       '--append-system-prompt', CLAUDE_TOOL_PROMPT,
       '--model', model,
       '--add-dir', '/workspace',
-      '--tools', 'Read,Write,Edit,Bash',
-      '--allowedTools', 'Read,Write,Edit,Bash',
+      '--tools', 'Read,Write,Edit,Bash,Glob,Grep,Task,TaskOutput,ExitPlan',
+      '--allowedTools', 'Read,Write,Edit,Bash,Glob,Grep,Task,TaskOutput,ExitPlan',
       '--permission-mode', 'acceptEdits'
     ],
   },
@@ -295,7 +295,11 @@ async function startBackgroundCommand(
 }
 
 // Check if background process is still running
-async function isProcessRunning(sandboxId: string, doneFile: string = '/tmp/agent.done'): Promise<boolean> {
+async function isProcessRunning(
+  sandboxId: string,
+  doneFile: string = '/tmp/agent.done',
+  pidFile?: string
+): Promise<boolean> {
   try {
     // Check if the done file exists - if it does, the process has finished
     const result = await execInSandbox(
@@ -304,7 +308,36 @@ async function isProcessRunning(sandboxId: string, doneFile: string = '/tmp/agen
       {},
       5000
     );
-    return result.stdout.trim() === 'running';
+    if (result.stdout.trim() !== 'running') {
+      return false;
+    }
+    if (!pidFile) {
+      return true;
+    }
+    const pidResult = await execInSandbox(
+      sandboxId,
+      `test -f ${pidFile} && cat ${pidFile} || echo ""`,
+      {},
+      5000
+    );
+    const pid = parseInt(pidResult.stdout.trim(), 10);
+    if (!pid) {
+      return true;
+    }
+    const statResult = await execInSandbox(
+      sandboxId,
+      `ps -p ${pid} -o stat= 2>/dev/null || echo ""`,
+      {},
+      5000
+    );
+    const stat = statResult.stdout.trim();
+    if (!stat) {
+      return false;
+    }
+    if (stat.includes('Z')) {
+      return false;
+    }
+    return true;
   } catch {
     return false;
   }
@@ -661,17 +694,19 @@ CONFIGEOF`,
         let hasFileChanges = false;
         let forcedExitCode: number | null = null;
         let forcedExitReason: string | null = null;
+        let claudeSlowWarned = false;
         const claudeToolUseMap = new Map<string, { name: string; filePath?: string }>();
         let baselineFilesInitialized = false;
-        const CLAUDE_IDLE_AFTER_EDIT_MS = 120000;
-        const CLAUDE_IDLE_NO_EDIT_MS = 180000;
-        const CLAUDE_IDLE_NO_TOOL_MS = 150000;
+        const CLAUDE_IDLE_AFTER_EDIT_MS = 240000;
+        const CLAUDE_IDLE_NO_EDIT_MS = 300000;
+        const CLAUDE_IDLE_NO_TOOL_MS = 240000;
 
         const processOutputChunk = async (rawChunk: string) => {
           if (!rawChunk) return;
           const cleanContent = stripAnsi(rawChunk);
           if (cleanContent.trim()) {
             lastActivityAt = Date.now();
+            claudeSlowWarned = false;
           }
 
           if (agent === 'claude-code') {
@@ -764,7 +799,7 @@ CONFIGEOF`,
 
           try {
             // Check if process is still running (check done file)
-            running = await isProcessRunning(sandboxId, doneFile);
+            running = await isProcessRunning(sandboxId, doneFile, pidFile);
 
             // Read new output
             const { content, newOffset } = await readOutputFromOffset(sandboxId, outputFile, offset);
@@ -884,18 +919,10 @@ CONFIGEOF`,
 
             if (agent === 'claude-code' && running) {
               const idleFor = now - lastActivityAt;
-              const shouldForceComplete =
-                (hasFileChanges && idleFor > CLAUDE_IDLE_AFTER_EDIT_MS) ||
-                (!hasFileChanges && hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_EDIT_MS) ||
-                (!hasFileChanges && !hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_TOOL_MS);
-
+              const shouldForceComplete = hasFileChanges && idleFor > CLAUDE_IDLE_AFTER_EDIT_MS;
               if (shouldForceComplete && !forcedExitReason) {
-                forcedExitReason = hasFileChanges
-                  ? 'Claude Code became idle after applying edits.'
-                  : hasClaudeToolUse
-                    ? 'Claude Code became idle after tool execution without edits.'
-                    : 'Claude Code stalled before tool execution.';
-                forcedExitCode = hasFileChanges ? 0 : 1;
+                forcedExitReason = 'Claude Code became idle after applying edits.';
+                forcedExitCode = 0;
                 await sendEvent({ type: 'status', message: forcedExitReason });
                 try {
                   await execInSandbox(
@@ -909,6 +936,18 @@ CONFIGEOF`,
                 }
                 running = false;
                 break;
+              }
+
+              const shouldWarnSlow =
+                !hasFileChanges &&
+                ((hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_EDIT_MS) ||
+                  (!hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_TOOL_MS));
+              if (shouldWarnSlow && !claudeSlowWarned) {
+                claudeSlowWarned = true;
+                await sendEvent({
+                  type: 'status',
+                  message: 'Claude Code is taking longer than usual. Still waiting for edits...'
+                });
               }
             }
           }

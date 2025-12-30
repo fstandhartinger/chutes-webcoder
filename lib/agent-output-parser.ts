@@ -102,11 +102,32 @@ export function parseClaudeCodeOutput(data: any): ParsedMessage {
             metadata: { toolName, filePath: input.file_path }
           });
         } else if (normalizedTool === 'read') {
-          // Reading files is less important, skip showing it
+          const filePath = input.file_path || input.path;
+          if (filePath) {
+            toolUses.push({
+              type: 'tool-use',
+              content: `Reading file: ${filePath}`,
+              metadata: { toolName, filePath }
+            });
+          }
         } else if (normalizedTool === 'bash') {
           const cmd = input.command || '';
-          // Clean up the command display - show npm/install commands
-          if (cmd.includes('npm install') || cmd.includes('npm run')) {
+          // Clean up the command display - show meaningful commands
+          if (
+            cmd.includes('npm ') ||
+            cmd.includes('pnpm ') ||
+            cmd.includes('yarn ') ||
+            cmd.includes('bun ') ||
+            cmd.startsWith('ls ') ||
+            cmd.startsWith('ls\t') ||
+            cmd.startsWith('ls\n') ||
+            cmd.startsWith('find ') ||
+            cmd.startsWith('rg ') ||
+            cmd.startsWith('grep ') ||
+            cmd.startsWith('cat ') ||
+            cmd.startsWith('mkdir ') ||
+            cmd.startsWith('pwd')
+          ) {
             const shortCmd = cmd.length > 80 ? cmd.substring(0, 80) + '...' : cmd;
             toolUses.push({
               type: 'tool-use',

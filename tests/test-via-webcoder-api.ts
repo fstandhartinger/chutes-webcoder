@@ -20,7 +20,10 @@ import { parseArgs } from 'util';
 const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrender.com';
 
 // Test prompt - creates a simple file to verify agent functionality
-const TEST_PROMPT = 'Update src/App.jsx to render a centered h1 that says "Hello from AI" using Tailwind classes.';
+const DEFAULT_PROMPT = 'Update src/App.jsx to render a centered h1 that says "Hello from AI" using Tailwind classes.';
+const DEFAULT_EXPECT = /Hello from AI/i;
+let testPrompt = process.env.TEST_PROMPT || DEFAULT_PROMPT;
+let expectedPattern: RegExp | null = null;
 
 // All agents and models
 // Note: opencode/droid are opt-in (run with --agent=opencode or --agent=droid)
@@ -120,10 +123,13 @@ async function fetchSandboxFiles(sandboxId: string): Promise<Record<string, stri
   return data.files || {};
 }
 
-function checkAppUpdate(files: Record<string, string>): { fileFound: boolean; contentMatch: boolean } {
+function checkAppUpdate(
+  files: Record<string, string>,
+  expectPattern: RegExp | null
+): { fileFound: boolean; contentMatch: boolean } {
   const appContent = files['src/App.jsx'] || files['App.jsx'] || '';
   const fileFound = Boolean(appContent);
-  const contentMatch = /Hello from AI/i.test(appContent);
+  const contentMatch = expectPattern ? expectPattern.test(appContent) : fileFound;
   return { fileFound, contentMatch };
 }
 
@@ -212,9 +218,9 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
     
     // Run the agent
     log(`  Running ${agent} with ${model}...`, 'cyan');
-    log(`  Prompt: "${TEST_PROMPT.slice(0, 60)}..."`, 'cyan');
+    log(`  Prompt: "${testPrompt.slice(0, 60)}..."`, 'cyan');
     
-    const result = await runAgent(agent, model, TEST_PROMPT, sandboxId, (event) => {
+    const result = await runAgent(agent, model, testPrompt, sandboxId, (event) => {
       events.push(event);
       
       // Log streaming events in real-time
@@ -242,9 +248,16 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
     let fileCheck: { fileFound: boolean; contentMatch: boolean } | undefined;
     try {
       const files = await fetchSandboxFiles(sandboxId);
-      fileCheck = checkAppUpdate(files);
+      fileCheck = checkAppUpdate(files, expectedPattern);
       if (fileCheck.fileFound) {
-        log(`    📁 App.jsx found (${fileCheck.contentMatch ? 'contains' : 'missing'} \"Hello from AI\")`, fileCheck.contentMatch ? 'green' : 'yellow');
+        if (expectedPattern) {
+          log(
+            `    📁 App.jsx found (${fileCheck.contentMatch ? 'matched' : 'missing'} expected content)`,
+            fileCheck.contentMatch ? 'green' : 'yellow'
+          );
+        } else {
+          log('    📁 App.jsx found', 'green');
+        }
       } else {
         log('    📁 App.jsx not found in sandbox files', 'yellow');
       }
@@ -289,6 +302,8 @@ async function main() {
     options: {
       agent: { type: 'string' },
       model: { type: 'string' },
+      prompt: { type: 'string' },
+      expect: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
@@ -301,6 +316,8 @@ Usage: npx tsx tests/test-via-webcoder-api.ts [options]
 Options:
   --agent=<agent>   Test only this agent (codex, aider, claude-code, opencode, droid)
   --model=<model>   Test only this model (e.g., zai-org/GLM-4.7-TEE)
+  --prompt=<text>   Override the test prompt
+  --expect=<text>   Case-insensitive content match for src/App.jsx
   -h, --help        Show this help
 
 Notes:
@@ -308,8 +325,20 @@ Notes:
 
 Environment:
   TEST_API_URL      Optional - Webcoder API URL (default: https://chutes-webcoder.onrender.com)
+  TEST_PROMPT       Optional - Override the test prompt
+  TEST_EXPECT       Optional - Regex (case-insensitive) expected in src/App.jsx
 `);
     process.exit(0);
+  }
+
+  if (values.prompt) {
+    testPrompt = values.prompt;
+  }
+  const expectSource = typeof values.expect === 'string' ? values.expect : process.env.TEST_EXPECT;
+  if (expectSource) {
+    expectedPattern = new RegExp(expectSource, 'i');
+  } else if (testPrompt === DEFAULT_PROMPT) {
+    expectedPattern = DEFAULT_EXPECT;
   }
   
   // Determine which tests to run
@@ -340,6 +369,10 @@ Environment:
   log(`  API URL:      ${API_BASE_URL}`, 'cyan');
   log(`  Agents:       ${agents.join(', ')}`, 'cyan');
   log(`  Models:       ${models.join(', ')}`, 'cyan');
+  log(`  Prompt:       ${testPrompt.slice(0, 80)}${testPrompt.length > 80 ? '...' : ''}`, 'cyan');
+  if (expectedPattern) {
+    log(`  Expect:       ${expectedPattern.source}`, 'cyan');
+  }
   log(`  Total tests:  ${totalTests}`, 'cyan');
   
   const results: TestResult[] = [];
@@ -433,4 +466,3 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
