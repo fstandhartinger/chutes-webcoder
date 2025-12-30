@@ -57,6 +57,10 @@ export async function GET() {
       },
       // Include info about whether user has chutes:invoke scope
       hasInvokeScope: true, // We always request this scope
+      connections: {
+        github: Boolean(session.oauth?.github?.accessToken),
+        netlify: Boolean(session.oauth?.netlify?.accessToken),
+      },
     });
   } catch (error) {
     console.error('[auth/me] Error:', error);
@@ -66,7 +70,6 @@ export async function GET() {
     );
   }
 }
-
 
 
 

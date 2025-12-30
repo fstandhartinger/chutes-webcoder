@@ -13,6 +13,10 @@ export interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasInvokeScope: boolean;
+  connections?: {
+    github: boolean;
+    netlify: boolean;
+  };
 }
 
 export interface PendingRequest {
@@ -39,6 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     isLoading: true,
     isAuthenticated: false,
     hasInvokeScope: false,
+    connections: {
+      github: false,
+      netlify: false,
+    },
   });
 
   // Fetch current user on mount
@@ -52,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
           isLoading: false,
           isAuthenticated: !!data.user,
           hasInvokeScope: data.hasInvokeScope || false,
+          connections: data.connections || { github: false, netlify: false },
         });
       } else {
         setState({
@@ -59,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
           isLoading: false,
           isAuthenticated: false,
           hasInvokeScope: false,
+          connections: { github: false, netlify: false },
         });
       }
     } catch (error) {
@@ -68,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
         isLoading: false,
         isAuthenticated: false,
         hasInvokeScope: false,
+        connections: { github: false, netlify: false },
       });
     }
   }, []);
@@ -135,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
         isLoading: false,
         isAuthenticated: false,
         hasInvokeScope: false,
+        connections: { github: false, netlify: false },
       });
     } catch (error) {
       console.error('[useAuth] Logout failed:', error);

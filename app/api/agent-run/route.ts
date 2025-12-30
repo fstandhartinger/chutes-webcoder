@@ -91,6 +91,8 @@ const AGENTS = {
     buildCommand: (prompt: string, model: string) => [
       'opencode', 'run',
       '--model', `openai/${model}`,
+      '--agent', 'build',
+      '--print-logs',
       prompt
     ],
   },
@@ -897,4 +899,3 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
-

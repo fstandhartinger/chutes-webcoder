@@ -48,10 +48,21 @@ export interface AuthTokens {
   tokenType: string;
 }
 
+export interface OAuthConnection {
+  accessToken: string;
+  tokenType?: string;
+  scope?: string;
+  createdAt: number;
+}
+
 export interface AuthSession {
   user: ChutesUser;
   tokens: AuthTokens;
   createdAt: number;
+  oauth?: {
+    github?: OAuthConnection;
+    netlify?: OAuthConnection;
+  };
 }
 
 export interface AuthState {
@@ -279,6 +290,25 @@ export function updateSessionTokens(cookieValue: string, tokens: AuthTokens): st
   return cookieValue;
 }
 
+export function updateSessionOAuth(
+  cookieValue: string,
+  provider: 'github' | 'netlify',
+  token: OAuthConnection | null
+): string {
+  const session = getSession(cookieValue);
+  if (!session) {
+    return cookieValue;
+  }
+  const oauth = { ...(session.oauth || {}) };
+  if (token) {
+    oauth[provider] = token;
+  } else {
+    delete oauth[provider];
+  }
+  session.oauth = Object.keys(oauth).length ? oauth : undefined;
+  return encryptSession(session);
+}
+
 // Check if tokens need refresh (5 min buffer)
 export function tokensNeedRefresh(tokens: AuthTokens): boolean {
   return tokens.expiresAt - Date.now() < 5 * 60 * 1000;
@@ -301,7 +331,6 @@ export async function callChutesApiWithUserToken(
     },
   });
 }
-
 
 
 

@@ -61,11 +61,19 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
    # Optional: Morph fast apply key
    MORPH_API_KEY=...
 
-   # Optional: GitHub import/export
-   GITHUB_TOKEN=your_github_token
+   # Optional: GitHub OAuth (user connections)
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
+   GITHUB_OAUTH_REDIRECT_URI=http://localhost:3000/api/github/oauth/callback
+   # Optional override (defaults to repo read:user user:email)
+   GITHUB_OAUTH_SCOPE=repo read:user user:email
 
-   # Optional: Netlify deployment
-   NETLIFY_API_TOKEN=your_netlify_api_token
+   # Optional: Netlify OAuth (user connections)
+   NETLIFY_CLIENT_ID=your_netlify_client_id
+   NETLIFY_CLIENT_SECRET=your_netlify_client_secret
+   NETLIFY_OAUTH_REDIRECT_URI=http://localhost:3000/api/netlify/oauth/callback
+   # Optional override if you need custom scopes
+   NETLIFY_OAUTH_SCOPE=
 
    # Optional: Factory Droid CLI
    FACTORY_API_KEY=your_factory_api_key
@@ -83,7 +91,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 - `config/app.config.ts` lists all sandbox and model settings. The default model is `chutes/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8`, but the upstream presets (GPT‑5, Claude Sonnet 4, Gemini 2.0 Flash, Kimi K2) remain available.
 - Switching between Sandy, Vercel, and E2B sandboxes is a matter of flipping `SANDBOX_PROVIDER` and providing the appropriate credentials.
 - Sandy preview URLs are derived from `SANDY_HOST_SUFFIX` (and `NEXT_PUBLIC_SANDBOX_HOST_SUFFIX` for the UI).
-- GitHub integration and the new “Builder” experience follow the upstream conventions—set `GITHUB_TOKEN`, `NEXTAUTH_SECRET`, etc., if you adopt those workflows.
+- GitHub import/export uses user OAuth tokens; set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` for the OAuth callback.
 
 ## CLI Coding Agents
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 import { readProjectState, writeProjectState } from '@/lib/project-state';
-
-const NETLIFY_API_TOKEN = process.env.NETLIFY_API_TOKEN;
+import { getSession, SESSION_COOKIE_NAME } from '@/lib/auth';
 
 async function getProvider(sandboxId: string) {
   const existing = sandboxManager.getProvider(sandboxId);
@@ -12,11 +12,29 @@ async function getProvider(sandboxId: string) {
   return null;
 }
 
-async function netlifyRequest(path: string, options: RequestInit = {}) {
+async function getNetlifyToken() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+  if (!sessionCookie) {
+    return { token: null, error: 'Not authenticated' };
+  }
+  const session = getSession(sessionCookie.value);
+  if (!session) {
+    cookieStore.delete(SESSION_COOKIE_NAME);
+    return { token: null, error: 'Invalid session' };
+  }
+  const token = session.oauth?.netlify?.accessToken;
+  if (!token) {
+    return { token: null, error: 'Netlify not connected' };
+  }
+  return { token, error: null };
+}
+
+async function netlifyRequest(path: string, token: string, options: RequestInit = {}) {
   const response = await fetch(`https://api.netlify.com/api/v1${path}`, {
     ...options,
     headers: {
-      Authorization: `Bearer ${NETLIFY_API_TOKEN}`,
+      Authorization: `Bearer ${token}`,
       'User-Agent': 'chutes-webcoder',
       ...(options.headers || {})
     }
@@ -26,8 +44,9 @@ async function netlifyRequest(path: string, options: RequestInit = {}) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!NETLIFY_API_TOKEN) {
-      return NextResponse.json({ success: false, error: 'NETLIFY_API_TOKEN is not configured' }, { status: 500 });
+    const { token: netlifyToken, error: authError } = await getNetlifyToken();
+    if (!netlifyToken) {
+      return NextResponse.json({ success: false, error: authError || 'Netlify connection required' }, { status: 401 });
     }
 
     const body = await request.json().catch(() => ({}));
@@ -73,7 +92,7 @@ export async function POST(request: NextRequest) {
     const zipBuffer = Buffer.from(base64Payload, 'base64');
 
     if (!siteId) {
-      const createResponse = await netlifyRequest('/sites', {
+      const createResponse = await netlifyRequest('/sites', netlifyToken, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: siteName || `chutes-${sandboxId.slice(0, 8)}` })
@@ -88,7 +107,7 @@ export async function POST(request: NextRequest) {
       siteId = siteData.id;
     }
 
-    const deployResponse = await netlifyRequest(`/sites/${siteId}/deploys`, {
+    const deployResponse = await netlifyRequest(`/sites/${siteId}/deploys`, netlifyToken, {
       method: 'POST',
       headers: { 'Content-Type': 'application/zip' },
       body: zipBuffer

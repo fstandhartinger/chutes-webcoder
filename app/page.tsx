@@ -180,8 +180,10 @@ function AISandboxPageContent() {
   const router = useRouter();
   
   // Auth state - enforce login on first request
-  const { isAuthenticated, isLoading: isAuthLoading, login, user } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, login, refresh: refreshAuth, user, connections } = useAuth();
   const { pendingRequest, clearPendingRequest } = usePendingAuthRequest();
+  const githubConnected = connections?.github ?? false;
+  const netlifyConnected = connections?.netlify ?? false;
   const creatingSandboxRef = useRef<Promise<any> | null>(null);
   const [aiModel, setAiModel] = useState(() => {
     const modelParam = searchParams.get('model');
@@ -3311,10 +3313,55 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
+  const buildReturnToUrl = () => `${window.location.pathname}${window.location.search}`;
+
+  const connectGithub = () => {
+    if (!isAuthenticated && !isAuthLoading) {
+      login(buildReturnToUrl());
+      return;
+    }
+    window.location.href = `/api/github/oauth/start?returnTo=${encodeURIComponent(buildReturnToUrl())}`;
+  };
+
+  const disconnectGithub = async () => {
+    try {
+      await fetch('/api/github/oauth/disconnect', { method: 'POST' });
+      await refreshAuth();
+      toast.success('GitHub disconnected.');
+    } catch (error) {
+      console.error('[github] Disconnect failed:', error);
+      toast.error('Failed to disconnect GitHub.');
+    }
+  };
+
+  const connectNetlify = () => {
+    if (!isAuthenticated && !isAuthLoading) {
+      login(buildReturnToUrl());
+      return;
+    }
+    window.location.href = `/api/netlify/oauth/start?returnTo=${encodeURIComponent(buildReturnToUrl())}`;
+  };
+
+  const disconnectNetlify = async () => {
+    try {
+      await fetch('/api/netlify/oauth/disconnect', { method: 'POST' });
+      await refreshAuth();
+      toast.success('Netlify disconnected.');
+    } catch (error) {
+      console.error('[netlify] Disconnect failed:', error);
+      toast.error('Failed to disconnect Netlify.');
+    }
+  };
+
   const importGithubRepo = async () => {
     const repoInput = githubRepoInput.trim();
     if (!repoInput) {
       toast.error('Enter a GitHub repo URL.');
+      return;
+    }
+    if (!githubConnected) {
+      toast.error('Connect GitHub before importing.');
+      connectGithub();
       return;
     }
     setGithubLoading(true);
@@ -3372,6 +3419,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       toast.error('Enter a repository name.');
       return;
     }
+    if (!githubConnected) {
+      toast.error('Connect GitHub before exporting.');
+      connectGithub();
+      return;
+    }
     const sandboxId = getActiveSandboxId();
     if (!sandboxId) {
       toast.error('No sandbox available to export.');
@@ -3416,6 +3468,11 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     const sandboxId = getActiveSandboxId();
     if (!sandboxId) {
       toast.error('No sandbox available to deploy.');
+      return;
+    }
+    if (!netlifyConnected) {
+      toast.error('Connect Netlify before deploying.');
+      connectNetlify();
       return;
     }
     setNetlifyDeploying(true);
@@ -5214,6 +5271,38 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             </DialogDescription>
           </DialogHeader>
 
+          <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-4">
+            {githubConnected ? (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium text-neutral-100">GitHub connected</div>
+                  <div className="text-xs text-neutral-500">You're ready to import or export.</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void disconnectGithub()}
+                  className="rounded-lg border border-neutral-700 px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800"
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium text-neutral-100">Connect GitHub</div>
+                  <div className="text-xs text-neutral-500">Authorize access to import or create repos.</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => connectGithub()}
+                  className="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-600"
+                >
+                  {isAuthenticated ? 'Connect' : 'Sign in to connect'}
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-3">
             <div className="text-xs uppercase tracking-widest text-neutral-500">Import repository</div>
             <input
@@ -5231,7 +5320,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             <button
               type="button"
               onClick={() => void importGithubRepo()}
-              disabled={githubLoading || !githubRepoInput.trim()}
+              disabled={githubLoading || !githubRepoInput.trim() || !githubConnected}
               className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
             >
               {githubLoading ? 'Importing…' : 'Import repo'}
@@ -5264,7 +5353,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             <button
               type="button"
               onClick={() => void exportGithubRepo()}
-              disabled={githubLoading || !githubExportName.trim()}
+              disabled={githubLoading || !githubExportName.trim() || !githubConnected}
               className="w-full rounded-xl bg-neutral-800 py-3 text-sm font-semibold text-white hover:bg-neutral-700 disabled:opacity-50"
             >
               {githubLoading ? 'Exporting…' : 'Create repo & push'}
@@ -5287,6 +5376,37 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
               Build the sandbox and publish the static bundle to Netlify.
             </DialogDescription>
           </DialogHeader>
+          <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-4">
+            {netlifyConnected ? (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium text-neutral-100">Netlify connected</div>
+                  <div className="text-xs text-neutral-500">You're ready to deploy.</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void disconnectNetlify()}
+                  className="rounded-lg border border-neutral-700 px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800"
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium text-neutral-100">Connect Netlify</div>
+                  <div className="text-xs text-neutral-500">Authorize access to deploy your site.</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => connectNetlify()}
+                  className="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-600"
+                >
+                  {isAuthenticated ? 'Connect' : 'Sign in to connect'}
+                </button>
+              </div>
+            )}
+          </div>
           <div className="space-y-3">
             <input
               value={netlifySiteName}
@@ -5297,7 +5417,7 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
             <button
               type="button"
               onClick={() => void deployToNetlify()}
-              disabled={netlifyDeploying}
+              disabled={netlifyDeploying || !netlifyConnected}
               className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
             >
               {netlifyDeploying ? 'Deploying…' : 'Deploy now'}

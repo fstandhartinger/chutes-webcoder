@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 import { readProjectState, writeProjectState } from '@/lib/project-state';
-
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+import { getSession, SESSION_COOKIE_NAME } from '@/lib/auth';
 
 async function getProvider(sandboxId: string) {
   const existing = sandboxManager.getProvider(sandboxId);
@@ -12,10 +12,28 @@ async function getProvider(sandboxId: string) {
   return null;
 }
 
-async function getGithubUser(): Promise<{ login: string; name?: string; email?: string }> {
+async function getGithubToken() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+  if (!sessionCookie) {
+    return { token: null, error: 'Not authenticated' };
+  }
+  const session = getSession(sessionCookie.value);
+  if (!session) {
+    cookieStore.delete(SESSION_COOKIE_NAME);
+    return { token: null, error: 'Invalid session' };
+  }
+  const token = session.oauth?.github?.accessToken;
+  if (!token) {
+    return { token: null, error: 'GitHub not connected' };
+  }
+  return { token, error: null };
+}
+
+async function getGithubUser(token: string): Promise<{ login: string; name?: string; email?: string }> {
   const response = await fetch('https://api.github.com/user', {
     headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
       'User-Agent': 'chutes-webcoder'
     }
@@ -28,8 +46,9 @@ async function getGithubUser(): Promise<{ login: string; name?: string; email?: 
 
 export async function POST(request: NextRequest) {
   try {
-    if (!GITHUB_TOKEN) {
-      return NextResponse.json({ success: false, error: 'GITHUB_TOKEN is not configured' }, { status: 500 });
+    const { token: githubToken, error: authError } = await getGithubToken();
+    if (!githubToken) {
+      return NextResponse.json({ success: false, error: authError || 'GitHub connection required' }, { status: 401 });
     }
 
     const body = await request.json().catch(() => ({}));
@@ -47,7 +66,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: `Sandbox ${sandboxId} not found` }, { status: 404 });
     }
 
-    const user = await getGithubUser();
+    const user = await getGithubUser(githubToken);
     const targetOwner = owner || user.login;
 
     const createUrl = owner
@@ -57,7 +76,7 @@ export async function POST(request: NextRequest) {
     const createResponse = await fetch(createUrl, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Authorization: `Bearer ${githubToken}`,
         Accept: 'application/vnd.github+json',
         'User-Agent': 'chutes-webcoder',
         'Content-Type': 'application/json'
@@ -77,7 +96,7 @@ export async function POST(request: NextRequest) {
     const cloneUrl = repoData.clone_url as string;
     const htmlUrl = repoData.html_url as string;
 
-    const authToken = encodeURIComponent(GITHUB_TOKEN);
+    const authToken = encodeURIComponent(githubToken);
     const authUrl = cloneUrl.replace('https://', `https://x-access-token:${authToken}@`);
 
     await provider.runCommand('git config --global init.defaultBranch main || true');

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 import { readProjectState, writeProjectState } from '@/lib/project-state';
-
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+import { getSession, SESSION_COOKIE_NAME } from '@/lib/auth';
 
 type ParsedRepo = { owner: string; repo: string };
 
 function parseRepo(input: string): ParsedRepo | null {
-  const trimmed = input.trim().replace(/\.git$/, '');
+  const trimmed = input.trim().replace(/\.git$/, '').replace(/\/$/, '');
   if (!trimmed) return null;
 
   const urlMatch = trimmed.match(/github\.com[:/](.+?)\/([^/]+)$/i);
@@ -29,6 +29,24 @@ function sanitizeRef(input?: string | null) {
   if (!trimmed) return null;
   if (!/^[A-Za-z0-9._/-]+$/.test(trimmed)) return null;
   return trimmed;
+}
+
+async function getGithubToken() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+  if (!sessionCookie) {
+    return { token: null, error: 'Not authenticated' };
+  }
+  const session = getSession(sessionCookie.value);
+  if (!session) {
+    cookieStore.delete(SESSION_COOKIE_NAME);
+    return { token: null, error: 'Invalid session' };
+  }
+  const token = session.oauth?.github?.accessToken;
+  if (!token) {
+    return { token: null, error: 'GitHub not connected' };
+  }
+  return { token, error: null };
 }
 
 async function getProvider(sandboxId: string) {
@@ -87,8 +105,9 @@ function detectDevServer(packageJson: any, manager: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!GITHUB_TOKEN) {
-      return NextResponse.json({ success: false, error: 'GITHUB_TOKEN is not configured' }, { status: 500 });
+    const { token: githubToken, error: authError } = await getGithubToken();
+    if (!githubToken) {
+      return NextResponse.json({ success: false, error: authError || 'GitHub connection required' }, { status: 401 });
     }
 
     const body = await request.json().catch(() => ({}));
@@ -111,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     const safeBranch = branch ? `--branch ${branch}` : '';
-    const authToken = encodeURIComponent(GITHUB_TOKEN);
+    const authToken = encodeURIComponent(githubToken);
     const cloneUrl = `https://x-access-token:${authToken}@github.com/${parsed.owner}/${parsed.repo}.git`;
 
     await provider.runCommand('rm -rf /tmp/chutes-repo');

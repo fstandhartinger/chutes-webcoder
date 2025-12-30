@@ -26,3 +26,19 @@ services:
         sync: false
       - key: CHUTES_API_KEY
         sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_OAUTH_REDIRECT_URI
+        sync: false
+      - key: GITHUB_OAUTH_SCOPE
+        sync: false
+      - key: NETLIFY_CLIENT_ID
+        sync: false
+      - key: NETLIFY_CLIENT_SECRET
+        sync: false
+      - key: NETLIFY_OAUTH_REDIRECT_URI
+        sync: false
+      - key: NETLIFY_OAUTH_SCOPE
+        sync: false
