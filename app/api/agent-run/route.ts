@@ -394,6 +394,7 @@ function isPlainTextExplanationLine(trimmed: string): boolean {
 
 function isPlainTextNoiseLine(trimmed: string): boolean {
   return Boolean(
+    trimmed.startsWith('INFO ') ||
     trimmed.match(/^[<{}\[\]();>]/) ||
     trimmed.match(/^\s*[<{}\[\]();>]/) ||
     trimmed.match(/^(import|export|function|const|let|var|return|class)\s/) ||
@@ -412,12 +413,35 @@ function isPlainTextNoiseLine(trimmed: string): boolean {
   );
 }
 
+function normalizeOpencodeInfoLine(trimmed: string): string | null {
+  if (!trimmed.startsWith('INFO ')) return null;
+
+  if (trimmed.includes('service=session.summary') && trimmed.includes('title=')) {
+    const title = trimmed.split('title=')[1];
+    if (title && title.trim()) {
+      return `OpenCode: ${title.trim()}`;
+    }
+  }
+
+  if (trimmed.includes('service=default') && trimmed.includes('creating instance')) {
+    return 'OpenCode is preparing the workspace...';
+  }
+
+  return null;
+}
+
 function filterPlainTextLines(lines: string[]): string[] {
   const meaningfulLines: string[] = [];
 
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
+    const opencodeInfo = normalizeOpencodeInfoLine(trimmed);
+    if (opencodeInfo) {
+      meaningfulLines.push(opencodeInfo);
+      continue;
+    }
+    if (trimmed.startsWith('INFO ')) continue;
     if (!isPlainTextExplanationLine(trimmed)) continue;
     if (isPlainTextNoiseLine(trimmed)) continue;
     meaningfulLines.push(trimmed);
