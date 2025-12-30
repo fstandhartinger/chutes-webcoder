@@ -938,7 +938,8 @@ CONFIGEOF`,
         // Get exit code
         const exitCode = forcedExitCode ?? await getExitCode(sandboxId, doneFile);
         const cancelled = exitCode === 130;
-        if (!cancelled && exitCode !== 0) {
+        const success = exitCode === 0 || hasFileChanges;
+        if (!cancelled && exitCode !== 0 && !hasFileChanges) {
           try {
             const tailResult = await execInSandbox(
               sandboxId,
@@ -958,6 +959,12 @@ CONFIGEOF`,
           } catch {
             await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}.` });
           }
+        }
+        if (!cancelled && exitCode !== 0 && hasFileChanges) {
+          await sendEvent({
+            type: 'status',
+            message: `Agent finished with warnings (exit ${exitCode}), but updates were detected.`
+          });
         }
 
         if (cancelled) {
@@ -1011,7 +1018,7 @@ CONFIGEOF`,
         await sendEvent({
           type: 'complete',
           exitCode,
-          success: exitCode === 0,
+          success,
           cancelled
         });
         

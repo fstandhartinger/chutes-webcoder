@@ -11,7 +11,10 @@ async function getProviderForSandbox(sandboxId: string) {
 
 export async function GET(request: NextRequest) {
   try {
-    const sandboxId = request.nextUrl.searchParams.get('sandboxId');
+    const sandboxId = request.nextUrl.searchParams.get('sandboxId') ||
+      request.nextUrl.searchParams.get('project') ||
+      request.cookies.get('sandySandboxId')?.value ||
+      request.headers.get('x-sandbox-id');
     const rawPath = request.nextUrl.searchParams.get('path');
 
     if (!sandboxId || !rawPath) {

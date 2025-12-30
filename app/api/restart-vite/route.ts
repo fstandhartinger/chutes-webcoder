@@ -21,6 +21,7 @@ function resolveSandboxId(request: NextRequest, body: Record<string, any>): stri
   return (
     body?.sandboxId ||
     request.nextUrl.searchParams.get('sandboxId') ||
+    request.nextUrl.searchParams.get('project') ||
     request.cookies.get('sandySandboxId')?.value ||
     request.headers.get('x-sandbox-id') ||
     null

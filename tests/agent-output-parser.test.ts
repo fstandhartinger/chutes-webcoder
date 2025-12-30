@@ -74,6 +74,44 @@ const ASSISTANT_TOOL_USE_MESSAGE = {
   session_id: 'abc123',
 };
 
+const ASSISTANT_TASK_MESSAGE = {
+  type: 'assistant',
+  message: {
+    content: [
+      {
+        type: 'tool_use',
+        name: 'Task',
+        input: {
+          title: 'Review workspace files',
+        },
+      },
+    ],
+    id: 'msg_126',
+    model: 'zai-org/GLM-4.7-TEE',
+    role: 'assistant',
+  },
+  session_id: 'abc123',
+};
+
+const ASSISTANT_TASK_OUTPUT_MESSAGE = {
+  type: 'assistant',
+  message: {
+    content: [
+      {
+        type: 'tool_use',
+        name: 'TaskOutput',
+        input: {
+          output: 'Scanned 3 files successfully.',
+        },
+      },
+    ],
+    id: 'msg_127',
+    model: 'zai-org/GLM-4.7-TEE',
+    role: 'assistant',
+  },
+  session_id: 'abc123',
+};
+
 const USER_TOOL_RESULT_MESSAGE = {
   type: 'user',
   message: {
@@ -116,6 +154,21 @@ test('parseClaudeCodeOutput - formats tool use messages', () => {
   assert.ok(result.content.includes('App.jsx'));
   assert.strictEqual(result.metadata?.toolName, 'Write');
   assert.strictEqual(result.metadata?.filePath, '/workspace/src/App.jsx');
+});
+
+test('parseClaudeCodeOutput - formats task tool messages', () => {
+  const result = parseClaudeCodeOutput(ASSISTANT_TASK_MESSAGE);
+  assert.strictEqual(result.type, 'tool-use');
+  assert.ok(result.content.includes('Working on'));
+  assert.ok(result.content.includes('Review workspace files'));
+  assert.strictEqual(result.metadata?.toolName, 'Task');
+});
+
+test('parseClaudeCodeOutput - formats task output messages', () => {
+  const result = parseClaudeCodeOutput(ASSISTANT_TASK_OUTPUT_MESSAGE);
+  assert.strictEqual(result.type, 'tool-use');
+  assert.ok(result.content.includes('Task update'));
+  assert.strictEqual(result.metadata?.toolName, 'TaskOutput');
 });
 
 test('parseClaudeCodeOutput - skips user tool result messages', () => {

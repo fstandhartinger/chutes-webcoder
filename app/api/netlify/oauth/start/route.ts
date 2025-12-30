@@ -12,7 +12,10 @@ function getAppBaseUrl(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const clientId = process.env.NETLIFY_CLIENT_ID;
   if (!clientId) {
-    return NextResponse.json({ error: 'NETLIFY_CLIENT_ID is not configured' }, { status: 500 });
+    const appBaseUrl = getAppBaseUrl(request);
+    return NextResponse.redirect(
+      new URL('/?oauthError=Netlify+OAuth+not+configured', appBaseUrl)
+    );
   }
 
   const appBaseUrl = getAppBaseUrl(request);

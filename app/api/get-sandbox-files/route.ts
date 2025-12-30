@@ -7,7 +7,9 @@ import { appConfig } from '@/config/app.config';
 export async function GET(request: NextRequest) {
   try {
     // Get sandboxId from query parameter (required for session isolation)
-    const sandboxId = request.nextUrl.searchParams.get('sandboxId');
+    const sandboxId = request.nextUrl.searchParams.get('sandboxId') ||
+      request.nextUrl.searchParams.get('project') ||
+      request.cookies.get('sandySandboxId')?.value;
 
     if (!sandboxId) {
       return NextResponse.json({

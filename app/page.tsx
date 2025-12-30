@@ -43,6 +43,7 @@ const CODE_PANEL_EXPANDED_MAX_HEIGHT = '70vh';
 const CODE_PANEL_MIN_HEIGHT = '12rem';
 const CHAT_STREAM_MIN_HEIGHT = '8rem';
 const CHAT_STREAM_MAX_HEIGHT = '18rem';
+const GITHUB_REPO_MANUAL = '__manual__';
 const buildFallbackSandboxUrl = (sandboxId: string) => `/api/sandy-preview/${sandboxId}`;
 
 interface SandboxData {
@@ -63,6 +64,16 @@ interface ChatMessage {
     commandType?: 'input' | 'output' | 'error' | 'success';
     systemTag?: string;
   };
+}
+
+interface GithubRepo {
+  id: number;
+  name: string;
+  fullName: string;
+  owner: string;
+  url?: string;
+  defaultBranch?: string;
+  private?: boolean;
 }
 
 // Simple markdown renderer for chat messages
@@ -241,6 +252,10 @@ function AISandboxPageContent() {
   const [githubOwnerInput, setGithubOwnerInput] = useState('');
   const [githubPrivate, setGithubPrivate] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
+  const [githubRepos, setGithubRepos] = useState<GithubRepo[]>([]);
+  const [githubReposLoading, setGithubReposLoading] = useState(false);
+  const [githubReposError, setGithubReposError] = useState<string | null>(null);
+  const [githubRepoSelection, setGithubRepoSelection] = useState('');
   const [netlifyDialogOpen, setNetlifyDialogOpen] = useState(false);
   const [netlifySiteName, setNetlifySiteName] = useState('');
   const [netlifyDeploying, setNetlifyDeploying] = useState(false);
@@ -258,12 +273,19 @@ function AISandboxPageContent() {
   const sendChatMessageRef = useRef<((message?: string, retryCount?: number) => Promise<void>) | null>(null);
   const captureUrlScreenshotRef = useRef<((url: string) => Promise<void>) | null>(null);
   const lastUserPromptRef = useRef<string>('');
+  const lastSandboxIdRef = useRef<string | null>(null);
+  const sandboxStatusThrottleRef = useRef<{ lastCheckedAt: number; inFlight: boolean }>({
+    lastCheckedAt: 0,
+    inFlight: false
+  });
+  const refreshInFlightRef = useRef<boolean>(false);
   const agentAbortRef = useRef<AbortController | null>(null);
   const fileUpdateQueueRef = useRef<{ created: Set<string>; modified: Set<string> }>({
     created: new Set(),
     modified: new Set()
   });
   const fileUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastFileUpdateRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -298,6 +320,7 @@ function AISandboxPageContent() {
       searchParams.get('sandbox') ||
       searchParams.get('project') ||
       projectState?.projectId ||
+      lastSandboxIdRef.current ||
       null,
     [sandboxData?.sandboxId, projectState?.projectId, searchParams]
   );
@@ -320,6 +343,17 @@ function AISandboxPageContent() {
     },
     [getActiveSandboxId, sandboxData?.sandboxId, sandboxData?.url]
   );
+  useEffect(() => {
+    const candidate =
+      sandboxData?.sandboxId ||
+      searchParams.get('sandbox') ||
+      searchParams.get('project') ||
+      projectState?.projectId ||
+      null;
+    if (candidate && candidate !== lastSandboxIdRef.current) {
+      lastSandboxIdRef.current = candidate;
+    }
+  }, [sandboxData?.sandboxId, searchParams, projectState?.projectId]);
   const syncUrlWithSandbox = useCallback((sandboxId: string, replace: boolean = true) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('sandbox', sandboxId);
@@ -381,6 +415,13 @@ function AISandboxPageContent() {
   const fetchSandboxActive = async (overrideSandboxId?: string | null): Promise<boolean> => {
     const sandboxId = getActiveSandboxId(overrideSandboxId);
     if (!sandboxId) return false;
+    const now = Date.now();
+    const throttle = sandboxStatusThrottleRef.current;
+    if (throttle.inFlight || now - throttle.lastCheckedAt < 800) {
+      return false;
+    }
+    throttle.inFlight = true;
+    throttle.lastCheckedAt = now;
     try {
       const res = await fetch(buildSandboxStatusUrl(sandboxId), { method: 'GET' });
       if (!res.ok) return false;
@@ -392,6 +433,9 @@ function AISandboxPageContent() {
         return true;
       }
     } catch {}
+    finally {
+      sandboxStatusThrottleRef.current.inFlight = false;
+    }
     return false;
   };
   
@@ -575,6 +619,17 @@ function AISandboxPageContent() {
     
     initializePage();
   }, [searchParams]);
+
+  useEffect(() => {
+    const oauthError = searchParams.get('oauthError');
+    if (!oauthError) return;
+    const message = decodeURIComponent(oauthError.replace(/\+/g, ' '));
+    toast.error(message);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('oauthError');
+    const next = params.toString();
+    router.replace(next ? `/?${next}` : '/', { scroll: false });
+  }, [router, searchParams]);
   
   // Handle pending request after successful auth
   // This is a ref to track if we've processed the pending request
@@ -643,6 +698,13 @@ function AISandboxPageContent() {
       updateStatus('No sandbox', false);
       return;
     }
+    const now = Date.now();
+    const throttle = sandboxStatusThrottleRef.current;
+    if (throttle.inFlight || now - throttle.lastCheckedAt < 1000) {
+      return;
+    }
+    throttle.inFlight = true;
+    throttle.lastCheckedAt = now;
     try {
       const response = await fetch(buildSandboxStatusUrl(sandboxId));
       if (!response.ok) {
@@ -675,6 +737,8 @@ function AISandboxPageContent() {
       } else {
         updateStatus('Status check failed', false);
       }
+    } finally {
+      sandboxStatusThrottleRef.current.inFlight = false;
     }
   }, [buildSandboxStatusUrl, getActiveSandboxId, sandboxData, updateStatus]);
 
@@ -708,11 +772,13 @@ function AISandboxPageContent() {
   // Deferred, robust refresh sequence when iframe and sandbox are ready
   useEffect(() => {
     const run = async () => {
-      if (!pendingRefresh) return;
+      if (!pendingRefresh || refreshInFlightRef.current) return;
+      refreshInFlightRef.current = true;
       const url = getPreviewUrl();
       if (!url) {
         console.warn('[refresh] No sandbox URL yet; waiting...');
         setTimeout(() => { if (isMountedRef.current) setPendingRefresh({ reason: pendingRefresh.reason }); }, 500);
+        refreshInFlightRef.current = false;
         return;
       }
       if (!iframeRef.current) {
@@ -721,6 +787,7 @@ function AISandboxPageContent() {
         if (isMountedRef.current) setActiveTab('preview');
         // Re-arm the refresh shortly after switching tabs
         setTimeout(() => { if (isMountedRef.current) setPendingRefresh({ reason: pendingRefresh.reason }); }, 300);
+        refreshInFlightRef.current = false;
         return;
       }
       console.log('[refresh] Starting refresh sequence. reason=', pendingRefresh.reason, 'url=', url);
@@ -757,6 +824,7 @@ function AISandboxPageContent() {
         }
       } finally {
         applyingRecoveryRef.current = false;
+        refreshInFlightRef.current = false;
         if (isMountedRef.current) setPendingRefresh(null);
       }
     };
@@ -834,13 +902,16 @@ function AISandboxPageContent() {
     const modifiedSuffix = modified.length > modifiedList.length ? ` +${modified.length - modifiedList.length} more` : '';
 
     if (createdList.length > 0 && modifiedList.length > 0) {
+      lastFileUpdateRef.current = `Created ${createdList.join(', ')} / Updated ${modifiedList.join(', ')}`;
       addChatMessage(
         `Files created: ${createdList.join(', ')}${createdSuffix}. Updated: ${modifiedList.join(', ')}${modifiedSuffix}.`,
         'system'
       );
     } else if (createdList.length > 0) {
+      lastFileUpdateRef.current = `Created ${createdList.join(', ')}`;
       addChatMessage(`Files created: ${createdList.join(', ')}${createdSuffix}.`, 'system');
     } else if (modifiedList.length > 0) {
+      lastFileUpdateRef.current = `Updated ${modifiedList.join(', ')}`;
       addChatMessage(`Files updated: ${modifiedList.join(', ')}${modifiedSuffix}.`, 'system');
     }
   }, [addChatMessage]);
@@ -1580,7 +1651,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     });
   }, []);
 
-  const fetchSandboxFiles = useCallback(async (overrideSandboxId?: string | null) => {
+  const fetchSandboxFiles = useCallback(async (overrideSandboxId?: string | null, retryCount: number = 0) => {
     const sandboxId = getActiveSandboxId(overrideSandboxId);
     if (!sandboxId) return;
     
@@ -1609,6 +1680,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             }
           }
         }
+      } else if (response.status >= 500 && retryCount < 2) {
+        setTimeout(() => {
+          if (isMountedRef.current) {
+            void fetchSandboxFiles(sandboxId, retryCount + 1);
+          }
+        }, 1500);
       }
     } catch (error) {
       console.error('[fetchSandboxFiles] Error fetching files:', error);
@@ -2590,6 +2667,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       let generatedCode = '';
       let explanation = '';
       let aggregatedStream = '';
+      let externalAgentCompleted = false;
       
       console.log('[chat] Starting to read stream...');
       let chunkCount = 0;
@@ -2722,7 +2800,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   }
                 } else if (data.type === 'heartbeat') {
                   // Keep-alive event - always update status with current elapsed time
-                  const progressText = `Processing... (${Math.round(data.elapsed)}s)`;
+                  const lastUpdate = lastFileUpdateRef.current;
+                  const progressText = lastUpdate
+                    ? `Processing... (${Math.round(data.elapsed)}s) - ${lastUpdate}`
+                    : `Processing... (${Math.round(data.elapsed)}s)`;
                   setGenerationProgress(prev => {
                     if (prev.status && !prev.status.startsWith('Processing')) {
                       return prev;
@@ -2998,6 +3079,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   if (typeof data.exitCode !== 'undefined') {
                     // External agent (Claude Code, Codex, Aider) complete
                     console.log('[chat] External agent complete. exitCode:', data.exitCode, 'success:', data.success);
+                    externalAgentCompleted = true;
 
                     // Clear thinking state
                     setGenerationProgress(prev => ({
@@ -3144,6 +3226,32 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       }
       if (agentAbortRef.current) {
         agentAbortRef.current = null;
+      }
+      if (useExternalAgent && !externalAgentCompleted) {
+        console.warn('[chat] External agent stream ended without completion; attempting recovery');
+        addChatMessage('Agent stream ended early. Checking sandbox state...', 'system');
+        setGenerationProgress(prev => ({
+          ...prev,
+          isGenerating: false,
+          isStreaming: false,
+          isThinking: false,
+          thinkingText: undefined,
+          thinkingDuration: undefined,
+          status: 'Finalizing preview...'
+        }));
+        const fallbackSandboxId = effectiveSandboxId || getActiveSandboxId();
+        if (fallbackSandboxId) {
+          await fetchSandboxFiles(fallbackSandboxId);
+          try {
+            await fetch('/api/restart-vite', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sandboxId: fallbackSandboxId })
+            });
+          } catch {}
+          setActiveTab('preview');
+          setPendingRefresh({ reason: 'stream-ended' });
+        }
       }
       // Fallback if the model didn't send an explicit 'complete' event
       if (!generatedCode && aggregatedStream && aggregatedStream.includes('<file path="')) {
@@ -3326,6 +3434,58 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
   const buildReturnToUrl = () => `${window.location.pathname}${window.location.search}`;
 
+  const refreshGithubRepos = useCallback(async () => {
+    if (!githubConnected) return;
+    setGithubReposLoading(true);
+    setGithubReposError(null);
+    try {
+      const response = await fetch('/api/github/repos');
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || response.statusText);
+      }
+      const data = await response.json();
+      const repos: GithubRepo[] = Array.isArray(data?.repos) ? data.repos : [];
+      setGithubRepos(repos);
+
+      if (githubRepoSelection === GITHUB_REPO_MANUAL) {
+        return;
+      }
+
+      const preferredSelection = githubRepoSelection || githubRepoInput;
+      const matchedRepo = preferredSelection
+        ? repos.find(repo => repo.fullName === preferredSelection)
+        : null;
+      const fallbackRepo = matchedRepo || repos[0];
+
+      if (fallbackRepo?.fullName) {
+        setGithubRepoSelection(fallbackRepo.fullName);
+        setGithubRepoInput(fallbackRepo.fullName);
+        if (!githubBranchInput.trim() && fallbackRepo.defaultBranch) {
+          setGithubBranchInput(fallbackRepo.defaultBranch);
+        }
+      } else if (repos.length === 0) {
+        setGithubRepoSelection(GITHUB_REPO_MANUAL);
+      }
+    } catch (error: any) {
+      setGithubReposError(error?.message || 'Failed to load repositories');
+    } finally {
+      setGithubReposLoading(false);
+    }
+  }, [githubBranchInput, githubConnected, githubRepoInput, githubRepoSelection]);
+
+  useEffect(() => {
+    if (githubConnected) return;
+    setGithubRepos([]);
+    setGithubReposError(null);
+    setGithubRepoSelection('');
+  }, [githubConnected]);
+
+  useEffect(() => {
+    if (!githubDialogOpen || !githubConnected || !showHomeScreen) return;
+    void refreshGithubRepos();
+  }, [githubConnected, githubDialogOpen, refreshGithubRepos, showHomeScreen]);
+
   const connectGithub = () => {
     if (!isAuthenticated && !isAuthLoading) {
       login(buildReturnToUrl());
@@ -3365,7 +3525,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
   };
 
   const importGithubRepo = async () => {
-    const repoInput = githubRepoInput.trim();
+    const repoInput = (githubRepoSelection === GITHUB_REPO_MANUAL
+      ? githubRepoInput
+      : (githubRepoSelection || githubRepoInput)).trim();
     if (!repoInput) {
       toast.error('Enter a GitHub repo URL.');
       return;
@@ -5278,98 +5440,162 @@ className={`group relative flex flex-col items-start gap-3 rounded-2xl border px
           <DialogHeader>
             <DialogTitle>GitHub integration</DialogTitle>
             <DialogDescription>
-              Import an existing repository or create a new one from this sandbox.
+              Connect your account to import repositories or export your current sandbox.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-4">
-            {githubConnected ? (
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-medium text-neutral-100">GitHub connected</div>
-                  <div className="text-xs text-neutral-500">You're ready to import or export.</div>
+          <div className="space-y-3">
+            <div className="text-xs uppercase tracking-widest text-neutral-500">Step 1 · Connect GitHub</div>
+            <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-4">
+              {githubConnected ? (
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-medium text-neutral-100">GitHub connected</div>
+                    <div className="text-xs text-neutral-500">You're ready to continue.</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void disconnectGithub()}
+                    className="rounded-lg border border-neutral-700 px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800"
+                  >
+                    Disconnect
+                  </button>
                 </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-medium text-neutral-100">Connect GitHub</div>
+                    <div className="text-xs text-neutral-500">Authorize access to your repositories.</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => connectGithub()}
+                    className="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-600"
+                  >
+                    {isAuthenticated ? 'Connect' : 'Sign in to connect'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {githubConnected ? (
+            showHomeScreen ? (
+              <div className="space-y-3">
+                <div className="text-xs uppercase tracking-widest text-neutral-500">Step 2 · Import repository</div>
+                <div className="flex items-center justify-between text-xs text-neutral-400">
+                  <span>Select a repo</span>
+                  <button
+                    type="button"
+                    onClick={() => void refreshGithubRepos()}
+                    disabled={githubReposLoading}
+                    className="text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+                  >
+                    {githubReposLoading ? 'Refreshing…' : 'Refresh list'}
+                  </button>
+                </div>
+                {githubReposError && (
+                  <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+                    {githubReposError}
+                  </div>
+                )}
+                {githubRepos.length > 0 ? (
+                  <select
+                    value={githubRepoSelection || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setGithubRepoSelection(value);
+                      if (value === GITHUB_REPO_MANUAL) {
+                        setGithubRepoInput('');
+                        return;
+                      }
+                      setGithubRepoInput(value);
+                      const repo = githubRepos.find((item) => item.fullName === value);
+                      if (repo?.defaultBranch && !githubBranchInput.trim()) {
+                        setGithubBranchInput(repo.defaultBranch);
+                      }
+                    }}
+                    className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  >
+                    <option value="" disabled>
+                      Select a repository
+                    </option>
+                    {githubRepos.map((repo) => (
+                      <option key={repo.id} value={repo.fullName} className="bg-neutral-900">
+                        {repo.fullName}{repo.private ? ' (private)' : ''}
+                      </option>
+                    ))}
+                    <option value={GITHUB_REPO_MANUAL} className="bg-neutral-900">
+                      Enter manually
+                    </option>
+                  </select>
+                ) : (
+                  <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-xs text-neutral-400">
+                    No repositories found. Enter a repo manually below.
+                  </div>
+                )}
+                {(githubRepoSelection === GITHUB_REPO_MANUAL || githubRepos.length === 0) && (
+                  <input
+                    value={githubRepoInput}
+                    onChange={(e) => setGithubRepoInput(e.target.value)}
+                    placeholder="owner/repo or https://github.com/owner/repo"
+                    className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  />
+                )}
+                <input
+                  value={githubBranchInput}
+                  onChange={(e) => setGithubBranchInput(e.target.value)}
+                  placeholder="branch (optional)"
+                  className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                />
                 <button
                   type="button"
-                  onClick={() => void disconnectGithub()}
-                  className="rounded-lg border border-neutral-700 px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800"
+                  onClick={() => void importGithubRepo()}
+                  disabled={githubLoading || !((githubRepoSelection === GITHUB_REPO_MANUAL ? githubRepoInput : githubRepoSelection).trim())}
+                  className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
                 >
-                  Disconnect
+                  {githubLoading ? 'Importing…' : 'Import repo'}
                 </button>
               </div>
             ) : (
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-medium text-neutral-100">Connect GitHub</div>
-                  <div className="text-xs text-neutral-500">Authorize access to import or create repos.</div>
-                </div>
+              <div className="space-y-3">
+                <div className="text-xs uppercase tracking-widest text-neutral-500">Step 2 · Export repository</div>
+                <input
+                  value={githubExportName}
+                  onChange={(e) => setGithubExportName(e.target.value)}
+                  placeholder="new repo name"
+                  className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                />
+                <input
+                  value={githubOwnerInput}
+                  onChange={(e) => setGithubOwnerInput(e.target.value)}
+                  placeholder="org (optional)"
+                  className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                />
+                <label className="flex items-center gap-2 text-sm text-neutral-300">
+                  <input
+                    type="checkbox"
+                    checked={githubPrivate}
+                    onChange={(e) => setGithubPrivate(e.target.checked)}
+                    className="h-4 w-4 rounded border-neutral-700 bg-neutral-900"
+                  />
+                  Create as private repo
+                </label>
                 <button
                   type="button"
-                  onClick={() => connectGithub()}
-                  className="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-600"
+                  onClick={() => void exportGithubRepo()}
+                  disabled={githubLoading || !githubExportName.trim()}
+                  className="w-full rounded-xl bg-neutral-800 py-3 text-sm font-semibold text-white hover:bg-neutral-700 disabled:opacity-50"
                 >
-                  {isAuthenticated ? 'Connect' : 'Sign in to connect'}
+                  {githubLoading ? 'Exporting…' : 'Create repo & push'}
                 </button>
               </div>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            <div className="text-xs uppercase tracking-widest text-neutral-500">Import repository</div>
-            <input
-              value={githubRepoInput}
-              onChange={(e) => setGithubRepoInput(e.target.value)}
-              placeholder="owner/repo or https://github.com/owner/repo"
-              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            />
-            <input
-              value={githubBranchInput}
-              onChange={(e) => setGithubBranchInput(e.target.value)}
-              placeholder="branch (optional)"
-              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            />
-            <button
-              type="button"
-              onClick={() => void importGithubRepo()}
-              disabled={githubLoading || !githubRepoInput.trim() || !githubConnected}
-              className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
-            >
-              {githubLoading ? 'Importing…' : 'Import repo'}
-            </button>
-          </div>
-
-          <div className="border-t border-neutral-800 pt-5 space-y-3">
-            <div className="text-xs uppercase tracking-widest text-neutral-500">Export repository</div>
-            <input
-              value={githubExportName}
-              onChange={(e) => setGithubExportName(e.target.value)}
-              placeholder="new repo name"
-              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            />
-            <input
-              value={githubOwnerInput}
-              onChange={(e) => setGithubOwnerInput(e.target.value)}
-              placeholder="org (optional)"
-              className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            />
-            <label className="flex items-center gap-2 text-sm text-neutral-300">
-              <input
-                type="checkbox"
-                checked={githubPrivate}
-                onChange={(e) => setGithubPrivate(e.target.checked)}
-                className="h-4 w-4 rounded border-neutral-700 bg-neutral-900"
-              />
-              Create as private repo
-            </label>
-            <button
-              type="button"
-              onClick={() => void exportGithubRepo()}
-              disabled={githubLoading || !githubExportName.trim() || !githubConnected}
-              className="w-full rounded-xl bg-neutral-800 py-3 text-sm font-semibold text-white hover:bg-neutral-700 disabled:opacity-50"
-            >
-              {githubLoading ? 'Exporting…' : 'Create repo & push'}
-            </button>
-          </div>
+            )
+          ) : (
+            <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-xs text-neutral-400">
+              Connect GitHub to continue.
+            </div>
+          )}
 
           <DialogFooter>
             <DialogClose className="rounded-xl border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800">

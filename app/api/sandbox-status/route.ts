@@ -5,6 +5,7 @@ import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 function resolveSandboxId(request: NextRequest): string | null {
   return (
     request.nextUrl.searchParams.get('sandboxId') ||
+    request.nextUrl.searchParams.get('project') ||
     request.cookies.get('sandySandboxId')?.value ||
     request.headers.get('x-sandbox-id')
   );

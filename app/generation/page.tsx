@@ -118,6 +118,10 @@ function AISandboxPage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const codeDisplayRef = useRef<HTMLDivElement>(null);
+  const sandboxStatusThrottleRef = useRef<{ lastCheckedAt: number; inFlight: boolean }>({
+    lastCheckedAt: 0,
+    inFlight: false
+  });
   
   const [codeApplicationState, setCodeApplicationState] = useState<CodeApplicationState>({
     stage: null
@@ -407,7 +411,12 @@ function AISandboxPage() {
   };
 
   const getActiveSandboxId = useCallback(
-    (override?: string | null) => override || sandboxData?.sandboxId || searchParams.get('sandbox') || null,
+    (override?: string | null) =>
+      override ||
+      sandboxData?.sandboxId ||
+      searchParams.get('sandbox') ||
+      searchParams.get('project') ||
+      null,
     [sandboxData?.sandboxId, searchParams]
   );
   const buildSandboxStatusUrl = useCallback(
@@ -535,6 +544,13 @@ function AISandboxPage() {
       updateStatus('No sandbox', false);
       return;
     }
+    const now = Date.now();
+    const throttle = sandboxStatusThrottleRef.current;
+    if (throttle.inFlight || now - throttle.lastCheckedAt < 1000) {
+      return;
+    }
+    throttle.inFlight = true;
+    throttle.lastCheckedAt = now;
     try {
       const response = await fetch(buildSandboxStatusUrl(sandboxId));
       const data = await response.json().catch(() => ({}));
@@ -569,6 +585,8 @@ function AISandboxPage() {
       } else {
         updateStatus('Status check failed', false);
       }
+    } finally {
+      sandboxStatusThrottleRef.current.inFlight = false;
     }
   };
 

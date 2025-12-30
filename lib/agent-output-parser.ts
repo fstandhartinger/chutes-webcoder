@@ -84,25 +84,26 @@ export function parseClaudeCodeOutput(data: any): ParsedMessage {
       }
 
       if (block.type === 'tool_use') {
-        const toolName = block.name;
+        const toolName = block.name || '';
+        const normalizedTool = toolName.toLowerCase();
         const input = block.input || {};
 
         // Format tool use nicely
-        if (toolName === 'Write' || toolName === 'write_to_file') {
+        if (normalizedTool === 'write' || normalizedTool === 'write_to_file') {
           toolUses.push({
             type: 'tool-use',
             content: `Creating file: ${input.file_path || input.path || 'file'}`,
             metadata: { toolName, filePath: input.file_path || input.path }
           });
-        } else if (toolName === 'Edit') {
+        } else if (normalizedTool === 'edit') {
           toolUses.push({
             type: 'tool-use',
             content: `Editing file: ${input.file_path || 'file'}`,
             metadata: { toolName, filePath: input.file_path }
           });
-        } else if (toolName === 'Read') {
+        } else if (normalizedTool === 'read') {
           // Reading files is less important, skip showing it
-        } else if (toolName === 'Bash') {
+        } else if (normalizedTool === 'bash') {
           const cmd = input.command || '';
           // Clean up the command display - show npm/install commands
           if (cmd.includes('npm install') || cmd.includes('npm run')) {
@@ -113,6 +114,47 @@ export function parseClaudeCodeOutput(data: any): ParsedMessage {
               metadata: { toolName }
             });
           }
+        } else if (normalizedTool === 'glob') {
+          const pattern = input.pattern || input.glob || input.path || '';
+          toolUses.push({
+            type: 'tool-use',
+            content: pattern ? `Searching files: ${pattern}` : 'Searching files...',
+            metadata: { toolName }
+          });
+        } else if (normalizedTool === 'grep') {
+          const pattern = input.pattern || input.query || '';
+          const path = input.path || input.directory || '';
+          const details = [pattern ? `"${pattern}"` : '', path ? `in ${path}` : '']
+            .filter(Boolean)
+            .join(' ');
+          toolUses.push({
+            type: 'tool-use',
+            content: details ? `Searching ${details}` : 'Searching workspace...',
+            metadata: { toolName }
+          });
+        } else if (normalizedTool === 'task') {
+          const label = input.title || input.description || input.prompt || input.task || 'Task';
+          toolUses.push({
+            type: 'tool-use',
+            content: `Working on: ${label}`,
+            metadata: { toolName }
+          });
+        } else if (normalizedTool === 'taskoutput') {
+          const summary = input.output || input.result || input.message;
+          if (summary) {
+            const trimmed = String(summary).trim();
+            toolUses.push({
+              type: 'tool-use',
+              content: trimmed.length > 120 ? `Task update: ${trimmed.slice(0, 120)}…` : `Task update: ${trimmed}`,
+              metadata: { toolName }
+            });
+          }
+        } else if (normalizedTool === 'exitplan') {
+          toolUses.push({
+            type: 'tool-use',
+            content: 'Finalizing plan...',
+            metadata: { toolName }
+          });
         }
         // Skip other tool uses to reduce noise
       }

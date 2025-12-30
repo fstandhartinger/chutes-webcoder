@@ -22,7 +22,10 @@ async function ensureCheckpointDir(provider: any) {
 
 export async function GET(request: NextRequest) {
   try {
-    const sandboxId = request.nextUrl.searchParams.get('sandboxId');
+    const sandboxId = request.nextUrl.searchParams.get('sandboxId') ||
+      request.nextUrl.searchParams.get('project') ||
+      request.cookies.get('sandySandboxId')?.value ||
+      request.headers.get('x-sandbox-id');
     if (!sandboxId) {
       return NextResponse.json({ success: false, error: 'sandboxId is required' }, { status: 400 });
     }
@@ -43,7 +46,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const sandboxId = body?.sandboxId;
+    const sandboxId = body?.sandboxId ||
+      request.nextUrl.searchParams.get('sandboxId') ||
+      request.nextUrl.searchParams.get('project') ||
+      request.cookies.get('sandySandboxId')?.value ||
+      request.headers.get('x-sandbox-id');
     const action = body?.action || 'create';
 
     if (!sandboxId) {

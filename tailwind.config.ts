@@ -114,6 +114,15 @@ const themeConfig: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
         inherit: "inherit",
+        "2": "2px",
+        "3": "3px",
+        "4": "4px",
+        "6": "6px",
+        "8": "8px",
+        "10": "10px",
+        "12": "12px",
+        "16": "16px",
+        "20": "20px",
       },
       // Keep custom transition timing
       transitionTimingFunction: {
