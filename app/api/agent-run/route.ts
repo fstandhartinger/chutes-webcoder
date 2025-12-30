@@ -36,7 +36,7 @@ const AGENTS = {
     }),
     buildCommand: (prompt: string, model: string) => [
       'claude', '-p', prompt,
-      '--output-format', 'stream-json',
+      '--output-format', 'json',
       '--verbose',
       '--no-session-persistence',
       '--append-system-prompt', CLAUDE_TOOL_PROMPT,
