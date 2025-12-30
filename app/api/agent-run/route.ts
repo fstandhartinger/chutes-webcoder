@@ -803,6 +803,27 @@ CONFIGEOF`,
         // Get exit code
         const exitCode = await getExitCode(sandboxId, doneFile);
         const cancelled = exitCode === 130;
+        if (!cancelled && exitCode !== 0) {
+          try {
+            const tailResult = await execInSandbox(
+              sandboxId,
+              `tail -n 50 ${outputFile} 2>/dev/null || true`,
+              {},
+              5000
+            );
+            const tailText = stripAnsi(tailResult.stdout || '').trim();
+            if (tailText) {
+              const tailLines = tailText.split('\n').slice(-10);
+              const joined = tailLines.join(' | ');
+              const snippet = joined.length > 500 ? `${joined.slice(0, 500)}…` : joined;
+              await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}. Last output: ${snippet}` });
+            } else {
+              await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}.` });
+            }
+          } catch {
+            await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}.` });
+          }
+        }
 
         if (cancelled) {
           await sendEvent({ type: 'status', message: 'Agent cancelled.' });
