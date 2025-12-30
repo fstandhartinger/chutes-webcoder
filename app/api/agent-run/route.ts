@@ -587,7 +587,12 @@ export async function POST(request: NextRequest) {
         const env = agentConfig.setupEnv(resolvedModel, apiKey);
         
         // Clean up any previous output files
-        await execInSandbox(sandboxId, `rm -f ${outputFile} ${pidFile} ${doneFile}`, {}, 5000).catch(() => {});
+        await execInSandbox(
+          sandboxId,
+          `rm -f ${outputFile} ${pidFile} ${doneFile} /tmp/agent_prompt.txt /tmp/agent_cmd.sh`,
+          {},
+          5000
+        ).catch(() => {});
         
         // For Codex, create config.toml before running
         if (agent === 'codex') {
@@ -657,11 +662,36 @@ CONFIGEOF`,
         // Wrap prompt with React/Vite system instructions
         const wrappedPrompt = wrapPromptForReactVite(prompt);
 
-        // Build command
-        const commandParts = agentConfig.buildCommand(wrappedPrompt, resolvedModel);
-        const command = commandParts.map(part =>
-          part.includes(' ') || part.includes('"') ? `"${part.replace(/"/g, '\\"')}"` : part
-        ).join(' ');
+        let command = '';
+        if (agent === 'codex') {
+          const promptFile = '/tmp/agent_prompt.txt';
+          const scriptFile = '/tmp/agent_cmd.sh';
+          await execInSandbox(
+            sandboxId,
+            `cat > ${promptFile} << '__CHUTES_PROMPT_EOF__'
+${wrappedPrompt}
+__CHUTES_PROMPT_EOF__`,
+            {},
+            10000
+          );
+          await execInSandbox(
+            sandboxId,
+            `cat > ${scriptFile} << '__CHUTES_CMD_EOF__'
+#!/bin/sh
+codex exec --full-auto --skip-git-repo-check --model "${resolvedModel}" - < ${promptFile}
+__CHUTES_CMD_EOF__
+chmod +x ${scriptFile}`,
+            env,
+            10000
+          );
+          command = `sh ${scriptFile}`;
+        } else {
+          // Build command
+          const commandParts = agentConfig.buildCommand(wrappedPrompt, resolvedModel);
+          command = commandParts.map(part =>
+            part.includes(' ') || part.includes('"') ? `"${part.replace(/"/g, '\\"')}"` : part
+          ).join(' ');
+        }
         
         await sendEvent({ 
           type: 'status', 
