@@ -627,6 +627,48 @@ CONFIGEOF`,
             10000
           );
           console.log(`[agent-run:${requestId}] Created Codex config.toml`);
+
+          const helperScript = `
+set -e
+if ! command -v write >/dev/null 2>&1; then
+  cat > /usr/local/bin/write << 'WRITE_EOF'
+#!/bin/sh
+set -e
+path="$1"
+shift || true
+python3 - "$path" "$@" << 'PY'
+import sys
+path = sys.argv[1]
+if len(sys.argv) > 2:
+    data = " ".join(sys.argv[2:])
+else:
+    data = sys.stdin.read()
+with open(path, "w", encoding="utf-8") as f:
+    f.write(data)
+PY
+WRITE_EOF
+  chmod +x /usr/local/bin/write
+fi
+if ! command -v apply_patch >/dev/null 2>&1; then
+  cat > /usr/local/bin/apply_patch << 'PATCH_EOF'
+#!/bin/sh
+set -e
+if [ "$#" -gt 0 ] && [ -f "$1" ]; then
+  patch -p0 -u < "$1"
+else
+  patch -p0 -u
+fi
+PATCH_EOF
+  chmod +x /usr/local/bin/apply_patch
+fi
+`;
+          await execInSandbox(
+            sandboxId,
+            `bash -lc ${JSON.stringify(helperScript)}`,
+            {},
+            10000
+          );
+          console.log(`[agent-run:${requestId}] Ensured Codex helper scripts`);
         }
 
         if (agent === 'opencode') {
