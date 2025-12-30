@@ -762,9 +762,11 @@ chmod +x ${scriptFile}`,
         let running = true;
         let pollCount = 0;
         let consecutiveErrors = 0;
-        const maxPolls = 1200; // 10 minutes at 500ms intervals
         const pollInterval = 500; // 500ms between polls
         const maxConsecutiveErrors = 5; // Allow some transient errors
+        const runStartedAt = Date.now();
+        const maxRunMs = maxDuration * 1000;
+        const maxPolls = Math.ceil(maxRunMs / pollInterval) + 200;
 
         // Buffer for incomplete JSON lines (Claude Code stream-json format)
         let jsonLineBuffer = '';
@@ -931,7 +933,13 @@ chmod +x ${scriptFile}`,
               break;
             }
           }
-          
+
+          if (running && Date.now() - runStartedAt > maxRunMs) {
+            await terminateAgent('Agent timed out after reaching the maximum run time.', 124);
+            running = false;
+            break;
+          }
+
           // Send heartbeat and check for file changes every 10 polls (5 seconds)
           if (pollCount % 10 === 0 && running) {
             await sendEvent({ type: 'heartbeat', elapsed: pollCount * pollInterval / 1000 });
