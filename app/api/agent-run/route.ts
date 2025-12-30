@@ -93,14 +93,14 @@ const AGENTS = {
     command: 'opencode',
     getApiKey: () => process.env.CHUTES_API_KEY,
     setupEnv: (_model: string, apiKey: string) => ({
-      OPENAI_API_KEY: apiKey,
-      OPENAI_BASE_URL: process.env.CHUTES_BASE_URL || 'https://llm.chutes.ai/v1',
+      CHUTES_API_KEY: apiKey,
+      CHUTES_BASE_URL: process.env.CHUTES_BASE_URL || 'https://llm.chutes.ai/v1',
       NO_COLOR: '1',
       TERM: 'dumb',
     }),
     buildCommand: (prompt: string, model: string) => [
       'opencode', 'run',
-      '--model', `openai/${model}`,
+      '--model', `chutes-openai/${model}`,
       '--agent', 'build',
       '--print-logs',
       prompt
@@ -580,6 +580,36 @@ CONFIGEOF`,
             10000
           );
           console.log(`[agent-run:${requestId}] Created Codex config.toml`);
+        }
+
+        if (agent === 'opencode') {
+          const opencodeConfig = {
+            $schema: 'https://opencode.ai/config.json',
+            provider: {
+              'chutes-openai': {
+                npm: '@ai-sdk/openai-compatible',
+                name: 'Chutes [OpenAI compatible]',
+                options: {
+                  baseURL: process.env.CHUTES_BASE_URL || 'https://llm.chutes.ai/v1',
+                  apiKey
+                },
+                models: {
+                  [resolvedModel]: {
+                    name: appConfig.ai.modelDisplayNames[resolvedModel] || resolvedModel
+                  }
+                }
+              }
+            }
+          };
+          await execInSandbox(
+            sandboxId,
+            `mkdir -p /root/.config/opencode && cat > /root/.config/opencode/opencode.json << 'CONFIGEOF'
+${JSON.stringify(opencodeConfig, null, 2)}
+CONFIGEOF`,
+            env,
+            10000
+          );
+          console.log(`[agent-run:${requestId}] Created OpenCode config`);
         }
         
         // Wrap prompt with React/Vite system instructions
