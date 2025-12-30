@@ -616,6 +616,7 @@ CONFIGEOF`,
         let forcedExitCode: number | null = null;
         let forcedExitReason: string | null = null;
         const claudeToolUseMap = new Map<string, { name: string; filePath?: string }>();
+        let baselineFilesInitialized = false;
         const CLAUDE_IDLE_AFTER_EDIT_MS = 45000;
         const CLAUDE_IDLE_NO_EDIT_MS = 90000;
 
@@ -756,6 +757,7 @@ CONFIGEOF`,
                 5000
               );
               if (fileListResult.exitCode === 0 && fileListResult.stdout.trim()) {
+                const isBaselineScan = !baselineFilesInitialized && knownFileStats.size === 0;
                 const currentFiles = new Set<string>();
                 const changes: Array<{ path: string; changeType: 'created' | 'modified' }> = [];
                 const lines = fileListResult.stdout.trim().split('\n').filter(Boolean);
@@ -780,7 +782,11 @@ CONFIGEOF`,
                 }
 
                 if (changes.length > 0) {
-                  hasFileChanges = true;
+                  if (!isBaselineScan) {
+                    hasFileChanges = true;
+                  } else {
+                    baselineFilesInitialized = true;
+                  }
                   const filesWithContent: Array<{ path: string; content: string; changeType: 'created' | 'modified' }> = [];
                   const limitedChanges = changes.slice(0, 10);
 
