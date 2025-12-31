@@ -548,15 +548,8 @@ export async function POST(request: NextRequest) {
     }
     
     const requestedModel = model;
-    let fallbackNote: string | null = null;
-    let runAgent: AgentType = requestedAgent;
-
-    const isClaudeCompatibleModel = (candidate: string) => /claude|anthropic/i.test(candidate);
-    if (requestedAgent === 'claude-code' && !isClaudeCompatibleModel(requestedModel)) {
-      runAgent = 'aider';
-      fallbackNote = `Claude Code isn't compatible with ${appConfig.ai.modelDisplayNames[requestedModel] || requestedModel}. Running Aider instead.`;
-    }
-
+    const fallbackNote: string | null = null;
+    const runAgent: AgentType = requestedAgent;
     const agentConfig = AGENTS[runAgent];
     const resolvedModel = 'resolveModel' in agentConfig && typeof agentConfig.resolveModel === 'function'
       ? agentConfig.resolveModel(model)
@@ -686,6 +679,37 @@ fi
             10000
           );
           console.log(`[agent-run:${requestId}] Ensured Codex helper scripts`);
+        }
+
+        if (runAgent === 'claude-code') {
+          const claudeSettings = {
+            model: resolvedModel,
+            alwaysThinkingEnabled: true,
+            env: {
+              ANTHROPIC_AUTH_TOKEN: apiKey,
+              ANTHROPIC_API_KEY: apiKey,
+              ANTHROPIC_BASE_URL: 'https://claude.chutes.ai',
+              API_TIMEOUT_MS: '6000000',
+              CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
+              ANTHROPIC_DEFAULT_HAIKU_MODEL: resolvedModel,
+              ANTHROPIC_DEFAULT_SONNET_MODEL: resolvedModel,
+              ANTHROPIC_DEFAULT_OPUS_MODEL: resolvedModel,
+              CLAUDE_CODE_SUBAGENT_MODEL: resolvedModel,
+              ANTHROPIC_SMALL_FAST_MODEL: resolvedModel
+            }
+          };
+          await execInSandbox(
+            sandboxId,
+            `mkdir -p /root/.claude && cat > /root/.claude/settings.json << 'CONFIGEOF'
+${JSON.stringify(claudeSettings, null, 2)}
+CONFIGEOF
+cat > /root/.claude.json << 'CONFIGEOF'
+${JSON.stringify({ hasCompletedOnboarding: true }, null, 2)}
+CONFIGEOF`,
+            {},
+            10000
+          );
+          console.log(`[agent-run:${requestId}] Wrote Claude Code settings`);
         }
 
         if (runAgent === 'opencode') {
