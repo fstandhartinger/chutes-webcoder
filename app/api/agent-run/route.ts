@@ -164,6 +164,7 @@ RULES:
 - If you do need to install new packages, use: npm install --legacy-peer-deps <package-name>
 - When editing files, prefer apply_patch or the "write" helper (write <path> ... or write <path> via stdin) to avoid shell-escaping errors
 - If you need to replace an entire file, use a heredoc: cat <<'EOF' > /workspace/src/App.jsx
+- Do NOT try to write App.jsx using echo/printf/node/python one-liners; those often break due to escaping
 
 TECH STACK (already set up):
 - React 18 with functional components and hooks
