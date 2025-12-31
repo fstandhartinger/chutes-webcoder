@@ -78,7 +78,7 @@ const AGENTS = {
       '--add-dir', '/workspace',
       '--tools', 'Write,Edit,Bash,Glob,Grep,Task,TaskOutput',
       '--allowedTools', 'Write,Edit,Bash,Glob,Grep,Task,TaskOutput',
-      '--permission-mode', 'bypassPermissions'
+      '--permission-mode', 'acceptEdits'
     ],
   },
   'codex': {
