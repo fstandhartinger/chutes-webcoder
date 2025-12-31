@@ -119,7 +119,7 @@ const AGENTS = {
       TERM: 'dumb',
     }),
     buildCommand: (prompt: string, model: string) => [
-      'droid',
+      '/root/.local/bin/droid',
       'exec',
       '--output-format', 'text',
       '--auto', 'medium',
