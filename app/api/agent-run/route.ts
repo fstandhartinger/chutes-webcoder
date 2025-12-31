@@ -553,8 +553,8 @@ export async function POST(request: NextRequest) {
 
     const isClaudeCompatibleModel = (candidate: string) => /claude|anthropic/i.test(candidate);
     if (requestedAgent === 'claude-code' && !isClaudeCompatibleModel(requestedModel)) {
-      runAgent = 'codex';
-      fallbackNote = `Claude Code isn't compatible with ${appConfig.ai.modelDisplayNames[requestedModel] || requestedModel}. Running OpenAI Codex instead.`;
+      runAgent = 'aider';
+      fallbackNote = `Claude Code isn't compatible with ${appConfig.ai.modelDisplayNames[requestedModel] || requestedModel}. Running Aider instead.`;
     }
 
     const agentConfig = AGENTS[runAgent];
