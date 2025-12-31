@@ -113,6 +113,7 @@ const AGENTS = {
     resolveModel: (_model: string) => process.env.DROID_MODEL || 'glm-4.6',
     setupEnv: (_model: string, apiKey: string) => ({
       FACTORY_API_KEY: apiKey,
+      PATH: '/root/.factory/bin:/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
       NO_COLOR: '1',
       TERM: 'dumb',
     }),
@@ -749,6 +750,35 @@ CONFIGEOF`,
             10000
           );
           console.log(`[agent-run:${requestId}] Created OpenCode config`);
+        }
+
+        if (runAgent === 'droid') {
+          try {
+            const droidCheck = await execInSandbox(
+              sandboxId,
+              'command -v droid >/dev/null 2>&1 && echo "ok" || echo "missing"',
+              env,
+              10000
+            );
+            if (droidCheck.stdout.trim() !== 'ok') {
+              console.log(`[agent-run:${requestId}] Droid CLI missing, installing...`);
+              await sendEvent({ type: 'status', message: 'Installing Factory Droid CLI...' });
+              await execInSandbox(
+                sandboxId,
+                'curl -fsSL https://app.factory.ai/cli | sh',
+                env,
+                120000
+              );
+              await execInSandbox(
+                sandboxId,
+                'command -v droid >/dev/null 2>&1 && echo "ready" || echo "missing"',
+                env,
+                10000
+              );
+            }
+          } catch (error) {
+            console.warn(`[agent-run:${requestId}] Droid install check failed:`, error);
+          }
         }
         
         // Wrap prompt with React/Vite system instructions
