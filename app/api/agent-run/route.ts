@@ -73,7 +73,6 @@ const AGENTS = {
       '--include-partial-messages',
       '--verbose',
       '--no-session-persistence',
-      '--dangerously-skip-permissions',
       '--append-system-prompt', CLAUDE_TOOL_PROMPT,
       '--model', model,
       '--add-dir', '/workspace',
