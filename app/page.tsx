@@ -2704,17 +2704,14 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) {
-            console.log('[chat] Stream complete. Total chunks:', chunkCount);
-            break;
+          const chunk = done ? '' : decoder.decode(value, { stream: true });
+          if (!done) {
+            chunkCount++;
+            if (chunkCount <= 3) {
+              console.log('[chat] Chunk', chunkCount, ':', chunk.substring(0, 200));
+            }
           }
-          
-          chunkCount++;
-          const chunk = decoder.decode(value, { stream: true });
-          if (chunkCount <= 3) {
-            console.log('[chat] Chunk', chunkCount, ':', chunk.substring(0, 200));
-          }
-          const { jsonObjects } = sseBuffer.addChunk(chunk);
+          const { jsonObjects } = sseBuffer.addChunk(chunk, done);
           
           for (const data of jsonObjects) {
             try {
@@ -3250,6 +3247,10 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               } catch (e) {
                 console.error('Failed to parse SSE data:', e);
               }
+          }
+          if (done) {
+            console.log('[chat] Stream complete. Total chunks:', chunkCount);
+            break;
           }
         }
       }

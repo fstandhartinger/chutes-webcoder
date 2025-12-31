@@ -375,55 +375,68 @@ export function shouldDisplayMessage(parsed: ParsedMessage): boolean {
  */
 export class SSEJsonBuffer {
   private buffer: string = '';
-  private incompleteJson: string = '';
 
   /**
    * Add a chunk to the buffer and return any complete JSON objects
    */
-  addChunk(chunk: string): { jsonObjects: any[]; lines: string[] } {
-    this.buffer += chunk;
+  addChunk(chunk: string, flush: boolean = false): { jsonObjects: any[]; lines: string[] } {
+    this.buffer += chunk.replace(/\r\n/g, '\n');
     const jsonObjects: any[] = [];
     const lines: string[] = [];
 
-    // Split by newlines but keep track of incomplete JSON
-    const allLines = this.buffer.split('\n');
-    this.buffer = '';
+    // Split by SSE event delimiter to avoid losing data across chunks
+    const events = this.buffer.split('\n\n');
+    this.buffer = events.pop() || '';
+    if (flush && this.buffer.trim()) {
+      events.push(this.buffer);
+      this.buffer = '';
+    }
 
-    for (let i = 0; i < allLines.length; i++) {
-      const line = allLines[i];
-      const isLastLine = i === allLines.length - 1;
+    for (const event of events) {
+      this.consumeEvent(event, jsonObjects, lines);
+    }
 
-      if (line.startsWith('data: ')) {
-        const jsonStr = this.incompleteJson + line.slice(6);
+    return { jsonObjects, lines };
+  }
 
-        try {
-          const parsed = JSON.parse(jsonStr);
-          jsonObjects.push(parsed);
-          this.incompleteJson = '';
-        } catch (e) {
-          // If this is the last line and parsing failed, it might be incomplete
-          if (isLastLine) {
-            this.incompleteJson = jsonStr;
-          } else {
-            // Try to see if it's a complete but malformed line
-            // If so, try to extract what we can
-            const extracted = this.tryExtractJson(jsonStr);
-            if (extracted) {
-              jsonObjects.push(extracted);
-              this.incompleteJson = '';
-            } else {
-              // Accumulate for next chunk
-              this.incompleteJson = jsonStr;
-            }
-          }
+  /**
+   * Flush any remaining buffered data at stream end.
+   */
+  flush(): { jsonObjects: any[]; lines: string[] } {
+    return this.addChunk('', true);
+  }
+
+  private consumeEvent(event: string, jsonObjects: any[], lines: string[]): void {
+    if (!event.trim()) return;
+    const dataLines: string[] = [];
+    const eventLines = event.split('\n');
+
+    for (const line of eventLines) {
+      if (line.startsWith('data:')) {
+        let payload = line.slice(5);
+        if (payload.startsWith(' ')) {
+          payload = payload.slice(1);
         }
+        dataLines.push(payload);
       } else if (line.trim() && !line.startsWith(':')) {
-        // Non-SSE line
         lines.push(line);
       }
     }
 
-    return { jsonObjects, lines };
+    if (dataLines.length === 0) {
+      return;
+    }
+
+    const jsonStr = dataLines.join('\n');
+    try {
+      const parsed = JSON.parse(jsonStr);
+      jsonObjects.push(parsed);
+    } catch (e) {
+      const extracted = this.tryExtractJson(jsonStr);
+      if (extracted) {
+        jsonObjects.push(extracted);
+      }
+    }
   }
 
   /**
@@ -461,17 +474,9 @@ export class SSEJsonBuffer {
   }
 
   /**
-   * Check if there's incomplete JSON waiting
-   */
-  hasIncomplete(): boolean {
-    return this.incompleteJson.length > 0;
-  }
-
-  /**
    * Clear the buffer
    */
   clear(): void {
     this.buffer = '';
-    this.incompleteJson = '';
   }
 }

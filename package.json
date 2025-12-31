@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "tsx tests/sandbox-utils.unit.test.ts",
+    "test:unit": "tsx --test tests/*.unit.test.ts",
     "test:integration": "tsx tests/sandbox-utils.integration.test.ts",
     "test:api": "tsx tests/parse-ai-response.test.ts",
     "test:code": "tsx tests/code-application-flow.test.ts",
