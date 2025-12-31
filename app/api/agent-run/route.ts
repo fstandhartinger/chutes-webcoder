@@ -833,13 +833,25 @@ chmod +x ${scriptFile}`,
             10000
           );
           command = `sh ${scriptFile}`;
+        } else if (runAgent === 'claude-code') {
+          const scriptFile = '/tmp/agent_cmd_claude.sh';
+          const commandParts = agentConfig.buildCommand(wrappedPrompt, resolvedModel);
+          const claudeCommand = commandParts.map(part => escapeShellArg(part)).join(' ');
+          await execInSandbox(
+            sandboxId,
+            `cat > ${scriptFile} << '__CHUTES_CMD_EOF__'
+#!/bin/sh
+prompt="$(cat ${promptFile})"
+${claudeCommand} "$prompt"
+__CHUTES_CMD_EOF__
+chmod +x ${scriptFile}`,
+            env,
+            10000
+          );
+          command = `sh ${scriptFile}`;
         } else {
           const commandParts = agentConfig.buildCommand(wrappedPrompt, resolvedModel);
-          if (runAgent === 'claude-code') {
-            command = buildShellCommand(commandParts, { stdinFile: promptFile });
-          } else {
-            command = buildShellCommand(commandParts);
-          }
+          command = buildShellCommand(commandParts);
         }
         
         await sendEvent({ 
@@ -1380,4 +1392,3 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
-
