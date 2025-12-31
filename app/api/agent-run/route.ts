@@ -764,18 +764,41 @@ CONFIGEOF`,
             if (droidCheck.stdout.trim() !== 'ok') {
               console.log(`[agent-run:${requestId}] Droid CLI missing, installing...`);
               await sendEvent({ type: 'status', message: 'Installing Factory Droid CLI...' });
-              await execInSandbox(
+              const installResult = await execInSandbox(
                 sandboxId,
                 'curl -fsSL https://app.factory.ai/cli | sh',
                 env,
                 120000
               );
-              await execInSandbox(
+              const installStdout = (installResult.stdout || '').trim();
+              const installStderr = (installResult.stderr || '').trim();
+              if (installStdout) {
+                console.log(`[agent-run:${requestId}] Droid install stdout: ${installStdout.slice(0, 2000)}`);
+              }
+              if (installStderr) {
+                console.log(`[agent-run:${requestId}] Droid install stderr: ${installStderr.slice(0, 2000)}`);
+              }
+              const pathProbe = await execInSandbox(
+                sandboxId,
+                'ls -la /root/.local/bin /root/.factory/bin 2>/dev/null || true',
+                env,
+                10000
+              );
+              if (pathProbe.stdout.trim()) {
+                console.log(`[agent-run:${requestId}] Droid install paths:\n${pathProbe.stdout.slice(0, 2000)}`);
+              }
+              const verifyResult = await execInSandbox(
                 sandboxId,
                 'command -v droid >/dev/null 2>&1 && echo "ready" || echo "missing"',
                 env,
                 10000
               );
+              if (verifyResult.stdout.trim() !== 'ready') {
+                await sendEvent({
+                  type: 'status',
+                  message: 'Factory Droid CLI is still missing after install attempt.'
+                });
+              }
             }
           } catch (error) {
             console.warn(`[agent-run:${requestId}] Droid install check failed:`, error);
