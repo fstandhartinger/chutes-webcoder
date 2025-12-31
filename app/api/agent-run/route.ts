@@ -114,6 +114,7 @@ const AGENTS = {
     setupEnv: (_model: string, apiKey: string) => ({
       FACTORY_API_KEY: apiKey,
       PATH: '/root/.factory/bin:/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+      HOME: '/root',
       NO_COLOR: '1',
       TERM: 'dumb',
     }),
