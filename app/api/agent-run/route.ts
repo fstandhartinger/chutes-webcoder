@@ -757,7 +757,7 @@ CONFIGEOF`,
           try {
             const droidCheck = await execInSandbox(
               sandboxId,
-              'command -v droid >/dev/null 2>&1 && echo "ok" || echo "missing"',
+              'if test -x /root/.local/bin/droid || test -x /root/.factory/bin/droid; then echo "ok"; else echo "missing"; fi',
               env,
               10000
             );
@@ -789,7 +789,7 @@ CONFIGEOF`,
               }
               const verifyResult = await execInSandbox(
                 sandboxId,
-                'command -v droid >/dev/null 2>&1 && echo "ready" || echo "missing"',
+                'test -x /root/.local/bin/droid && echo "ready" || echo "missing"',
                 env,
                 10000
               );
@@ -1380,3 +1380,4 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
+
