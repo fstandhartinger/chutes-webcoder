@@ -68,7 +68,6 @@ const AGENTS = {
     }),
     buildCommand: (_prompt: string, model: string) => [
       'claude', '-p',
-      '--input-format', 'text',
       '--output-format', 'stream-json',
       '--include-partial-messages',
       '--verbose',
@@ -1433,3 +1432,5 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
+
+
