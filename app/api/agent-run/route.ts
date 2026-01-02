@@ -75,7 +75,7 @@ const AGENTS = {
       '--include-partial-messages',
       '--verbose',
       '--no-session-persistence',
-      '--system-prompt', CLAUDE_TOOL_PROMPT,
+      '--append-system-prompt', CLAUDE_TOOL_PROMPT,
       '--model', model,
       '--add-dir', '/workspace',
       '--tools', 'Read,Write,Edit,Bash,Glob,Grep,Task,TaskOutput',
