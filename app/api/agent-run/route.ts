@@ -606,27 +606,6 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const requestedModel = model;
-    const fallbackNote: string | null = null;
-    const runAgent: AgentType = requestedAgent;
-    const agentConfig = AGENTS[runAgent];
-    const resolvedModel = 'resolveModel' in agentConfig && typeof agentConfig.resolveModel === 'function'
-      ? agentConfig.resolveModel(model)
-      : model;
-
-    // Get API key per agent
-    const apiKey = ('getApiKey' in agentConfig && typeof agentConfig.getApiKey === 'function')
-      ? agentConfig.getApiKey()
-      : process.env.CHUTES_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: runAgent === 'droid' ? 'FACTORY_API_KEY is not configured' : 'CHUTES_API_KEY is not configured' },
-        { status: 500 }
-      );
-    }
-    
-    console.log(`[agent-run:${requestId}] Using agent config: "${agentConfig.name}" (command: ${agentConfig.command})`);
-
     // Create streaming response
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
@@ -644,27 +623,96 @@ export async function POST(request: NextRequest) {
       const outputFile = '/tmp/agent_output.log';
       const pidFile = '/tmp/agent.pid';
       const doneFile = '/tmp/agent.done';
-      let lineBuffer = '';
-      
-      try {
-        await sendEvent({ type: 'status', message: `Starting ${agentConfig.name}...` });
-        if (fallbackNote) {
-          await sendEvent({ type: 'status', message: fallbackNote });
+      const appPath = '/workspace/src/App.jsx';
+
+      const readTextFile = async (filePath: string): Promise<string | null> => {
+        const missingMarker = '__CHUTES_FILE_MISSING__';
+        try {
+          const result = await execInSandbox(
+            sandboxId,
+            `if test -f ${escapeShellArg(filePath)}; then cat ${escapeShellArg(filePath)}; else echo ${escapeShellArg(missingMarker)}; fi`,
+            {},
+            5000
+          );
+          const output = result.stdout ?? '';
+          if (output.trim() === missingMarker) {
+            return null;
+          }
+          return output;
+        } catch {
+          return null;
         }
-        
+      };
+
+      const restoreMissingAppFile = async (knownFileContents: Map<string, string>) => {
+        try {
+          const existsResult = await execInSandbox(
+            sandboxId,
+            `test -f ${appPath} && echo "exists" || echo "missing"`,
+            {},
+            5000
+          );
+          if (existsResult.stdout.trim() === 'exists') {
+            return;
+          }
+          const cached = knownFileContents.get(appPath);
+          if (!cached) {
+            return;
+          }
+          const encoded = Buffer.from(cached, 'utf-8').toString('base64');
+          await execInSandbox(
+            sandboxId,
+            `python3 - << 'PY'\nimport base64\ncontent = base64.b64decode('${encoded}').decode('utf-8')\nwith open('${appPath}', 'w', encoding='utf-8') as f:\n    f.write(content)\nPY`,
+            {},
+            10000
+          );
+          await sendEvent({ type: 'status', message: 'Restored App.jsx after an unexpected deletion.' });
+        } catch {
+          // Ignore restore failures
+        }
+      };
+
+      const runAgentProcess = async (agentToRun: AgentType, promptToRun: string) => {
+        const agentConfig = AGENTS[agentToRun];
+        const resolvedModel = 'resolveModel' in agentConfig && typeof agentConfig.resolveModel === 'function'
+          ? agentConfig.resolveModel(model)
+          : model;
+        const apiKey = ('getApiKey' in agentConfig && typeof agentConfig.getApiKey === 'function')
+          ? agentConfig.getApiKey()
+          : process.env.CHUTES_API_KEY;
+        if (!apiKey) {
+          throw new Error(agentToRun === 'droid' ? 'FACTORY_API_KEY is not configured' : 'CHUTES_API_KEY is not configured');
+        }
+
+        console.log(`[agent-run:${requestId}] Using agent config: "${agentConfig.name}" (command: ${agentConfig.command})`);
+        await sendEvent({ type: 'status', message: `Starting ${agentConfig.name}...` });
+
+        const baselineAppContent = await readTextFile(appPath);
+
         // Build environment variables
         const env = agentConfig.setupEnv(resolvedModel, apiKey);
-        
+
+        let lineBuffer = '';
+        // Buffer for incomplete JSON lines (Claude Code stream-json format)
+        let jsonLineBuffer = '';
+
+        // Track known files and mtimes for change detection
+        const knownFileStats: Map<string, number> = new Map();
+        const knownFileContents: Map<string, string> = new Map();
+        if (baselineAppContent !== null) {
+          knownFileContents.set(appPath, baselineAppContent);
+        }
+
         // Clean up any previous output files
         await execInSandbox(
           sandboxId,
-          `rm -f ${outputFile} ${pidFile} ${doneFile} /tmp/agent_prompt.txt /tmp/agent_cmd.sh`,
+          `rm -f ${outputFile} ${pidFile} ${doneFile} /tmp/agent_prompt.txt /tmp/agent_cmd.sh /tmp/agent_cmd_claude.sh`,
           {},
           5000
         ).catch(() => {});
-        
+
         // For Codex, create config.toml before running
-        if (runAgent === 'codex') {
+        if (agentToRun === 'codex') {
           const configToml = `
 # Generated by chutes-webcoder agent-run
 model_provider = "chutes-ai"
@@ -740,7 +788,7 @@ fi
           console.log(`[agent-run:${requestId}] Ensured Codex helper scripts`);
         }
 
-        if (runAgent === 'claude-code') {
+        if (agentToRun === 'claude-code') {
           const claudeSettings = {
             env: {
               ANTHROPIC_AUTH_TOKEN: apiKey,
@@ -764,7 +812,7 @@ CONFIGEOF`,
           console.log(`[agent-run:${requestId}] Wrote Claude Code settings`);
         }
 
-        if (runAgent === 'opencode') {
+        if (agentToRun === 'opencode') {
           const opencodeConfig = {
             $schema: 'https://opencode.ai/config.json',
             provider: {
@@ -794,7 +842,7 @@ CONFIGEOF`,
           console.log(`[agent-run:${requestId}] Created OpenCode config`);
         }
 
-        if (runAgent === 'droid') {
+        if (agentToRun === 'droid') {
           try {
             const droidCheck = await execInSandbox(
               sandboxId,
@@ -845,15 +893,15 @@ CONFIGEOF`,
             console.warn(`[agent-run:${requestId}] Droid install check failed:`, error);
           }
         }
-        
+
         // Wrap prompt with React/Vite system instructions
-        const wrappedPrompt = runAgent === 'claude-code'
-          ? wrapPromptForClaudeReactVite(prompt)
-          : wrapPromptForReactVite(prompt);
+        const wrappedPrompt = agentToRun === 'claude-code'
+          ? wrapPromptForClaudeReactVite(promptToRun)
+          : wrapPromptForReactVite(promptToRun);
 
         let command = '';
         const promptFile = '/tmp/agent_prompt.txt';
-        if (runAgent === 'codex' || runAgent === 'claude-code') {
+        if (agentToRun === 'codex' || agentToRun === 'claude-code') {
           await execInSandbox(
             sandboxId,
             `cat > ${promptFile} << '__CHUTES_PROMPT_EOF__'
@@ -863,7 +911,7 @@ __CHUTES_PROMPT_EOF__`,
             10000
           );
         }
-        if (runAgent === 'codex') {
+        if (agentToRun === 'codex') {
           const scriptFile = '/tmp/agent_cmd.sh';
           await execInSandbox(
             sandboxId,
@@ -876,7 +924,7 @@ chmod +x ${scriptFile}`,
             10000
           );
           command = `sh ${scriptFile}`;
-        } else if (runAgent === 'claude-code') {
+        } else if (agentToRun === 'claude-code') {
           const scriptFile = '/tmp/agent_cmd_claude.sh';
           const commandParts = agentConfig.buildCommand(wrappedPrompt, resolvedModel);
           const claudeCommand = commandParts.map(part => escapeShellArg(part)).join(' ');
@@ -896,18 +944,18 @@ chmod +x ${scriptFile}`,
           const commandParts = agentConfig.buildCommand(wrappedPrompt, resolvedModel);
           command = buildShellCommand(commandParts);
         }
-        
-        await sendEvent({ 
-          type: 'status', 
-          message: `Running ${agentConfig.name} with model ${appConfig.ai.modelDisplayNames[resolvedModel] || resolvedModel}...` 
+
+        await sendEvent({
+          type: 'status',
+          message: `Running ${agentConfig.name} with model ${appConfig.ai.modelDisplayNames[resolvedModel] || resolvedModel}...`
         });
-        
+
         console.log(`[agent-run:${requestId}] Executing ${agentConfig.name} command: ${command.substring(0, 200)}...`);
         console.log(`[agent-run:${requestId}] Environment keys:`, Object.keys(env));
-        
+
         // Start the command in background
         await startBackgroundCommand(sandboxId, command, env, outputFile, pidFile, doneFile);
-        
+
         // Poll for output and stream it
         let offset = 0;
         let running = true;
@@ -919,12 +967,6 @@ chmod +x ${scriptFile}`,
         const maxRunMs = maxDuration * 1000;
         const maxPolls = Math.ceil(maxRunMs / pollInterval) + 200;
 
-        // Buffer for incomplete JSON lines (Claude Code stream-json format)
-        let jsonLineBuffer = '';
-
-        // Track known files and mtimes for change detection
-        const knownFileStats: Map<string, number> = new Map();
-        const knownFileContents: Map<string, string> = new Map();
         let lastActivityAt = Date.now();
         let lastIdleStatusAt = 0;
         let hasClaudeToolUse = false;
@@ -1045,7 +1087,7 @@ chmod +x ${scriptFile}`,
             claudeSlowWarned = false;
           }
 
-        if (runAgent === 'claude-code') {
+          if (agentToRun === 'claude-code') {
             jsonLineBuffer += cleanContent;
             const lines = jsonLineBuffer.split('\n');
             jsonLineBuffer = lines.pop() || '';
@@ -1069,10 +1111,10 @@ chmod +x ${scriptFile}`,
                 }
               }
             }
-        } else {
-          lineBuffer += cleanContent;
-          const lines = lineBuffer.split('\n');
-          lineBuffer = lines.pop() || '';
+          } else {
+            lineBuffer += cleanContent;
+            const lines = lineBuffer.split('\n');
+            lineBuffer = lines.pop() || '';
             const meaningfulLines = filterPlainTextLines(lines);
             if (meaningfulLines.length > 0) {
               await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
@@ -1103,9 +1145,9 @@ chmod +x ${scriptFile}`,
           } catch (pollError) {
             consecutiveErrors++;
             console.warn(`[agent-run] Poll error ${consecutiveErrors}/${maxConsecutiveErrors}:`, pollError);
-            
+
             // If sandbox is gone, stop polling
-            if (pollError instanceof Error && 
+            if (pollError instanceof Error &&
                 (pollError.message.includes('404') || pollError.message.includes('not found'))) {
               console.error('[agent-run] Sandbox disappeared during execution');
               await sendEvent({ type: 'error', error: 'Sandbox was terminated unexpectedly' });
@@ -1213,7 +1255,7 @@ chmod +x ${scriptFile}`,
               lastIdleStatusAt = now;
             }
 
-            if (runAgent === 'claude-code' && running) {
+            if (agentToRun === 'claude-code' && running) {
               const idleFor = now - lastActivityAt;
               const shouldForceComplete = hasFileChanges && idleFor > CLAUDE_IDLE_AFTER_EDIT_MS;
               if (shouldForceComplete && !forcedExitReason) {
@@ -1248,7 +1290,7 @@ chmod +x ${scriptFile}`,
             }
           }
         }
-        
+
         if (running && pollCount >= maxPolls) {
           await terminateAgent('Agent timed out after reaching the maximum run time.', 124);
           running = false;
@@ -1271,7 +1313,7 @@ chmod +x ${scriptFile}`,
           await processOutputChunk(finalContent);
         }
 
-        if (runAgent === 'claude-code' && jsonLineBuffer.trim()) {
+        if (agentToRun === 'claude-code' && jsonLineBuffer.trim()) {
           const trimmed = jsonLineBuffer.trim();
           try {
             const parsed = JSON.parse(trimmed);
@@ -1287,13 +1329,13 @@ chmod +x ${scriptFile}`,
               await sendEvent({ type: 'output', text: trimmed });
             }
           }
-        } else if (runAgent !== 'claude-code' && lineBuffer.trim()) {
+        } else if (agentToRun !== 'claude-code' && lineBuffer.trim()) {
           const meaningfulLines = filterPlainTextLines([lineBuffer]);
           if (meaningfulLines.length > 0) {
             await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
           }
         }
-        
+
         // Get exit code
         const exitCode = forcedExitCode ?? await getExitCode(sandboxId, doneFile);
         const cancelled = exitCode === 130;
@@ -1326,38 +1368,33 @@ chmod +x ${scriptFile}`,
           });
         }
 
-        const restoreMissingAppFile = async () => {
-          const appPath = '/workspace/src/App.jsx';
-          try {
-            const existsResult = await execInSandbox(
-              sandboxId,
-              `test -f ${appPath} && echo "exists" || echo "missing"`,
-              {},
-              5000
-            );
-            if (existsResult.stdout.trim() === 'exists') {
-              return;
-            }
-            const cached = knownFileContents.get(appPath);
-            if (!cached) {
-              return;
-            }
-            const encoded = Buffer.from(cached, 'utf-8').toString('base64');
-            await execInSandbox(
-              sandboxId,
-              `python3 - << 'PY'\nimport base64\ncontent = base64.b64decode('${encoded}').decode('utf-8')\nwith open('${appPath}', 'w', encoding='utf-8') as f:\n    f.write(content)\nPY`,
-              {},
-              10000
-            );
-            await sendEvent({ type: 'status', message: 'Restored App.jsx after an unexpected deletion.' });
-          } catch {
-            // Ignore restore failures
-          }
+        const finalAppContent = await readTextFile(appPath);
+        const appChanged = baselineAppContent !== finalAppContent;
+
+        return {
+          exitCode,
+          success,
+          cancelled,
+          hasFileChanges,
+          appChanged,
+          knownFileContents
         };
+      };
 
-        await restoreMissingAppFile();
+      try {
+        let result = await runAgentProcess(requestedAgent, prompt);
 
-        if (cancelled) {
+        if (!result.cancelled && requestedAgent === 'claude-code' && (!result.hasFileChanges || !result.appChanged)) {
+          await sendEvent({
+            type: 'status',
+            message: 'Claude Code produced no edits. Retrying with OpenAI Codex...'
+          });
+          result = await runAgentProcess('codex', prompt);
+        }
+
+        await restoreMissingAppFile(result.knownFileContents);
+
+        if (result.cancelled) {
           await sendEvent({ type: 'status', message: 'Agent cancelled.' });
         } else {
           // After agent completes, ensure Vite is running and serving content
@@ -1407,11 +1444,10 @@ chmod +x ${scriptFile}`,
 
         await sendEvent({
           type: 'complete',
-          exitCode,
-          success,
-          cancelled
+          exitCode: result.exitCode,
+          success: result.success,
+          cancelled: result.cancelled
         });
-        
       } catch (error: unknown) {
         console.error('[agent-run] Error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
