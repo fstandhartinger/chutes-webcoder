@@ -1230,7 +1230,7 @@ chmod +x ${scriptFile}`,
             try {
               const fileListResult = await execInSandbox(
                 sandboxId,
-                'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\n" 2>/dev/null | head -200',
+                'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" -o -name "*.txt" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\n" 2>/dev/null | head -200',
                 {},
                 5000
               );
