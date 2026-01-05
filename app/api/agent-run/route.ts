@@ -1474,6 +1474,7 @@ chmod +x ${scriptFile}`,
 
       try {
         let result = await runAgentProcess(requestedAgent, prompt);
+        let effectiveAgent = requestedAgent;
 
         if (!result.cancelled && requestedAgent === 'claude-code' && !result.hasFileChanges) {
           await sendEvent({
@@ -1481,14 +1482,16 @@ chmod +x ${scriptFile}`,
             message: 'Claude Code produced no edits. Retrying with OpenAI Codex...'
           });
           result = await runAgentProcess('codex', prompt);
+          effectiveAgent = 'codex';
         }
 
-        if (!result.cancelled && requestedAgent === 'codex' && !result.hasFileChanges) {
+        if (!result.cancelled && effectiveAgent === 'codex' && !result.hasFileChanges) {
           await sendEvent({
             type: 'status',
             message: 'Codex produced no edits. Retrying with Aider...'
           });
           result = await runAgentProcess('aider', prompt);
+          effectiveAgent = 'aider';
         }
 
         await restoreMissingAppFile(result.knownFileContents);
