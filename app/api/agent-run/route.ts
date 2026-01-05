@@ -121,7 +121,8 @@ const AGENTS = {
       '--no-auto-commits',        // Don't auto-commit
       '--no-show-model-warnings', // Suppress model warnings
       '--no-pretty',              // Disable pretty output (no spinners/colors)
-      '--message', prompt
+      '--message', prompt,
+      'src/App.jsx'
       // NOTE: Removed --no-stream to allow streaming output
     ],
   },
