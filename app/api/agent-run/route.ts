@@ -1474,7 +1474,7 @@ chmod +x ${scriptFile}`,
       try {
         let result = await runAgentProcess(requestedAgent, prompt);
 
-        if (!result.cancelled && requestedAgent === 'claude-code' && (!result.hasFileChanges || !result.appChanged)) {
+        if (!result.cancelled && requestedAgent === 'claude-code' && !result.hasFileChanges) {
           await sendEvent({
             type: 'status',
             message: 'Claude Code produced no edits. Retrying with OpenAI Codex...'
@@ -1482,7 +1482,7 @@ chmod +x ${scriptFile}`,
           result = await runAgentProcess('codex', prompt);
         }
 
-        if (!result.cancelled && requestedAgent === 'codex' && (!result.hasFileChanges || !result.appChanged)) {
+        if (!result.cancelled && requestedAgent === 'codex' && !result.hasFileChanges) {
           await sendEvent({
             type: 'status',
             message: 'Codex produced no edits. Retrying with Aider...'
