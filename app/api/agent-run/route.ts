@@ -1466,6 +1466,14 @@ chmod +x ${scriptFile}`,
           result = await runAgentProcess('codex', prompt);
         }
 
+        if (!result.cancelled && requestedAgent === 'codex' && (!result.hasFileChanges || !result.appChanged)) {
+          await sendEvent({
+            type: 'status',
+            message: 'Codex produced no edits. Retrying with Aider...'
+          });
+          result = await runAgentProcess('aider', prompt);
+        }
+
         await restoreMissingAppFile(result.knownFileContents);
 
         if (result.cancelled) {
