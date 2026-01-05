@@ -1002,6 +1002,9 @@ chmod +x ${scriptFile}`,
         const maxPolls = Math.ceil(maxRunMs / pollInterval) + 200;
 
         let lastActivityAt = Date.now();
+        let lastHeartbeatAt = Date.now();
+        let outputEmitted = false;
+        let syntheticOutputSent = false;
         let lastIdleStatusAt = 0;
         let hasClaudeToolUse = false;
         let hasFileChanges = false;
@@ -1035,6 +1038,7 @@ chmod +x ${scriptFile}`,
 
         const handleClaudeEvent = async (parsed: any) => {
           await sendEvent({ type: 'agent-output', data: parsed });
+          outputEmitted = true;
 
           if (parsed?.type === 'assistant' && Array.isArray(parsed.message?.content)) {
             for (const block of parsed.message.content) {
@@ -1161,6 +1165,7 @@ chmod +x ${scriptFile}`,
             });
             if (deduped.length > 0) {
               await sendEvent({ type: 'output', text: deduped.join('\n') });
+              outputEmitted = true;
             }
           }
         };
@@ -1199,15 +1204,27 @@ chmod +x ${scriptFile}`,
             }
           }
 
-          if (running && Date.now() - runStartedAt > maxRunMs) {
+          const now = Date.now();
+
+          if (running && now - runStartedAt > maxRunMs) {
             await terminateAgent('Agent timed out after reaching the maximum run time.', 124);
             running = false;
             break;
           }
 
-          // Send heartbeat and check for file changes every 10 polls (5 seconds)
+          if (running && now - lastHeartbeatAt >= 5000) {
+            await sendEvent({ type: 'heartbeat', elapsed: (now - runStartedAt) / 1000 });
+            lastHeartbeatAt = now;
+          }
+
+          if (running && !outputEmitted && !syntheticOutputSent && now - runStartedAt > 15000) {
+            await sendEvent({ type: 'output', text: 'Working on your request...' });
+            outputEmitted = true;
+            syntheticOutputSent = true;
+          }
+
+          // Check for file changes every 10 polls (~5 seconds)
           if (pollCount % 10 === 0 && running) {
-            await sendEvent({ type: 'heartbeat', elapsed: pollCount * pollInterval / 1000 });
 
             // Check for new/modified files in /workspace/src
             try {
@@ -1292,7 +1309,6 @@ chmod +x ${scriptFile}`,
               // Ignore file check errors
             }
 
-            const now = Date.now();
             if (now - lastActivityAt > 20000 && now - lastIdleStatusAt > 20000) {
               await sendEvent({ type: 'status', message: 'Agent is still working inside the sandbox...' });
               lastIdleStatusAt = now;
