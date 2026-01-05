@@ -33,7 +33,7 @@ const ALL_AGENTS = [...DEFAULT_AGENTS, ...EXTRA_AGENTS] as const;
 const ALL_MODELS = [
   'zai-org/GLM-4.7-TEE',
   'deepseek-ai/DeepSeek-V3.2-TEE',
-  'MiniMaxAI/MiniMax-M2',
+  'MiniMaxAI/MiniMax-M2.1-TEE',
   'XiaomiMiMo/MiMo-V2-Flash',
   'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8',
 ] as const;
@@ -45,13 +45,26 @@ interface TestResult {
   agent: Agent;
   model: Model;
   sandboxId: string;
+  sandboxUrl?: string;
   success: boolean;
   duration: number;
   streamedEvents: number;
   hasOutput: boolean;
+  progressEvents: {
+    status: number;
+    output: number;
+    agentOutput: number;
+    filesUpdate: number;
+    heartbeat: number;
+  };
   fileCheck?: {
     fileFound: boolean;
     contentMatch: boolean;
+  };
+  previewCheck?: {
+    ok: boolean;
+    status?: number;
+    matchedContent: boolean;
   };
   exitCode?: number;
   error?: string;
@@ -89,7 +102,7 @@ async function killSandbox(): Promise<void> {
 }
 
 // Create sandbox via Webcoder API
-async function createSandbox(forceNew: boolean = false): Promise<{ sandboxId: string; url: string }> {
+async function createSandbox(forceNew: boolean = false): Promise<{ sandboxId: string; url: string; sandboxUrl?: string }> {
   // Kill existing sandbox if we want a fresh one
   if (forceNew) {
     log(`    Killing existing sandbox...`, 'cyan');
@@ -110,7 +123,7 @@ async function createSandbox(forceNew: boolean = false): Promise<{ sandboxId: st
   const resolvedUrl = data.url && data.url.startsWith('/')
     ? new URL(data.url, API_BASE_URL).toString()
     : data.url;
-  return { sandboxId: data.sandboxId, url: resolvedUrl };
+  return { sandboxId: data.sandboxId, url: resolvedUrl, sandboxUrl: data.sandboxUrl };
 }
 
 async function fetchSandboxFiles(sandboxId: string): Promise<Record<string, string>> {
@@ -198,19 +211,47 @@ async function runAgent(
   return { success, exitCode, error };
 }
 
+async function waitForPreview(previewUrl: string): Promise<{ ok: boolean; status?: number; matchedContent: boolean }> {
+  const maxAttempts = 10;
+  const delayMs = 2000;
+  let lastStatus: number | undefined;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const response = await fetch(previewUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      lastStatus = response.status;
+      if (response.ok) {
+        const text = await response.text();
+        const matchedContent = /<div id="root">|@vite\/client|\/src\/main\.jsx/.test(text);
+        if (matchedContent || text.trim().length > 0) {
+          return { ok: true, status: response.status, matchedContent };
+        }
+      }
+    } catch {
+      // retry
+    }
+    await new Promise(r => setTimeout(r, delayMs));
+  }
+  return { ok: false, status: lastStatus, matchedContent: false };
+}
+
 // Run a single test
 async function runTest(agent: Agent, model: Model): Promise<TestResult> {
   const startTime = Date.now();
   const events: any[] = [];
   let sandboxId = '';
+  let sandboxUrl = '';
   
   try {
     // Create a fresh sandbox for each test
     log(`\n  Creating fresh sandbox via Webcoder API...`, 'cyan');
     const sandbox = await createSandbox(true);
     sandboxId = sandbox.sandboxId;
+    sandboxUrl = sandbox.url || sandbox.sandboxUrl || '';
     log(`  Sandbox ID: ${sandboxId}`, 'cyan');
-    log(`  Sandbox URL: ${sandbox.url}`, 'cyan');
+    log(`  Sandbox URL: ${sandboxUrl}`, 'cyan');
     
     // Wait for sandbox to be ready
     log(`  Waiting for sandbox to be ready...`, 'cyan');
@@ -244,6 +285,13 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
     const duration = Date.now() - startTime;
     const hasOutput = events.some(e => e.type === 'output' || e.type === 'agent-output');
     const outputText = events.filter(e => e.type === 'output').map(e => e.text).join('\n');
+    const progressEvents = {
+      status: events.filter(e => e.type === 'status').length,
+      output: events.filter(e => e.type === 'output').length,
+      agentOutput: events.filter(e => e.type === 'agent-output').length,
+      filesUpdate: events.filter(e => e.type === 'files-update').length,
+      heartbeat: events.filter(e => e.type === 'heartbeat').length
+    };
 
     let fileCheck: { fileFound: boolean; contentMatch: boolean } | undefined;
     try {
@@ -264,17 +312,35 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
     } catch (fileError: any) {
       log(`    ⚠️ File check failed: ${fileError.message}`, 'yellow');
     }
-    const success = result.success && (!fileCheck || fileCheck.contentMatch);
+    let previewCheck: { ok: boolean; status?: number; matchedContent: boolean } | undefined;
+    try {
+      previewCheck = await waitForPreview(sandboxUrl);
+      if (previewCheck.ok) {
+        log(
+          `    🖼️ Preview reachable (${previewCheck.matchedContent ? 'HTML ok' : 'non-empty response'})`,
+          previewCheck.matchedContent ? 'green' : 'yellow'
+        );
+      } else {
+        log(`    🖼️ Preview not reachable (status ${previewCheck.status ?? 'n/a'})`, 'yellow');
+      }
+    } catch (previewError: any) {
+      log(`    ⚠️ Preview check failed: ${previewError.message}`, 'yellow');
+    }
+
+    const success = result.success && (!fileCheck || fileCheck.contentMatch) && Boolean(previewCheck?.ok);
     
     return {
       agent,
       model,
       sandboxId,
+      sandboxUrl,
       success,
       duration,
       streamedEvents: events.length,
       hasOutput,
+      progressEvents,
       fileCheck,
+      previewCheck,
       exitCode: result.exitCode,
       error: result.error,
       outputPreview: outputText.slice(0, 300),
@@ -286,10 +352,18 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
       agent,
       model,
       sandboxId,
+      sandboxUrl,
       success: false,
       duration,
       streamedEvents: events.length,
       hasOutput: false,
+      progressEvents: {
+        status: 0,
+        output: 0,
+        agentOutput: 0,
+        filesUpdate: 0,
+        heartbeat: 0
+      },
       error: error.message,
     };
   }
@@ -393,8 +467,15 @@ Environment:
       log(`    Duration: ${(result.duration / 1000).toFixed(1)}s`, 'cyan');
       log(`    Events streamed: ${result.streamedEvents}`, 'cyan');
       log(`    Has output: ${result.hasOutput ? 'Yes' : 'No'}`, result.hasOutput ? 'green' : 'yellow');
+      log(
+        `    Progress events: status=${result.progressEvents.status}, output=${result.progressEvents.output}, agent=${result.progressEvents.agentOutput}, files=${result.progressEvents.filesUpdate}, heartbeat=${result.progressEvents.heartbeat}`,
+        'cyan'
+      );
       if (result.fileCheck) {
         log(`    App.jsx updated: ${result.fileCheck.contentMatch ? 'Yes' : 'No'}`, result.fileCheck.contentMatch ? 'green' : 'yellow');
+      }
+      if (result.previewCheck) {
+        log(`    Preview reachable: ${result.previewCheck.ok ? 'Yes' : 'No'}`, result.previewCheck.ok ? 'green' : 'yellow');
       }
       log(`    Result: ${result.success ? '✅ PASSED' : '❌ FAILED'}`, result.success ? 'green' : 'red');
       if (result.error) {
@@ -421,8 +502,8 @@ Environment:
   log(`  Failed: ${failed.length}/${results.length}`, failed.length > 0 ? 'red' : 'green');
   
   // Results table
-  log(`\n${'Agent'.padEnd(15)} ${'Model'.padEnd(25)} ${'Status'.padEnd(8)} ${'Events'.padEnd(8)} ${'Output'.padEnd(8)} ${'Files'.padEnd(8)} ${'Time'.padEnd(10)}`, 'bright');
-  log(`${'-'.repeat(15)} ${'-'.repeat(25)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(10)}`, 'reset');
+  log(`\n${'Agent'.padEnd(15)} ${'Model'.padEnd(25)} ${'Status'.padEnd(8)} ${'Events'.padEnd(8)} ${'Output'.padEnd(8)} ${'Files'.padEnd(8)} ${'Preview'.padEnd(8)} ${'Time'.padEnd(10)}`, 'bright');
+  log(`${'-'.repeat(15)} ${'-'.repeat(25)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(8)} ${'-'.repeat(10)}`, 'reset');
   
   for (const r of results) {
     const status = r.success ? '✅ PASS' : '❌ FAIL';
@@ -431,9 +512,10 @@ Environment:
     const duration = `${(r.duration / 1000).toFixed(1)}s`;
     const hasOutput = r.hasOutput ? '✓' : '✗';
     const filesOk = r.fileCheck?.contentMatch ? '✓' : '✗';
+    const previewOk = r.previewCheck?.ok ? '✓' : '✗';
     
     log(
-      `${r.agent.padEnd(15)} ${modelShort.padEnd(25)} ${status.padEnd(8)} ${String(r.streamedEvents).padEnd(8)} ${hasOutput.padEnd(8)} ${filesOk.padEnd(8)} ${duration.padEnd(10)}`,
+      `${r.agent.padEnd(15)} ${modelShort.padEnd(25)} ${status.padEnd(8)} ${String(r.streamedEvents).padEnd(8)} ${hasOutput.padEnd(8)} ${filesOk.padEnd(8)} ${previewOk.padEnd(8)} ${duration.padEnd(10)}`,
       color
     );
   }
@@ -466,9 +548,6 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
-
-
 
 
 

@@ -454,7 +454,8 @@ function stripAnsi(str: string): string {
   return str
     .replace(/\x1b\[[0-9;]*m/g, '')
     .replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')
-    .replace(/\r/g, '');
+    .replace(/\r/g, '')
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
 }
 
 function isPlainTextExplanationLine(trimmed: string): boolean {
@@ -491,6 +492,13 @@ function isPlainTextExplanationLine(trimmed: string): boolean {
 function isPlainTextNoiseLine(trimmed: string): boolean {
   return Boolean(
     trimmed.startsWith('INFO ') ||
+    trimmed.toLowerCase().includes('note: run with') ||
+    trimmed.toLowerCase().includes('rust_backtrace') ||
+    trimmed.startsWith('bash:') ||
+    trimmed.includes('here-document') ||
+    trimmed.includes('**THINKING**') ||
+    trimmed.match(/^(\*|\d+\.)\s/) ||
+    trimmed.startsWith('```') ||
     trimmed.match(/^[<{}\[\]();>]/) ||
     trimmed.match(/^\s*[<{}\[\]();>]/) ||
     trimmed.match(/^(import|export|function|const|let|var|return|class)\s/) ||
@@ -695,10 +703,13 @@ export async function POST(request: NextRequest) {
         let lineBuffer = '';
         // Buffer for incomplete JSON lines (Claude Code stream-json format)
         let jsonLineBuffer = '';
+        const recentOutputLines: string[] = [];
+        const RECENT_OUTPUT_LIMIT = 50;
 
         // Track known files and mtimes for change detection
         const knownFileStats: Map<string, number> = new Map();
         const knownFileContents: Map<string, string> = new Map();
+        let baselineFilesInitialized = false;
         if (baselineAppContent !== null) {
           knownFileContents.set(appPath, baselineAppContent);
         }
@@ -710,6 +721,29 @@ export async function POST(request: NextRequest) {
           {},
           5000
         ).catch(() => {});
+
+        // Capture baseline file stats before the agent runs to avoid missing fast edits
+        try {
+          const baselineResult = await execInSandbox(
+            sandboxId,
+            'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\n" 2>/dev/null | head -200',
+            {},
+            5000
+          );
+          if (baselineResult.exitCode === 0 && baselineResult.stdout.trim()) {
+            for (const line of baselineResult.stdout.trim().split('\\n')) {
+              const [path, mtimeRaw] = line.split('\\t');
+              if (!path) continue;
+              const mtime = Number.parseFloat(mtimeRaw || '');
+              if (Number.isFinite(mtime)) {
+                knownFileStats.set(path, mtime);
+              }
+            }
+            baselineFilesInitialized = knownFileStats.size > 0;
+          }
+        } catch {
+          // Ignore baseline scan errors
+        }
 
         // For Codex, create config.toml before running
         if (agentToRun === 'codex') {
@@ -975,10 +1009,10 @@ chmod +x ${scriptFile}`,
         let forcedExitReason: string | null = null;
         let claudeSlowWarned = false;
         const claudeToolUseMap = new Map<string, { name: string; filePath?: string }>();
-        let baselineFilesInitialized = false;
         const CLAUDE_IDLE_AFTER_EDIT_MS = 240000;
         const CLAUDE_IDLE_NO_EDIT_MS = 300000;
         const CLAUDE_IDLE_NO_TOOL_MS = 240000;
+        const CLAUDE_MAX_NO_EDIT_MS = 240000;
         const AGENT_IDLE_AFTER_EDIT_MS = 180000;
         const AGENT_IDLE_NO_EDIT_MS = 240000;
 
@@ -1116,8 +1150,17 @@ chmod +x ${scriptFile}`,
             const lines = lineBuffer.split('\n');
             lineBuffer = lines.pop() || '';
             const meaningfulLines = filterPlainTextLines(lines);
-            if (meaningfulLines.length > 0) {
-              await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
+            const deduped = meaningfulLines.filter(line => {
+              if (!line) return false;
+              if (recentOutputLines.includes(line)) return false;
+              recentOutputLines.push(line);
+              if (recentOutputLines.length > RECENT_OUTPUT_LIMIT) {
+                recentOutputLines.shift();
+              }
+              return true;
+            });
+            if (deduped.length > 0) {
+              await sendEvent({ type: 'output', text: deduped.join('\n') });
             }
           }
         };
@@ -1257,6 +1300,7 @@ chmod +x ${scriptFile}`,
 
             if (agentToRun === 'claude-code' && running) {
               const idleFor = now - lastActivityAt;
+              const runtimeNoEdits = now - runStartedAt;
               const shouldForceComplete = hasFileChanges && idleFor > CLAUDE_IDLE_AFTER_EDIT_MS;
               if (shouldForceComplete && !forcedExitReason) {
                 await terminateAgent('Claude Code became idle after applying edits.', 0);
@@ -1264,16 +1308,33 @@ chmod +x ${scriptFile}`,
                 break;
               }
 
+              const warnThreshold = 60000;
               const shouldWarnSlow =
                 !hasFileChanges &&
-                ((hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_EDIT_MS) ||
-                  (!hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_TOOL_MS));
+                ((hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_EDIT_MS - warnThreshold) ||
+                  (!hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_TOOL_MS - warnThreshold));
               if (shouldWarnSlow && !claudeSlowWarned) {
                 claudeSlowWarned = true;
                 await sendEvent({
                   type: 'status',
                   message: 'Claude Code is taking longer than usual. Still waiting for edits...'
                 });
+              }
+
+              const shouldTerminateNoEdit =
+                !hasFileChanges &&
+                ((hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_EDIT_MS) ||
+                  (!hasClaudeToolUse && idleFor > CLAUDE_IDLE_NO_TOOL_MS));
+              if (shouldTerminateNoEdit && !forcedExitReason) {
+                await terminateAgent('Claude Code stalled without applying edits. Retrying...', 1);
+                running = false;
+                break;
+              }
+
+              if (!hasFileChanges && runtimeNoEdits > CLAUDE_MAX_NO_EDIT_MS && !forcedExitReason) {
+                await terminateAgent('Claude Code did not apply edits in time. Retrying...', 1);
+                running = false;
+                break;
               }
             } else if (running) {
               const idleFor = now - lastActivityAt;
@@ -1331,8 +1392,17 @@ chmod +x ${scriptFile}`,
           }
         } else if (agentToRun !== 'claude-code' && lineBuffer.trim()) {
           const meaningfulLines = filterPlainTextLines([lineBuffer]);
-          if (meaningfulLines.length > 0) {
-            await sendEvent({ type: 'output', text: meaningfulLines.join('\n') });
+          const deduped = meaningfulLines.filter(line => {
+            if (!line) return false;
+            if (recentOutputLines.includes(line)) return false;
+            recentOutputLines.push(line);
+            if (recentOutputLines.length > RECENT_OUTPUT_LIMIT) {
+              recentOutputLines.shift();
+            }
+            return true;
+          });
+          if (deduped.length > 0) {
+            await sendEvent({ type: 'output', text: deduped.join('\n') });
           }
         }
 
@@ -1341,24 +1411,28 @@ chmod +x ${scriptFile}`,
         const cancelled = exitCode === 130;
         const success = exitCode === 0 || hasFileChanges;
         if (!cancelled && exitCode !== 0 && !hasFileChanges) {
-          try {
-            const tailResult = await execInSandbox(
-              sandboxId,
-              `tail -n 50 ${outputFile} 2>/dev/null || true`,
-              {},
-              5000
-            );
-            const tailText = stripAnsi(tailResult.stdout || '').trim();
-            if (tailText) {
-              const tailLines = tailText.split('\n').slice(-10);
-              const joined = tailLines.join(' | ');
-              const snippet = joined.length > 500 ? `${joined.slice(0, 500)}…` : joined;
-              await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}. Last output: ${snippet}` });
-            } else {
+          if (agentToRun === 'claude-code') {
+            await sendEvent({ type: 'status', message: 'Claude Code exited without applying edits.' });
+          } else {
+            try {
+              const tailResult = await execInSandbox(
+                sandboxId,
+                `tail -n 50 ${outputFile} 2>/dev/null || true`,
+                {},
+                5000
+              );
+              const tailText = stripAnsi(tailResult.stdout || '').trim();
+              if (tailText) {
+                const tailLines = tailText.split('\n').slice(-10);
+                const joined = tailLines.join(' | ');
+                const snippet = joined.length > 500 ? `${joined.slice(0, 500)}…` : joined;
+                await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}. Last output: ${snippet}` });
+              } else {
+                await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}.` });
+              }
+            } catch {
               await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}.` });
             }
-          } catch {
-            await sendEvent({ type: 'status', message: `Agent exited with code ${exitCode}.` });
           }
         }
         if (!cancelled && exitCode !== 0 && hasFileChanges) {

@@ -36,7 +36,7 @@ const ALL_AGENTS = ['claude-code', 'aider'] as const; // codex removed - not ful
 const ALL_MODELS = [
   'zai-org/GLM-4.7-TEE',
   'deepseek-ai/DeepSeek-V3.2-TEE',
-  'MiniMaxAI/MiniMax-M2',
+  'MiniMaxAI/MiniMax-M2.1-TEE',
   'XiaomiMiMo/MiMo-V2-Flash',
 ] as const;
 

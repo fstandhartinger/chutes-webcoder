@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         // Give it a timeout
         await Promise.race([
           sandboxManager.terminateSandbox(sandboxId),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Terminate timeout')), 10000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Terminate timeout')), 30000))
         ]);
         results.providerTerminated = true;
         console.log(`[kill-sandbox] Sandbox ${sandboxId} terminated successfully`);

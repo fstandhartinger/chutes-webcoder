@@ -19,7 +19,7 @@ const AGENTS = ['builtin', 'claude-code', 'codex', 'aider'] as const;
 const MODELS = [
   'zai-org/GLM-4.7-TEE',
   'deepseek-ai/DeepSeek-V3.2-TEE',
-  'MiniMaxAI/MiniMax-M2',
+  'MiniMaxAI/MiniMax-M2.1-TEE',
   'XiaomiMiMo/MiMo-V2-Flash',
 ] as const;
 
