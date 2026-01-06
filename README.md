@@ -36,7 +36,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
    CHUTES_BASE_URL=https://llm.chutes.ai/v1
    NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-   # Sandbox provider (Sandy by default)
+   # Sandbox provider (Sandy by default; dedicated host)
    SANDBOX_PROVIDER=sandy
    SANDY_BASE_URL=https://sandy.94.130.222.43.nip.io
    SANDY_API_KEY=your_sandy_api_key
