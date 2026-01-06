@@ -23,7 +23,7 @@
 import { parseArgs } from 'util';
 
 // Configuration
-const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.65.109.49.103.nip.io';
+const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.94.130.222.43.nip.io';
 const SANDY_API_KEY = process.env.SANDY_API_KEY;
 const CHUTES_API_KEY = process.env.CHUTES_API_KEY;
 const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrender.com';
@@ -318,7 +318,7 @@ Options:
 Environment:
   SANDY_API_KEY     Required - Sandy API key
   CHUTES_API_KEY    Required - Chutes API key
-  SANDY_BASE_URL    Optional - Sandy server URL (default: https://sandy.65.109.49.103.nip.io)
+  SANDY_BASE_URL    Optional - Sandy server URL (default: https://sandy.94.130.222.43.nip.io)
   TEST_API_URL      Optional - Webcoder API URL (default: https://chutes-webcoder.onrender.com)
 `);
     process.exit(0);
