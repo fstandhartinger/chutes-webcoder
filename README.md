@@ -38,10 +38,10 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
    # Sandbox provider (Sandy by default)
    SANDBOX_PROVIDER=sandy
-   SANDY_BASE_URL=https://sandy.example.com
+   SANDY_BASE_URL=https://sandy.94.130.222.43.nip.io
    SANDY_API_KEY=your_sandy_api_key
-   SANDY_HOST_SUFFIX=.sandy.example.com
-   NEXT_PUBLIC_SANDBOX_HOST_SUFFIX=.sandy.example.com
+   SANDY_HOST_SUFFIX=.sandy.94.130.222.43.nip.io
+   NEXT_PUBLIC_SANDBOX_HOST_SUFFIX=.sandy.94.130.222.43.nip.io
 
    # Optional: Vercel sandbox (requires Vercel account setup)
    # SANDBOX_PROVIDER=vercel

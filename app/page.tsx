@@ -344,8 +344,8 @@ function AISandboxPageContent() {
     (override?: string | null) => {
       const sandboxId = getActiveSandboxId(override);
       if (!sandboxId) return null;
-      if (sandboxData?.sandboxId === sandboxId && (sandboxData?.sandboxUrl || sandboxData?.url)) {
-        return sandboxData.sandboxUrl || sandboxData.url;
+      if (sandboxData?.sandboxId === sandboxId && (sandboxData?.url || sandboxData?.sandboxUrl)) {
+        return sandboxData.url || sandboxData.sandboxUrl;
       }
       return buildFallbackSandboxUrl(sandboxId);
     },

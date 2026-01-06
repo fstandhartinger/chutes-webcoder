@@ -1592,3 +1592,6 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
+
+
+
