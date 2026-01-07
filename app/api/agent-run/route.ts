@@ -357,7 +357,7 @@ async function execInSandbox(
   
   // Sanitize command - remove any control characters
   const sanitizedCommand = command.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
-  const requestTimeout = Math.max(timeoutMs + 5000, 15000);
+  const requestTimeout = Math.max(timeoutMs + 5000, 30000);
 
   return sandyRequest(
     `/api/sandboxes/${sandboxId}/exec`,
@@ -374,6 +374,43 @@ async function execInSandbox(
     1000,
     requestTimeout
   );
+}
+
+async function writeSandboxFile(
+  sandboxId: string,
+  path: string,
+  content: string,
+  timeoutMs: number = 30000
+): Promise<void> {
+  await sandyRequest(
+    `/api/sandboxes/${sandboxId}/files/write`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ path, content }),
+    },
+    3,
+    1000,
+    timeoutMs
+  );
+}
+
+async function writeSandboxFileWithFallback(
+  sandboxId: string,
+  path: string,
+  content: string
+): Promise<void> {
+  try {
+    await writeSandboxFile(sandboxId, path, content);
+  } catch (error) {
+    console.warn(`[agent-run] files.write failed for ${path}, falling back to exec:`, error);
+    const marker = `__CHUTES_EOF_${Math.random().toString(36).slice(2)}__`;
+    await execInSandbox(
+      sandboxId,
+      `cat > ${escapeShellArg(path)} << '${marker}'\n${content}\n${marker}`,
+      {},
+      10000
+    );
+  }
 }
 
 // Start a command in background and return immediately
@@ -662,9 +699,13 @@ export async function POST(request: NextRequest) {
     
     // Run agent in background with streaming output
     (async () => {
-      const outputFile = '/tmp/agent_output.log';
-      const pidFile = '/tmp/agent.pid';
-      const doneFile = '/tmp/agent.done';
+      const agentTempDir = '/workspace/.chutes';
+      const outputFile = `${agentTempDir}/agent_output.log`;
+      const pidFile = `${agentTempDir}/agent.pid`;
+      const doneFile = `${agentTempDir}/agent.done`;
+      const promptFile = `${agentTempDir}/agent_prompt.txt`;
+      const codexScriptFile = `${agentTempDir}/agent_cmd.sh`;
+      const claudeScriptFile = `${agentTempDir}/agent_cmd_claude.sh`;
       const appPath = '/workspace/src/App.jsx';
 
       const readTextFile = async (filePath: string): Promise<string | null> => {
@@ -751,7 +792,7 @@ export async function POST(request: NextRequest) {
         // Clean up any previous output files
         await execInSandbox(
           sandboxId,
-          `rm -f ${outputFile} ${pidFile} ${doneFile} /tmp/agent_prompt.txt /tmp/agent_cmd.sh /tmp/agent_cmd_claude.sh`,
+          `mkdir -p ${agentTempDir} && rm -f ${outputFile} ${pidFile} ${doneFile} ${promptFile} ${codexScriptFile} ${claudeScriptFile}`,
           {},
           5000
         ).catch(() => {});
@@ -968,46 +1009,19 @@ CONFIGEOF`,
           : wrapPromptForReactVite(promptToRun);
 
         let command = '';
-        const promptFile = '/tmp/agent_prompt.txt';
         if (agentToRun === 'codex' || agentToRun === 'claude-code') {
-          await execInSandbox(
-            sandboxId,
-            `cat > ${promptFile} << '__CHUTES_PROMPT_EOF__'
-${wrappedPrompt}
-__CHUTES_PROMPT_EOF__`,
-            {},
-            10000
-          );
+          await writeSandboxFileWithFallback(sandboxId, promptFile, wrappedPrompt);
         }
         if (agentToRun === 'codex') {
-          const scriptFile = '/tmp/agent_cmd.sh';
-          await execInSandbox(
-            sandboxId,
-            `cat > ${scriptFile} << '__CHUTES_CMD_EOF__'
-#!/bin/sh
-codex exec --full-auto --skip-git-repo-check --model "${resolvedModel}" - < ${promptFile}
-__CHUTES_CMD_EOF__
-chmod +x ${scriptFile}`,
-            env,
-            10000
-          );
-          command = `sh ${scriptFile}`;
+          const scriptContent = `#!/bin/sh\ncodex exec --full-auto --skip-git-repo-check --model "${resolvedModel}" - < ${promptFile}\n`;
+          await writeSandboxFileWithFallback(sandboxId, codexScriptFile, scriptContent);
+          command = `sh ${codexScriptFile}`;
         } else if (agentToRun === 'claude-code') {
-          const scriptFile = '/tmp/agent_cmd_claude.sh';
           const commandParts = agentConfig.buildCommand(wrappedPrompt, resolvedModel);
           const claudeCommand = commandParts.map(part => escapeShellArg(part)).join(' ');
-          await execInSandbox(
-            sandboxId,
-            `cat > ${scriptFile} << '__CHUTES_CMD_EOF__'
-#!/bin/sh
-prompt="$(cat ${promptFile})"
-${claudeCommand} "$prompt"
-__CHUTES_CMD_EOF__
-chmod +x ${scriptFile}`,
-            env,
-            10000
-          );
-          command = `sh ${scriptFile}`;
+          const scriptContent = `#!/bin/sh\nprompt=\"$(cat ${promptFile})\"\n${claudeCommand} \"$prompt\"\n`;
+          await writeSandboxFileWithFallback(sandboxId, claudeScriptFile, scriptContent);
+          command = `sh ${claudeScriptFile}`;
         } else {
           const commandParts = agentConfig.buildCommand(wrappedPrompt, resolvedModel);
           command = buildShellCommand(commandParts);
