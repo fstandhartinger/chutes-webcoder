@@ -1,3 +1,4 @@
+import { Agent } from 'undici';
 import { SandboxProvider, SandboxInfo, CommandResult } from '../types';
 import { appConfig } from '@/config/app.config';
 
@@ -5,6 +6,23 @@ interface SandyExecResponse {
   stdout: string;
   stderr: string;
   exitCode: number;
+}
+
+const sandyDispatcherCache = new Map<number, Agent>();
+
+function getSandyDispatcher(timeoutMs: number): Agent {
+  const cached = sandyDispatcherCache.get(timeoutMs);
+  if (cached) {
+    return cached;
+  }
+
+  const agent = new Agent({
+    connectTimeout: timeoutMs,
+    headersTimeout: timeoutMs,
+    bodyTimeout: timeoutMs,
+  });
+  sandyDispatcherCache.set(timeoutMs, agent);
+  return agent;
 }
 
 export class SandyProvider extends SandboxProvider {
@@ -32,6 +50,15 @@ export class SandyProvider extends SandboxProvider {
 
   private resolveTimeoutMs(): number {
     return this.config.sandy?.timeoutMs || appConfig.sandy.timeoutMs;
+  }
+
+  private resolveCreateTimeoutMs(): number {
+    const configured = this.config.sandy?.createTimeoutMs;
+    if (typeof configured === 'number') {
+      return configured;
+    }
+    const fallback = appConfig.sandy.createTimeoutMs;
+    return Math.max(fallback, appConfig.api.requestTimeout);
   }
 
   private resolveHostSuffix(): string {
@@ -74,12 +101,15 @@ export class SandyProvider extends SandboxProvider {
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const response = await fetch(url, {
+      const dispatcher = getSandyDispatcher(timeoutMs);
+      const requestInit: RequestInit & { dispatcher?: Agent } = {
         ...options,
         headers,
         body,
-        signal: controller.signal
-      });
+        signal: controller.signal,
+        dispatcher
+      };
+      const response = await fetch(url, requestInit);
 
       if (!response.ok) {
         const text = await response.text();
@@ -144,7 +174,7 @@ export class SandyProvider extends SandboxProvider {
       sandboxId: string;
       url: string;
       createdAt?: string;
-    }>('/api/sandboxes', { method: 'POST' });
+    }>('/api/sandboxes', { method: 'POST' }, this.resolveCreateTimeoutMs());
 
     this.sandboxInfo = {
       sandboxId: data.sandboxId,
@@ -364,31 +394,42 @@ body {
   background-color: rgb(17 24 39);
 }`;
 
-    await this.writeFile('package.json', JSON.stringify(packageJson, null, 2));
-    await this.writeFile('vite.config.js', viteConfig);
-    await this.writeFile('tailwind.config.js', tailwindConfig);
-    await this.writeFile('postcss.config.js', postcssConfig);
-    await this.writeFile('index.html', indexHtml);
-    await this.writeFile('src/main.jsx', mainJsx);
-    await this.writeFile('src/App.jsx', appJsx);
-    await this.writeFile('src/index.css', indexCss);
-
-    const installResult = await this.request<SandyExecResponse>(
-      `/api/sandboxes/${this.requireSandboxId()}/exec`,
-      {
-        method: 'POST',
-        body: {
-          command: 'npm install',
-          cwd: this.resolveWorkdir(),
-          timeoutMs: appConfig.packages.installTimeout
-        }
-      },
-      appConfig.packages.installTimeout + 5_000
+    const templateDir = '/opt/sandy/template';
+    const templateCheck = await this.runCommand(
+      `[ -f ${templateDir}/package.json ] && [ -d ${templateDir}/node_modules ]`
     );
-    const installExitCode = typeof installResult.exitCode === 'number' ? installResult.exitCode : 0;
-    if (installExitCode !== 0) {
-      throw new Error(`npm install failed: ${installResult.stderr || installResult.stdout}`);
+    const hasTemplate = templateCheck.success;
+
+    if (hasTemplate) {
+      await this.runCommand(`cp -R ${templateDir}/. ${this.resolveWorkdir()}`);
+    } else {
+      await this.writeFile('package.json', JSON.stringify(packageJson, null, 2));
+      await this.writeFile('tailwind.config.js', tailwindConfig);
+      await this.writeFile('postcss.config.js', postcssConfig);
+      await this.writeFile('index.html', indexHtml);
+      await this.writeFile('src/main.jsx', mainJsx);
+      await this.writeFile('src/App.jsx', appJsx);
+      await this.writeFile('src/index.css', indexCss);
+
+      const installResult = await this.request<SandyExecResponse>(
+        `/api/sandboxes/${this.requireSandboxId()}/exec`,
+        {
+          method: 'POST',
+          body: {
+            command: 'npm install',
+            cwd: this.resolveWorkdir(),
+            timeoutMs: appConfig.packages.installTimeout
+          }
+        },
+        appConfig.packages.installTimeout + 5_000
+      );
+      const installExitCode = typeof installResult.exitCode === 'number' ? installResult.exitCode : 0;
+      if (installExitCode !== 0) {
+        throw new Error(`npm install failed: ${installResult.stderr || installResult.stdout}`);
+      }
     }
+
+    await this.writeFile('vite.config.js', viteConfig);
 
     await this.runCommand('pkill -f vite || true');
     await this.runCommand('nohup npm run dev > /tmp/vite.log 2>&1 &');

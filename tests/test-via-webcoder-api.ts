@@ -15,6 +15,7 @@
  */
 
 import { parseArgs } from 'util';
+import { Agent, fetch as undiciFetch } from 'undici';
 
 // Configuration
 const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrender.com';
@@ -24,6 +25,17 @@ const DEFAULT_PROMPT = 'Update src/App.jsx to render a centered h1 that says "He
 const DEFAULT_EXPECT = /Hello from AI/i;
 let testPrompt = process.env.TEST_PROMPT || DEFAULT_PROMPT;
 let expectedPattern: RegExp | null = null;
+const reuseSandbox = process.env.TEST_REUSE_SANDBOX === '1' || Boolean(process.env.TEST_SANDBOX_ID);
+
+const fetchDispatcher = new Agent({
+  connectTimeout: 600_000,
+  headersTimeout: 600_000,
+  bodyTimeout: 600_000,
+});
+
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}) {
+  return undiciFetch(input, { ...init, dispatcher: fetchDispatcher });
+}
 
 // All agents and models
 // Note: opencode/droid are opt-in (run with --agent=opencode or --agent=droid)
@@ -87,12 +99,16 @@ function log(message: string, color: keyof typeof colors = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
-// Kill existing sandbox
-async function killSandbox(): Promise<void> {
+let lastSandboxId: string | null = null;
+
+// Kill existing sandbox when we have an ID
+async function killSandbox(sandboxId: string | null): Promise<void> {
+  if (!sandboxId) return;
   try {
-    await fetch(`${API_BASE_URL}/api/kill-sandbox`, {
+    await fetchWithTimeout(`${API_BASE_URL}/api/kill-sandbox`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sandboxId }),
     });
     // Wait a moment for cleanup
     await new Promise(r => setTimeout(r, 2000));
@@ -103,13 +119,33 @@ async function killSandbox(): Promise<void> {
 
 // Create sandbox via Webcoder API
 async function createSandbox(forceNew: boolean = false): Promise<{ sandboxId: string; url: string; sandboxUrl?: string }> {
+  const reuseId = !forceNew ? (process.env.TEST_SANDBOX_ID || lastSandboxId) : null;
+  if (reuseId) {
+    log(`    Reusing sandbox: ${reuseId}`, 'cyan');
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/create-ai-sandbox-v2`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sandboxId: reuseId }),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to restore sandbox: ${response.status} ${text}`);
+    }
+    const data = await response.json();
+    const resolvedUrl = data.url && data.url.startsWith('/')
+      ? new URL(data.url, API_BASE_URL).toString()
+      : data.url;
+    lastSandboxId = data.sandboxId;
+    return { sandboxId: data.sandboxId, url: resolvedUrl, sandboxUrl: data.sandboxUrl };
+  }
+
   // Kill existing sandbox if we want a fresh one
   if (forceNew) {
     log(`    Killing existing sandbox...`, 'cyan');
-    await killSandbox();
+    await killSandbox(lastSandboxId);
   }
   
-  const response = await fetch(`${API_BASE_URL}/api/create-ai-sandbox-v2`, {
+  const response = await fetchWithTimeout(`${API_BASE_URL}/api/create-ai-sandbox-v2`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });
@@ -123,11 +159,12 @@ async function createSandbox(forceNew: boolean = false): Promise<{ sandboxId: st
   const resolvedUrl = data.url && data.url.startsWith('/')
     ? new URL(data.url, API_BASE_URL).toString()
     : data.url;
+  lastSandboxId = data.sandboxId;
   return { sandboxId: data.sandboxId, url: resolvedUrl, sandboxUrl: data.sandboxUrl };
 }
 
 async function fetchSandboxFiles(sandboxId: string): Promise<Record<string, string>> {
-  const response = await fetch(`${API_BASE_URL}/api/get-sandbox-files?sandboxId=${sandboxId}`);
+  const response = await fetchWithTimeout(`${API_BASE_URL}/api/get-sandbox-files?sandboxId=${sandboxId}`);
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Failed to fetch sandbox files: ${response.status} ${text}`);
@@ -154,7 +191,7 @@ async function runAgent(
   sandboxId: string,
   onEvent: (event: any) => void
 ): Promise<{ success: boolean; exitCode?: number; error?: string }> {
-  const response = await fetch(`${API_BASE_URL}/api/agent-run`, {
+  const response = await fetchWithTimeout(`${API_BASE_URL}/api/agent-run`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ agent, model, prompt, sandboxId }),
@@ -219,7 +256,7 @@ async function waitForPreview(previewUrl: string): Promise<{ ok: boolean; status
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const response = await fetch(previewUrl, { signal: controller.signal });
+      const response = await fetchWithTimeout(previewUrl, { signal: controller.signal });
       clearTimeout(timeoutId);
       lastStatus = response.status;
       if (response.ok) {
@@ -245,9 +282,10 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
   let sandboxUrl = '';
   
   try {
-    // Create a fresh sandbox for each test
+    const forceNew = !reuseSandbox;
+    // Create a fresh sandbox for each test (or reuse when configured)
     log(`\n  Creating fresh sandbox via Webcoder API...`, 'cyan');
-    const sandbox = await createSandbox(true);
+    const sandbox = await createSandbox(forceNew);
     sandboxId = sandbox.sandboxId;
     sandboxUrl = sandbox.url || sandbox.sandboxUrl || '';
     log(`  Sandbox ID: ${sandboxId}`, 'cyan');

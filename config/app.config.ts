@@ -64,6 +64,12 @@ export const appConfig = {
     // Time to wait for Vite dev server to be ready (in milliseconds)
     viteStartupDelay: 10000,
 
+    // Time to wait for sandbox creation (in milliseconds)
+    createTimeoutMs: 240000,
+
+    // Time to wait for Vite setup after creation (in milliseconds)
+    setupTimeoutMs: 240000,
+
     // Working directory in sandbox
     workingDirectory: '/workspace',
   },
@@ -198,7 +204,7 @@ export const appConfig = {
     useLegacyPeerDeps: true,
     
     // Package installation timeout (milliseconds)
-    installTimeout: 60000,
+    installTimeout: 180000,
     
     // Auto-restart Vite after package installation
     autoRestartVite: true,
@@ -238,7 +244,7 @@ export const appConfig = {
     retryDelay: 1000, // milliseconds
     
     // Request timeout (milliseconds)
-    requestTimeout: 30000,
+    requestTimeout: 120000,
   }
 };
 

@@ -3,7 +3,8 @@ import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 
 export async function POST(request: NextRequest) {
   try {
-    const { sandboxId } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const sandboxId = body?.sandboxId || request.nextUrl.searchParams.get('sandboxId');
 
     // sandboxId is REQUIRED for session isolation
     if (!sandboxId) {

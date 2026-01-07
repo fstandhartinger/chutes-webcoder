@@ -30,6 +30,8 @@ export interface SandboxProviderConfig {
     baseUrl?: string;
     hostSuffix?: string;
     timeoutMs?: number;
+    createTimeoutMs?: number;
+    setupTimeoutMs?: number;
     workdir?: string;
   };
   vercel?: {

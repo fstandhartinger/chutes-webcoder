@@ -52,6 +52,11 @@ Make sure your App.jsx exports a default function component that renders visible
 User Request:
 `;
 
+function isAnthropicModel(model: string): boolean {
+  const normalized = model.toLowerCase();
+  return normalized.includes('claude') || normalized.includes('anthropic');
+}
+
 // Agent configurations
 const AGENTS = {
   'claude-code': {
@@ -257,7 +262,8 @@ async function sandyRequest<T>(
   path: string,
   options: RequestInit = {},
   retries: number = 3,
-  retryDelay: number = 1000
+  retryDelay: number = 1000,
+  timeoutMs: number = appConfig.api.requestTimeout
 ): Promise<T> {
   const { baseUrl, apiKey } = getSandyConfig();
   const url = `${baseUrl}${path}`;
@@ -273,7 +279,7 @@ async function sandyRequest<T>(
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       
       const response = await fetch(url, {
         ...options,
@@ -302,8 +308,7 @@ async function sandyRequest<T>(
       
       // Don't retry if it's a 4xx error or abort
       if (lastError.message.includes('404') || 
-          lastError.message.includes('400') ||
-          lastError.name === 'AbortError') {
+          lastError.message.includes('400')) {
         throw lastError;
       }
       
@@ -331,16 +336,23 @@ async function execInSandbox(
   
   // Sanitize command - remove any control characters
   const sanitizedCommand = command.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
-  
-  return sandyRequest(`/api/sandboxes/${sandboxId}/exec`, {
-    method: 'POST',
-    body: JSON.stringify({
-      command: sanitizedCommand,
-      cwd: '/workspace',
-      env,
-      timeoutMs,
-    }),
-  });
+  const requestTimeout = Math.max(timeoutMs + 5000, appConfig.api.requestTimeout);
+
+  return sandyRequest(
+    `/api/sandboxes/${sandboxId}/exec`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        command: sanitizedCommand,
+        cwd: '/workspace',
+        env,
+        timeoutMs,
+      }),
+    },
+    3,
+    1000,
+    requestTimeout
+  );
 }
 
 // Start a command in background and return immediately
@@ -999,7 +1011,8 @@ chmod +x ${scriptFile}`,
         const pollInterval = 500; // 500ms between polls
         const maxConsecutiveErrors = 5; // Allow some transient errors
         const runStartedAt = Date.now();
-        const maxRunMs = maxDuration * 1000;
+        const isNonAnthropicClaude = agentToRun === 'claude-code' && !isAnthropicModel(resolvedModel);
+        const maxRunMs = isNonAnthropicClaude ? Math.min(maxDuration * 1000, 300000) : maxDuration * 1000;
         const maxPolls = Math.ceil(maxRunMs / pollInterval) + 200;
 
         let lastActivityAt = Date.now();
@@ -1013,12 +1026,99 @@ chmod +x ${scriptFile}`,
         let forcedExitReason: string | null = null;
         let claudeSlowWarned = false;
         const claudeToolUseMap = new Map<string, { name: string; filePath?: string }>();
-        const CLAUDE_IDLE_AFTER_EDIT_MS = 240000;
-        const CLAUDE_IDLE_NO_EDIT_MS = 300000;
-        const CLAUDE_IDLE_NO_TOOL_MS = 240000;
-        const CLAUDE_MAX_NO_EDIT_MS = 240000;
+        const CLAUDE_IDLE_AFTER_EDIT_MS = isNonAnthropicClaude ? 120000 : 240000;
+        const CLAUDE_IDLE_NO_EDIT_MS = isNonAnthropicClaude ? 150000 : 300000;
+        const CLAUDE_IDLE_NO_TOOL_MS = isNonAnthropicClaude ? 120000 : 240000;
+        const CLAUDE_MAX_NO_EDIT_MS = isNonAnthropicClaude ? 150000 : 240000;
         const AGENT_IDLE_AFTER_EDIT_MS = 180000;
         const AGENT_IDLE_NO_EDIT_MS = 240000;
+
+        const scanForFileChanges = async (emitUpdates: boolean) => {
+          try {
+            const fileListResult = await execInSandbox(
+              sandboxId,
+              'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" -o -name "*.txt" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\n" 2>/dev/null | head -200',
+              {},
+              5000
+            );
+            if (fileListResult.exitCode === 0 && fileListResult.stdout.trim()) {
+              const isBaselineScan = !baselineFilesInitialized && knownFileStats.size === 0;
+              const currentFiles = new Set<string>();
+              const changes: Array<{ path: string; changeType: 'created' | 'modified' }> = [];
+              const lines = fileListResult.stdout.trim().split('\n').filter(Boolean);
+
+              for (const line of lines) {
+                const [path, mtimeRaw] = line.split('\t');
+                if (!path) continue;
+                currentFiles.add(path);
+
+                const mtime = Number.parseFloat(mtimeRaw || '');
+                const prevMtime = knownFileStats.get(path);
+
+                if (prevMtime === undefined) {
+                  changes.push({ path, changeType: 'created' });
+                } else if (Number.isFinite(mtime) && mtime > prevMtime + 0.0001) {
+                  changes.push({ path, changeType: 'modified' });
+                }
+
+                if (Number.isFinite(mtime)) {
+                  knownFileStats.set(path, mtime);
+                }
+              }
+
+              if (changes.length > 0) {
+                if (!isBaselineScan) {
+                  hasFileChanges = true;
+                } else {
+                  baselineFilesInitialized = true;
+                }
+
+                if (emitUpdates) {
+                  const filesWithContent: Array<{ path: string; content: string; changeType: 'created' | 'modified' }> = [];
+                  const limitedChanges = changes.slice(0, 10);
+
+                  for (const change of limitedChanges) {
+                    const relativePath = change.path.replace('/workspace/', '');
+                    try {
+                      const contentResult = await execInSandbox(
+                        sandboxId,
+                        `head -c 10240 "${change.path}" 2>/dev/null || echo ""`,
+                        {},
+                        3000
+                      );
+                      const fileContent = contentResult.stdout || '';
+                      filesWithContent.push({
+                        path: relativePath,
+                        content: fileContent,
+                        changeType: change.changeType
+                      });
+                      knownFileContents.set(change.path, fileContent);
+                    } catch {
+                      filesWithContent.push({
+                        path: relativePath,
+                        content: '',
+                        changeType: change.changeType
+                      });
+                    }
+                  }
+
+                  await sendEvent({
+                    type: 'files-update',
+                    files: filesWithContent,
+                    changes: limitedChanges.map(change => ({
+                      path: change.path.replace('/workspace/', ''),
+                      changeType: change.changeType
+                    })),
+                    totalFiles: currentFiles.size
+                  });
+                  lastActivityAt = Date.now();
+                }
+              }
+            }
+          } catch {
+            // Ignore file check errors
+          }
+        };
 
         const terminateAgent = async (reason: string, exitCode: number) => {
           if (forcedExitReason) return;
@@ -1226,89 +1326,7 @@ chmod +x ${scriptFile}`,
 
           // Check for file changes every 10 polls (~5 seconds)
           if (pollCount % 10 === 0 && running) {
-
-            // Check for new/modified files in /workspace/src
-            try {
-              const fileListResult = await execInSandbox(
-                sandboxId,
-                'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" -o -name "*.txt" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\n" 2>/dev/null | head -200',
-                {},
-                5000
-              );
-              if (fileListResult.exitCode === 0 && fileListResult.stdout.trim()) {
-                const isBaselineScan = !baselineFilesInitialized && knownFileStats.size === 0;
-                const currentFiles = new Set<string>();
-                const changes: Array<{ path: string; changeType: 'created' | 'modified' }> = [];
-                const lines = fileListResult.stdout.trim().split('\n').filter(Boolean);
-
-                for (const line of lines) {
-                  const [path, mtimeRaw] = line.split('\t');
-                  if (!path) continue;
-                  currentFiles.add(path);
-
-                  const mtime = Number.parseFloat(mtimeRaw || '');
-                  const prevMtime = knownFileStats.get(path);
-
-                  if (prevMtime === undefined) {
-                    changes.push({ path, changeType: 'created' });
-                  } else if (Number.isFinite(mtime) && mtime > prevMtime + 0.0001) {
-                    changes.push({ path, changeType: 'modified' });
-                  }
-
-                  if (Number.isFinite(mtime)) {
-                    knownFileStats.set(path, mtime);
-                  }
-                }
-
-                if (changes.length > 0) {
-                  if (!isBaselineScan) {
-                    hasFileChanges = true;
-                  } else {
-                    baselineFilesInitialized = true;
-                  }
-                  const filesWithContent: Array<{ path: string; content: string; changeType: 'created' | 'modified' }> = [];
-                  const limitedChanges = changes.slice(0, 10);
-
-                  for (const change of limitedChanges) {
-                    const relativePath = change.path.replace('/workspace/', '');
-                    try {
-                      const contentResult = await execInSandbox(
-                        sandboxId,
-                        `head -c 10240 "${change.path}" 2>/dev/null || echo ""`,
-                        {},
-                        3000
-                      );
-                      const fileContent = contentResult.stdout || '';
-                      filesWithContent.push({
-                        path: relativePath,
-                        content: fileContent,
-                        changeType: change.changeType
-                      });
-                      knownFileContents.set(change.path, fileContent);
-                    } catch {
-                      filesWithContent.push({
-                        path: relativePath,
-                        content: '',
-                        changeType: change.changeType
-                      });
-                    }
-                  }
-
-                  await sendEvent({
-                    type: 'files-update',
-                    files: filesWithContent,
-                    changes: limitedChanges.map(change => ({
-                      path: change.path.replace('/workspace/', ''),
-                      changeType: change.changeType
-                    })),
-                    totalFiles: currentFiles.size
-                  });
-                  lastActivityAt = Date.now();
-                }
-              }
-            } catch {
-              // Ignore file check errors
-            }
+            await scanForFileChanges(true);
 
             if (now - lastActivityAt > 20000 && now - lastIdleStatusAt > 20000) {
               await sendEvent({ type: 'status', message: 'Agent is still working inside the sandbox...' });
@@ -1391,6 +1409,8 @@ chmod +x ${scriptFile}`,
           await processOutputChunk(finalContent);
         }
 
+        await scanForFileChanges(true);
+
         if (agentToRun === 'claude-code' && jsonLineBuffer.trim()) {
           const trimmed = jsonLineBuffer.trim();
           try {
@@ -1426,6 +1446,13 @@ chmod +x ${scriptFile}`,
         // Get exit code
         const exitCode = forcedExitCode ?? await getExitCode(sandboxId, doneFile);
         const cancelled = exitCode === 130;
+
+        const finalAppContent = await readTextFile(appPath);
+        const appChanged = baselineAppContent !== null && baselineAppContent !== finalAppContent;
+        if (appChanged && !hasFileChanges) {
+          hasFileChanges = true;
+        }
+
         const success = exitCode === 0 || hasFileChanges;
         if (!cancelled && exitCode !== 0 && !hasFileChanges) {
           if (agentToRun === 'claude-code') {
@@ -1459,9 +1486,6 @@ chmod +x ${scriptFile}`,
           });
         }
 
-        const finalAppContent = await readTextFile(appPath);
-        const appChanged = baselineAppContent !== finalAppContent;
-
         return {
           exitCode,
           success,
@@ -1485,13 +1509,24 @@ chmod +x ${scriptFile}`,
           effectiveAgent = 'codex';
         }
 
+        const allowAiderFallback = !(
+          requestedAgent === 'claude-code' && !isAnthropicModel(model)
+        );
+
         if (!result.cancelled && effectiveAgent === 'codex' && !result.hasFileChanges) {
-          await sendEvent({
-            type: 'status',
-            message: 'Codex produced no edits. Retrying with Aider...'
-          });
-          result = await runAgentProcess('aider', prompt);
-          effectiveAgent = 'aider';
+          if (allowAiderFallback) {
+            await sendEvent({
+              type: 'status',
+              message: 'Codex produced no edits. Retrying with Aider...'
+            });
+            result = await runAgentProcess('aider', prompt);
+            effectiveAgent = 'aider';
+          } else {
+            await sendEvent({
+              type: 'status',
+              message: 'Codex produced no edits. Stopping to avoid extra fallback.'
+            });
+          }
         }
 
         await restoreMissingAppFile(result.knownFileContents);
@@ -1555,7 +1590,11 @@ chmod +x ${scriptFile}`,
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         await sendEvent({ type: 'error', error: errorMessage });
       } finally {
-        await writer.close();
+        try {
+          await writer.close();
+        } catch (closeError) {
+          console.warn('[agent-run] Stream already closed:', closeError);
+        }
       }
     })();
     
@@ -1592,7 +1631,4 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
-
-
-
 

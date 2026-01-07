@@ -3,8 +3,9 @@ import { SandboxFactory } from '@/lib/sandbox/factory';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
 import { resolveSandboxUrls } from '@/lib/server/sandbox-preview';
 import { buildDefaultProjectState, readProjectState, writeProjectState } from '@/lib/project-state';
+import { appConfig } from '@/config/app.config';
 
-async function createSandboxWithRetry(maxRetries: number = 3): Promise<any> {
+async function createSandboxWithRetry(maxRetries: number = 5): Promise<any> {
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -16,7 +17,12 @@ async function createSandboxWithRetry(maxRetries: number = 3): Promise<any> {
       console.error(`[create-ai-sandbox-v2] Attempt ${attempt} failed:`, lastError.message);
 
       if (attempt < maxRetries) {
-        const delay = Math.min(2000 * Math.pow(2, attempt - 1), 10000);
+        const isTransient = /EAI_AGAIN|ECONNREFUSED|ECONNRESET|fetch failed|Bad Gateway|502|503|504|headers timeout|UND_ERR_HEADERS_TIMEOUT/i.test(
+          lastError.message
+        );
+        const baseDelay = isTransient ? 5000 : 2000;
+        const maxDelay = isTransient ? 30000 : 10000;
+        const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
         console.log(`[create-ai-sandbox-v2] Waiting ${delay}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
@@ -30,53 +36,77 @@ async function createSandboxInternal() {
   console.log('[create-ai-sandbox-v2] Creating sandbox...');
 
   const provider = SandboxFactory.create();
-
-  const createPromise = provider.createSandbox();
-  const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Sandbox creation timeout (60s)')), 60000)
-  );
-
-  const sandboxInfo = await Promise.race([createPromise, timeoutPromise]);
-
-  if (!sandboxInfo.sandboxId || sandboxInfo.sandboxId.length < 8) {
-    throw new Error(`Invalid sandbox ID received: ${sandboxInfo.sandboxId}`);
-  }
-
-  const { previewUrl, sandboxUrl } = resolveSandboxUrls(sandboxInfo);
-
-  console.log('[create-ai-sandbox-v2] Setting up Vite React app...');
-  const setupPromise = provider.setupViteApp();
-  const setupTimeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Vite setup timeout (30s)')), 30000)
-  );
-
-  await Promise.race([setupPromise, setupTimeoutPromise]);
+  let registeredSandboxId: string | null = null;
 
   try {
-    const healthResult = await provider.runCommand('echo "sandbox-ready"');
-    if (!healthResult.success) {
-      throw new Error(`Health check returned exit code ${healthResult.exitCode}`);
+    const createPromise = provider.createSandbox();
+    const sandboxCreateTimeoutMs = appConfig.sandy.createTimeoutMs;
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Sandbox creation timeout (${sandboxCreateTimeoutMs / 1000}s)`)), sandboxCreateTimeoutMs)
+    );
+
+    const sandboxInfo = await Promise.race([createPromise, timeoutPromise]);
+
+    if (!sandboxInfo.sandboxId || sandboxInfo.sandboxId.length < 8) {
+      throw new Error(`Invalid sandbox ID received: ${sandboxInfo.sandboxId}`);
     }
-    console.log('[create-ai-sandbox-v2] Sandbox health check passed');
-  } catch (healthError) {
-    console.error('[create-ai-sandbox-v2] Health check failed:', healthError);
-    throw new Error('Sandbox health check failed');
+
+    const { previewUrl, sandboxUrl } = resolveSandboxUrls(sandboxInfo);
+
+    console.log('[create-ai-sandbox-v2] Setting up Vite React app...');
+    const setupPromise = provider.setupViteApp();
+    const sandboxSetupTimeoutMs = appConfig.sandy.setupTimeoutMs;
+    const setupTimeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Vite setup timeout (${sandboxSetupTimeoutMs / 1000}s)`)), sandboxSetupTimeoutMs)
+    );
+
+    await Promise.race([setupPromise, setupTimeoutPromise]);
+
+    try {
+      const healthResult = await provider.runCommand('echo "sandbox-ready"');
+      if (!healthResult.success) {
+        throw new Error(`Health check returned exit code ${healthResult.exitCode}`);
+      }
+      console.log('[create-ai-sandbox-v2] Sandbox health check passed');
+    } catch (healthError) {
+      console.error('[create-ai-sandbox-v2] Health check failed:', healthError);
+      throw new Error('Sandbox health check failed');
+    }
+
+    sandboxManager.registerSandbox(sandboxInfo.sandboxId, provider);
+    registeredSandboxId = sandboxInfo.sandboxId;
+
+    try {
+      await writeProjectState(provider, sandboxInfo.sandboxId, buildDefaultProjectState(sandboxInfo.sandboxId));
+    } catch (stateError) {
+      console.warn('[create-ai-sandbox-v2] Failed to persist project state:', stateError);
+    }
+
+    console.log('[create-ai-sandbox-v2] Sandbox ready at:', previewUrl);
+
+    return {
+      success: true,
+      sandboxId: sandboxInfo.sandboxId,
+      url: previewUrl,
+      sandboxUrl,
+      provider: sandboxInfo.provider,
+      message: 'Sandbox created and Vite React app initialized'
+    };
+  } catch (error) {
+    const sandboxId = registeredSandboxId || provider.getSandboxInfo?.()?.sandboxId;
+    if (sandboxId) {
+      try {
+        if (registeredSandboxId) {
+          await sandboxManager.terminateSandbox(sandboxId);
+        } else if (provider.terminate) {
+          await provider.terminate();
+        }
+      } catch (cleanupError) {
+        console.warn('[create-ai-sandbox-v2] Failed to cleanup sandbox after error:', cleanupError);
+      }
+    }
+    throw error;
   }
-
-  sandboxManager.registerSandbox(sandboxInfo.sandboxId, provider);
-
-  await writeProjectState(provider, sandboxInfo.sandboxId, buildDefaultProjectState(sandboxInfo.sandboxId));
-
-  console.log('[create-ai-sandbox-v2] Sandbox ready at:', previewUrl);
-
-  return {
-    success: true,
-    sandboxId: sandboxInfo.sandboxId,
-    url: previewUrl,
-    sandboxUrl,
-    provider: sandboxInfo.provider,
-    message: 'Sandbox created and Vite React app initialized'
-  };
 }
 
 export async function POST(request: NextRequest) {
@@ -96,8 +126,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: `Sandbox ${sandboxId} not found` }, { status: 404 });
       }
       const { previewUrl, sandboxUrl } = resolveSandboxUrls(providerInfo);
-      const state = await readProjectState(provider, sandboxId);
-      await writeProjectState(provider, sandboxId, state);
+      try {
+        const state = await readProjectState(provider, sandboxId);
+        await writeProjectState(provider, sandboxId, state);
+      } catch (stateError) {
+        console.warn('[create-ai-sandbox-v2] Failed to refresh project state during restore:', stateError);
+      }
 
       const response = NextResponse.json({
         success: true,
