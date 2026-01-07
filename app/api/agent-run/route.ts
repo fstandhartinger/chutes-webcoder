@@ -1043,7 +1043,7 @@ CONFIGEOF`,
         let running = true;
         let pollCount = 0;
         let consecutiveErrors = 0;
-        const pollInterval = 500; // 500ms between polls
+        const pollInterval = 1000; // 1s between polls to avoid overloading Sandy
         const maxConsecutiveErrors = 5; // Allow some transient errors
         const runStartedAt = Date.now();
         const isNonAnthropicClaude = agentToRun === 'claude-code' && !isAnthropicModel(resolvedModel);
@@ -1359,8 +1359,8 @@ CONFIGEOF`,
             syntheticOutputSent = true;
           }
 
-          // Check for file changes every 10 polls (~5 seconds)
-          if (pollCount % 10 === 0 && running) {
+          // Check for file changes every 15 polls (~15 seconds)
+          if (pollCount % 15 === 0 && running) {
             await scanForFileChanges(true);
 
             if (now - lastActivityAt > 20000 && now - lastIdleStatusAt > 20000) {
@@ -1535,7 +1535,7 @@ CONFIGEOF`,
         let result = await runAgentProcess(requestedAgent, prompt);
         let effectiveAgent = requestedAgent;
 
-        if (!result.cancelled && requestedAgent === 'claude-code' && !result.hasFileChanges) {
+        if (!result.cancelled && requestedAgent === 'claude-code' && !result.hasFileChanges && result.exitCode !== 0) {
           await sendEvent({
             type: 'status',
             message: 'Claude Code produced no edits. Retrying with OpenAI Codex...'
@@ -1548,7 +1548,7 @@ CONFIGEOF`,
           requestedAgent === 'claude-code' && !isAnthropicModel(model)
         );
 
-        if (!result.cancelled && effectiveAgent === 'codex' && !result.hasFileChanges) {
+        if (!result.cancelled && effectiveAgent === 'codex' && !result.hasFileChanges && result.exitCode !== 0) {
           if (allowAiderFallback) {
             await sendEvent({
               type: 'status',
