@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Agent } from 'undici';
 import { appConfig } from '@/config/app.config';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 600; // 10 minutes max for agent execution
+
+const sandyDispatcherCache = new Map<number, Agent>();
+
+function getSandyDispatcher(timeoutMs: number): Agent {
+  const cached = sandyDispatcherCache.get(timeoutMs);
+  if (cached) {
+    return cached;
+  }
+
+  const agent = new Agent({
+    connectTimeout: timeoutMs,
+    headersTimeout: timeoutMs,
+    bodyTimeout: timeoutMs,
+  });
+  sandyDispatcherCache.set(timeoutMs, agent);
+  return agent;
+}
 
 const CLAUDE_TOOL_PROMPT = [
   'You are running in a non-interactive sandbox session.',
@@ -280,12 +298,15 @@ async function sandyRequest<T>(
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const dispatcher = getSandyDispatcher(timeoutMs);
       
-      const response = await fetch(url, {
+      const requestInit: RequestInit & { dispatcher?: Agent } = {
         ...options,
         headers,
         signal: controller.signal,
-      });
+        dispatcher,
+      };
+      const response = await fetch(url, requestInit);
       
       clearTimeout(timeoutId);
       
@@ -336,7 +357,7 @@ async function execInSandbox(
   
   // Sanitize command - remove any control characters
   const sanitizedCommand = command.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
-  const requestTimeout = Math.max(timeoutMs + 5000, appConfig.api.requestTimeout);
+  const requestTimeout = Math.max(timeoutMs + 5000, 15000);
 
   return sandyRequest(
     `/api/sandboxes/${sandboxId}/exec`,
@@ -1631,4 +1652,3 @@ export async function GET() {
     defaultModel: appConfig.ai.defaultModel,
   });
 }
-
