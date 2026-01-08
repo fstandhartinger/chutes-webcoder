@@ -782,7 +782,7 @@ export async function POST(request: NextRequest) {
         const RECENT_OUTPUT_LIMIT = 50;
 
         // Track known files and mtimes for change detection
-        const knownFileStats: Map<string, number> = new Map();
+        const knownFileStats: Map<string, { mtime: number; size: number }> = new Map();
         const knownFileContents: Map<string, string> = new Map();
         let baselineFilesInitialized = false;
         if (baselineAppContent !== null) {
@@ -801,17 +801,21 @@ export async function POST(request: NextRequest) {
         try {
           const baselineResult = await execInSandbox(
             sandboxId,
-            'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" -o -name "*.txt" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\n" 2>/dev/null | head -200',
+            'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" -o -name "*.txt" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\t%s\\n" 2>/dev/null | head -200',
             {},
             5000
           );
           if (baselineResult.exitCode === 0 && baselineResult.stdout.trim()) {
             for (const line of baselineResult.stdout.trim().split('\\n')) {
-              const [path, mtimeRaw] = line.split('\\t');
+              const [path, mtimeRaw, sizeRaw] = line.split('\\t');
               if (!path) continue;
               const mtime = Number.parseFloat(mtimeRaw || '');
-              if (Number.isFinite(mtime)) {
-                knownFileStats.set(path, mtime);
+              const size = Number.parseInt(sizeRaw || '', 10);
+              if (Number.isFinite(mtime) || Number.isFinite(size)) {
+                knownFileStats.set(path, {
+                  mtime: Number.isFinite(mtime) ? mtime : 0,
+                  size: Number.isFinite(size) ? size : 0
+                });
               }
             }
             baselineFilesInitialized = knownFileStats.size > 0;
@@ -1072,7 +1076,7 @@ CONFIGEOF`,
           try {
             const fileListResult = await execInSandbox(
               sandboxId,
-              'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" -o -name "*.txt" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\n" 2>/dev/null | head -200',
+              'find /workspace -maxdepth 6 -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" -o -name "*.html" -o -name "*.txt" \\) -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.next/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/.chutes/*" -printf "%p\\t%T@\\t%s\\n" 2>/dev/null | head -200',
               {},
               5000
             );
@@ -1083,21 +1087,27 @@ CONFIGEOF`,
               const lines = fileListResult.stdout.trim().split('\n').filter(Boolean);
 
               for (const line of lines) {
-                const [path, mtimeRaw] = line.split('\t');
+                const [path, mtimeRaw, sizeRaw] = line.split('\t');
                 if (!path) continue;
                 currentFiles.add(path);
 
                 const mtime = Number.parseFloat(mtimeRaw || '');
-                const prevMtime = knownFileStats.get(path);
+                const size = Number.parseInt(sizeRaw || '', 10);
+                const prev = knownFileStats.get(path);
+                const mtimeChanged = Number.isFinite(mtime) && (!prev || mtime > prev.mtime + 0.0001);
+                const sizeChanged = Number.isFinite(size) && (!prev || size !== prev.size);
 
-                if (prevMtime === undefined) {
+                if (!prev) {
                   changes.push({ path, changeType: 'created' });
-                } else if (Number.isFinite(mtime) && mtime > prevMtime + 0.0001) {
+                } else if (mtimeChanged || sizeChanged) {
                   changes.push({ path, changeType: 'modified' });
                 }
 
-                if (Number.isFinite(mtime)) {
-                  knownFileStats.set(path, mtime);
+                if (Number.isFinite(mtime) || Number.isFinite(size)) {
+                  knownFileStats.set(path, {
+                    mtime: Number.isFinite(mtime) ? mtime : prev?.mtime ?? 0,
+                    size: Number.isFinite(size) ? size : prev?.size ?? 0
+                  });
                 }
               }
 
@@ -1238,7 +1248,8 @@ CONFIGEOF`,
                 if (contentChanged || (content !== null && previousContent === undefined)) {
                   const changeType = knownFileStats.has(filePath) ? 'modified' : 'created';
                   const nowSeconds = Date.now() / 1000;
-                  knownFileStats.set(filePath, nowSeconds);
+                  const contentSize = content ? Buffer.byteLength(content) : 0;
+                  knownFileStats.set(filePath, { mtime: nowSeconds, size: contentSize });
                   knownFileContents.set(filePath, content ?? '');
                   await sendEvent({
                     type: 'files-update',
