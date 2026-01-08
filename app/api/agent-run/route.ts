@@ -122,7 +122,7 @@ const AGENTS = {
       TERM: 'dumb',
     }),
     buildCommand: (prompt: string, model: string) => [
-      'codex', 'exec', '--full-auto', '--skip-git-repo-check', '--model', model, prompt
+      'codex', 'exec', '--ask-for-approval', 'never', '--sandbox', 'workspace-write', '--skip-git-repo-check', '--model', model, prompt
     ],
   },
   'aider': {
@@ -221,9 +221,8 @@ RULES:
 - DO NOT run "npm install" unless you need to add a NEW package
 - DO NOT run "npm run dev" - the server is already running
 - If you do need to install new packages, use: npm install --legacy-peer-deps <package-name>
-- Use the Write tool to replace /workspace/src/App.jsx for full-file changes
-- Use the Edit tool for targeted updates
-- Do NOT use bash redirection or apply_patch to modify files
+- You MUST apply file changes before finishing. Use non-interactive shell commands (apply_patch, write, cat <<'EOF' > file, or python - <<'PY') to update files.
+- After editing, re-open /workspace/src/App.jsx to verify the changes are present.
 
 TECH STACK (already set up):
 - React 18 with functional components and hooks
@@ -1017,7 +1016,7 @@ CONFIGEOF`,
           await writeSandboxFileWithFallback(sandboxId, promptFile, wrappedPrompt);
         }
         if (agentToRun === 'codex') {
-          const scriptContent = `#!/bin/sh\ncodex exec --full-auto --skip-git-repo-check --model "${resolvedModel}" - < ${promptFile}\n`;
+          const scriptContent = `#!/bin/sh\ncodex exec --ask-for-approval never --sandbox workspace-write --skip-git-repo-check --model "${resolvedModel}" - < ${promptFile}\n`;
           await writeSandboxFileWithFallback(sandboxId, codexScriptFile, scriptContent);
           command = `sh ${codexScriptFile}`;
         } else if (agentToRun === 'claude-code') {
@@ -1499,7 +1498,14 @@ CONFIGEOF`,
           hasFileChanges = true;
         }
 
-        const success = exitCode === 0 || hasFileChanges;
+        const requiresEdits = true;
+        const success = hasFileChanges || (!requiresEdits && exitCode === 0);
+        if (!cancelled && exitCode === 0 && !hasFileChanges) {
+          await sendEvent({
+            type: 'status',
+            message: 'Agent reported success but no edits were detected.'
+          });
+        }
         if (!cancelled && exitCode !== 0 && !hasFileChanges) {
           if (agentToRun === 'claude-code') {
             await sendEvent({ type: 'status', message: 'Claude Code exited without applying edits.' });
@@ -1546,7 +1552,7 @@ CONFIGEOF`,
         let result = await runAgentProcess(requestedAgent, prompt);
         let effectiveAgent = requestedAgent;
 
-        if (!result.cancelled && requestedAgent === 'claude-code' && !result.hasFileChanges && result.exitCode !== 0) {
+        if (!result.cancelled && requestedAgent === 'claude-code' && !result.hasFileChanges) {
           await sendEvent({
             type: 'status',
             message: 'Claude Code produced no edits. Retrying with OpenAI Codex...'
@@ -1559,7 +1565,7 @@ CONFIGEOF`,
           requestedAgent === 'claude-code' && !isAnthropicModel(model)
         );
 
-        if (!result.cancelled && effectiveAgent === 'codex' && !result.hasFileChanges && result.exitCode !== 0) {
+        if (!result.cancelled && effectiveAgent === 'codex' && !result.hasFileChanges) {
           if (allowAiderFallback) {
             await sendEvent({
               type: 'status',
