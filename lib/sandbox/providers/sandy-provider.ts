@@ -61,6 +61,10 @@ export class SandyProvider extends SandboxProvider {
     return Math.max(fallback, appConfig.api.requestTimeout);
   }
 
+  private resolveRequestTimeoutMs(): number {
+    return Math.max(appConfig.api.requestTimeout, this.resolveTimeoutMs());
+  }
+
   private resolveHostSuffix(): string {
     const raw = (this.config.sandy?.hostSuffix ||
       process.env.SANDY_HOST_SUFFIX ||
@@ -99,6 +103,7 @@ export class SandyProvider extends SandboxProvider {
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const startedAt = Date.now();
 
     try {
       const dispatcher = getSandyDispatcher(timeoutMs);
@@ -125,6 +130,11 @@ export class SandyProvider extends SandboxProvider {
       } catch (error) {
         throw new Error('Sandy API returned non-JSON response');
       }
+    } catch (error) {
+      const elapsedMs = Date.now() - startedAt;
+      const message = error instanceof Error ? error.message : String(error);
+      const suffix = controller.signal.aborted ? ' (aborted)' : '';
+      throw new Error(`Sandy request failed path=${path} timeoutMs=${timeoutMs} elapsedMs=${elapsedMs}${suffix}: ${message}`);
     } finally {
       clearTimeout(timeout);
     }
@@ -221,7 +231,7 @@ export class SandyProvider extends SandboxProvider {
         path,
         content
       }
-    });
+    }, this.resolveRequestTimeoutMs());
     this.existingFiles.add(path);
   }
 
@@ -230,7 +240,8 @@ export class SandyProvider extends SandboxProvider {
     const query = new URLSearchParams({ path }).toString();
     const data = await this.request<{ content: string }>(
       `/api/sandboxes/${sandboxId}/files/read?${query}`,
-      { method: 'GET' }
+      { method: 'GET' },
+      this.resolveRequestTimeoutMs()
     );
     return data.content ?? '';
   }
@@ -240,7 +251,8 @@ export class SandyProvider extends SandboxProvider {
     const query = new URLSearchParams({ path: directory }).toString();
     const data = await this.request<{ files: string[] }>(
       `/api/sandboxes/${sandboxId}/files/list?${query}`,
-      { method: 'GET' }
+      { method: 'GET' },
+      this.resolveRequestTimeoutMs()
     );
     return data.files ?? [];
   }

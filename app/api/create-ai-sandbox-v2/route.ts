@@ -45,7 +45,9 @@ async function createSandboxInternal() {
       setTimeout(() => reject(new Error(`Sandbox creation timeout (${sandboxCreateTimeoutMs / 1000}s)`)), sandboxCreateTimeoutMs)
     );
 
+    const createStarted = Date.now();
     const sandboxInfo = await Promise.race([createPromise, timeoutPromise]);
+    console.log(`[create-ai-sandbox-v2] Sandbox created in ${Date.now() - createStarted}ms`);
 
     if (!sandboxInfo.sandboxId || sandboxInfo.sandboxId.length < 8) {
       throw new Error(`Invalid sandbox ID received: ${sandboxInfo.sandboxId}`);
@@ -54,6 +56,7 @@ async function createSandboxInternal() {
     const { previewUrl, sandboxUrl } = resolveSandboxUrls(sandboxInfo);
 
     console.log('[create-ai-sandbox-v2] Setting up Vite React app...');
+    const setupStarted = Date.now();
     const setupPromise = provider.setupViteApp();
     const sandboxSetupTimeoutMs = appConfig.sandy.setupTimeoutMs;
     const setupTimeoutPromise = new Promise<never>((_, reject) =>
@@ -61,6 +64,7 @@ async function createSandboxInternal() {
     );
 
     await Promise.race([setupPromise, setupTimeoutPromise]);
+    console.log(`[create-ai-sandbox-v2] Vite setup completed in ${Date.now() - setupStarted}ms`);
 
     try {
       const healthResult = await provider.runCommand('echo "sandbox-ready"');
