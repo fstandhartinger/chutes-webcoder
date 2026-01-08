@@ -88,7 +88,8 @@ export class SandyProvider extends SandboxProvider {
     options: (Omit<RequestInit, 'body'> & { body?: any }) = {},
     timeoutMs: number = appConfig.api.requestTimeout
   ): Promise<T> {
-    const url = new URL(path, this.getBaseUrl()).toString();
+    const baseUrl = this.getBaseUrl();
+    const url = new URL(path, baseUrl).toString();
     const headers = new Headers(options.headers || {});
     const apiKey = this.getApiKey();
     if (apiKey) {
@@ -134,7 +135,10 @@ export class SandyProvider extends SandboxProvider {
       const elapsedMs = Date.now() - startedAt;
       const message = error instanceof Error ? error.message : String(error);
       const suffix = controller.signal.aborted ? ' (aborted)' : '';
-      throw new Error(`Sandy request failed path=${path} timeoutMs=${timeoutMs} elapsedMs=${elapsedMs}${suffix}: ${message}`);
+      const method = options.method || 'GET';
+      throw new Error(
+        `Sandy request failed ${method} ${url} timeoutMs=${timeoutMs} elapsedMs=${elapsedMs}${suffix}: ${message}`
+      );
     } finally {
       clearTimeout(timeout);
     }
