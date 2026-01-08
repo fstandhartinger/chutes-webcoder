@@ -122,7 +122,7 @@ const AGENTS = {
       TERM: 'dumb',
     }),
     buildCommand: (prompt: string, model: string) => [
-      'codex', '--ask-for-approval', 'never', '--sandbox', 'workspace-write', 'exec', '--skip-git-repo-check', '--model', model, prompt
+      'codex', '--ask-for-approval', 'never', 'exec', '--sandbox', 'workspace-write', '--skip-git-repo-check', '--model', model, prompt
     ],
   },
   'aider': {
@@ -1016,7 +1016,7 @@ CONFIGEOF`,
           await writeSandboxFileWithFallback(sandboxId, promptFile, wrappedPrompt);
         }
         if (agentToRun === 'codex') {
-          const scriptContent = `#!/bin/sh\ncodex --ask-for-approval never --sandbox workspace-write exec --skip-git-repo-check --model "${resolvedModel}" - < ${promptFile}\n`;
+          const scriptContent = `#!/bin/sh\ncodex --ask-for-approval never exec --sandbox workspace-write --skip-git-repo-check --model "${resolvedModel}" - < ${promptFile}\n`;
           await writeSandboxFileWithFallback(sandboxId, codexScriptFile, scriptContent);
           command = `sh ${codexScriptFile}`;
         } else if (agentToRun === 'claude-code') {
