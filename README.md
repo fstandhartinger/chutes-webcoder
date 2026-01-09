@@ -96,7 +96,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
 ## CLI Coding Agents
 
-The `/api/agent-run` endpoint enables running external CLI coding agents inside Sandy sandboxes. Each agent is configured to use Chutes' model endpoints:
+The `/api/agent-run` endpoint proxies to Sandy's agent API, which runs CLI agents inside the sandbox. Each agent is configured to use Chutes' model endpoints:
 
 | Agent | Package | API Endpoint | Status | Typical Speed |
 |-------|---------|--------------|--------|---------------|
@@ -116,7 +116,7 @@ The `/api/agent-run` endpoint enables running external CLI coding agents inside 
 
 ### Real-Time Output Streaming
 
-The agent-run API uses a polling-based streaming mechanism to provide real-time feedback:
+The agent-run API streams Sandy's SSE output to provide real-time feedback:
 
 - Agent output is streamed to the client as soon as it's available (500ms polling interval)
 - Heartbeat events every 5 seconds keep the connection alive
