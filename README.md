@@ -92,6 +92,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 - Switching between Sandy, Vercel, and E2B sandboxes is a matter of flipping `SANDBOX_PROVIDER` and providing the appropriate credentials.
 - Sandy preview URLs are derived from `SANDY_HOST_SUFFIX` (and `NEXT_PUBLIC_SANDBOX_HOST_SUFFIX` for the UI).
 - GitHub import/export uses user OAuth tokens; set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` for the OAuth callback.
+- Sandy provides a shared cache mount for npm/pip/HF downloads, so repeated sandbox runs reuse dependencies.
 
 ## CLI Coding Agents
 
