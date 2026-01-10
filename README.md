@@ -80,6 +80,8 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
    DROID_MODEL=glm-4.6
    ```
 
+> **Note**: The production Sandy host moved to `https://sandy.65.109.64.180.nip.io` (old Sandy is deprecated).
+
 3. **Run dev server**
    ```bash
    npm run dev
