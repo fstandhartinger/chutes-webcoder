@@ -77,6 +77,18 @@ echo "Checking Aider..."
 RESULT=$(exec_in_sandbox "aider --version 2>&1 || echo 'not found'" "{}")
 echo "Aider: $(echo "$RESULT" | jq -r '.stdout' | head -1)"
 
+echo "Checking OpenCode..."
+RESULT=$(exec_in_sandbox "opencode --version 2>&1 || echo 'not found'" "{}")
+echo "OpenCode: $(echo "$RESULT" | jq -r '.stdout' | head -1)"
+
+echo "Checking Factory Droid..."
+RESULT=$(exec_in_sandbox "droid --version 2>&1 || echo 'not found'" "{}")
+echo "Droid: $(echo "$RESULT" | jq -r '.stdout' | head -1)"
+
+echo "Checking OpenHands..."
+RESULT=$(exec_in_sandbox "openhands --version 2>&1 || echo 'not found'" "{}")
+echo "OpenHands: $(echo "$RESULT" | jq -r '.stdout' | head -1)"
+
 # Test 2: Test Aider with simple prompt
 echo ""
 echo "=== Test 2: Aider Simple Test ==="
@@ -140,7 +152,6 @@ fi
 
 echo ""
 echo "=== Tests Complete ==="
-
 
 
 

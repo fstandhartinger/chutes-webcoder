@@ -19,6 +19,7 @@ import { Agent, fetch as undiciFetch } from 'undici';
 
 // Configuration
 const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrender.com';
+const FACTORY_API_KEY = process.env.FACTORY_API_KEY;
 
 // Test prompt - creates a simple file to verify agent functionality
 const DEFAULT_PROMPT = 'Update src/App.jsx to render a centered h1 that says "Hello from AI" using Tailwind classes.';
@@ -38,9 +39,9 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}
 }
 
 // All agents and models
-// Note: opencode/droid are opt-in (run with --agent=opencode or --agent=droid)
+// Note: opencode/droid/openhands are opt-in (run with --agent=opencode, --agent=droid, --agent=openhands)
 const DEFAULT_AGENTS = ['codex', 'aider', 'claude-code'] as const;
-const EXTRA_AGENTS = ['opencode', 'droid'] as const;
+const EXTRA_AGENTS = ['opencode', 'droid', 'openhands'] as const;
 const ALL_AGENTS = [...DEFAULT_AGENTS, ...EXTRA_AGENTS] as const;
 const ALL_MODELS = [
   'zai-org/GLM-4.7-TEE',
@@ -426,19 +427,20 @@ async function main() {
 Usage: npx tsx tests/test-via-webcoder-api.ts [options]
 
 Options:
-  --agent=<agent>   Test only this agent (codex, aider, claude-code, opencode, droid)
+  --agent=<agent>   Test only this agent (codex, aider, claude-code, opencode, droid, openhands)
   --model=<model>   Test only this model (e.g., zai-org/GLM-4.7-TEE)
   --prompt=<text>   Override the test prompt
   --expect=<text>   Case-insensitive content match for src/App.jsx
   -h, --help        Show this help
 
 Notes:
-  Default agents: codex, aider, claude-code. Use --agent for opencode/droid.
+  Default agents: codex, aider, claude-code. Use --agent for opencode/droid/openhands.
 
 Environment:
   TEST_API_URL      Optional - Webcoder API URL (default: https://chutes-webcoder.onrender.com)
   TEST_PROMPT       Optional - Override the test prompt
   TEST_EXPECT       Optional - Regex (case-insensitive) expected in src/App.jsx
+  FACTORY_API_KEY   Optional - Required for droid agent
 `);
     process.exit(0);
   }
@@ -455,6 +457,9 @@ Environment:
   
   // Determine which tests to run
   let agents: Agent[] = values.agent ? [values.agent as Agent] : [...DEFAULT_AGENTS];
+  if (!FACTORY_API_KEY) {
+    agents = agents.filter(agent => agent !== 'droid');
+  }
   let models: Model[] = values.model ? [values.model as Model] : [...ALL_MODELS];
   
   // Validate
@@ -586,8 +591,6 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
-
 
 
 

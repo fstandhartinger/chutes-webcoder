@@ -91,7 +91,9 @@ export async function GET() {
       { id: 'aider', name: 'Aider' },
       { id: 'opencode', name: 'OpenCode' },
       { id: 'droid', name: 'Factory Droid' },
+      { id: 'openhands', name: 'OpenHands' },
     ],
     models: appConfig.ai.availableModels,
   });
 }
+

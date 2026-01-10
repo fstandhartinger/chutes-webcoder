@@ -3,19 +3,21 @@
  * 
  * These tests verify that all agent/model combinations work correctly.
  * 
- * Run with: npx tsx tests/agent-run.test.ts
+ * Run with: npx tsx --test tests/agent-run.test.ts
  */
 
-import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
+import assert from 'node:assert/strict';
+import { before, after, describe, test } from 'node:test';
 
 // Configuration
 const API_BASE_URL = process.env.TEST_API_URL || 'http://localhost:3000';
 const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.65.109.64.180.nip.io';
 const SANDY_API_KEY = process.env.SANDY_API_KEY;
 const CHUTES_API_KEY = process.env.CHUTES_API_KEY;
+const FACTORY_API_KEY = process.env.FACTORY_API_KEY;
 
 // Available agents and models
-const AGENTS = ['builtin', 'claude-code', 'codex', 'aider'] as const;
+const AGENTS = ['builtin', 'claude-code', 'codex', 'aider', 'opencode', 'droid', 'openhands'] as const;
 const MODELS = [
   'zai-org/GLM-4.7-TEE',
   'deepseek-ai/DeepSeek-V3.2-TEE',
@@ -118,17 +120,15 @@ async function consumeSSEStream(response: Response): Promise<{
 describe('Agent Configuration', () => {
   test('all agents have required fields', async () => {
     const response = await fetch(`${API_BASE_URL}/api/agent-run`);
-    expect(response.ok).toBe(true);
+    assert.equal(response.ok, true);
     
     const data = await response.json();
-    expect(data.agents).toBeDefined();
-    expect(data.models).toBeDefined();
-    expect(data.defaultModel).toBeDefined();
+    assert.ok(data.agents);
+    assert.ok(data.models);
     
     for (const agent of data.agents) {
-      expect(agent.id).toBeDefined();
-      expect(agent.name).toBeDefined();
-      expect(agent.command).toBeDefined();
+      assert.ok(agent.id);
+      assert.ok(agent.name);
     }
   });
   
@@ -137,15 +137,14 @@ describe('Agent Configuration', () => {
     const data = await response.json();
     
     for (const model of MODELS) {
-      const found = data.models.find((m: any) => m.id === model);
-      expect(found).toBeDefined();
+      assert.ok(data.models.includes(model));
     }
   });
 });
 
 // Integration Tests - require sandbox
 describe('Agent Run Integration', () => {
-  beforeAll(async () => {
+  before(async () => {
     if (!SANDY_API_KEY || !CHUTES_API_KEY) {
       console.warn('Skipping integration tests - SANDY_API_KEY or CHUTES_API_KEY not set');
       return;
@@ -158,7 +157,7 @@ describe('Agent Run Integration', () => {
     await new Promise(resolve => setTimeout(resolve, 5000));
   });
   
-  afterAll(async () => {
+  after(async () => {
     if (testSandboxId) {
       await terminateSandbox(testSandboxId);
       console.log('Terminated test sandbox:', testSandboxId);
@@ -166,7 +165,12 @@ describe('Agent Run Integration', () => {
   });
   
   // Skip builtin since it uses a different API
-  const externalAgents = AGENTS.filter(a => a !== 'builtin');
+  const externalAgents = AGENTS.filter(a => a !== 'builtin').filter(agent => {
+    if (agent === 'droid') {
+      return Boolean(FACTORY_API_KEY);
+    }
+    return true;
+  });
   
   for (const agent of externalAgents) {
     describe(`Agent: ${agent}`, () => {
@@ -190,18 +194,18 @@ describe('Agent Run Integration', () => {
           }),
         });
         
-        expect(response.ok).toBe(true);
-        expect(response.headers.get('content-type')).toContain('text/event-stream');
+        assert.equal(response.ok, true);
+        assert.ok(response.headers.get('content-type')?.includes('text/event-stream'));
         
         const result = await consumeSSEStream(response);
         
         // Should have status events
         const statusEvents = result.events.filter(e => e.type === 'status');
-        expect(statusEvents.length).toBeGreaterThan(0);
+        assert.ok(statusEvents.length > 0);
         
         // Should have a complete event
         const completeEvent = result.events.find(e => e.type === 'complete');
-        expect(completeEvent).toBeDefined();
+        assert.ok(completeEvent);
         
         // Log result for debugging
         console.log(`[${agent}/${model}] Result:`, {
@@ -228,9 +232,9 @@ describe('Agent Run Smoke Tests', () => {
       }),
     });
     
-    expect(response.status).toBe(400);
+    assert.equal(response.status, 400);
     const data = await response.json();
-    expect(data.error).toContain('Unknown agent');
+    assert.ok(data.error.includes('Unknown agent'));
   });
   
   test('rejects unknown model', async () => {
@@ -245,9 +249,9 @@ describe('Agent Run Smoke Tests', () => {
       }),
     });
     
-    expect(response.status).toBe(400);
+    assert.equal(response.status, 400);
     const data = await response.json();
-    expect(data.error).toContain('Unknown model');
+    assert.ok(data.error.includes('Unknown model'));
   });
   
   test('requires sandboxId', async () => {
@@ -261,9 +265,9 @@ describe('Agent Run Smoke Tests', () => {
       }),
     });
     
-    expect(response.status).toBe(400);
+    assert.equal(response.status, 400);
     const data = await response.json();
-    expect(data.error).toContain('sandboxId');
+    assert.ok(data.error.includes('sandboxId'));
   });
 });
 
@@ -275,12 +279,6 @@ if (import.meta.main) {
   console.log('Has SANDY_API_KEY:', !!SANDY_API_KEY);
   console.log('Has CHUTES_API_KEY:', !!CHUTES_API_KEY);
 }
-
-
-
-
-
-
 
 
 

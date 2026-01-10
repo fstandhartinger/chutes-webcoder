@@ -3,7 +3,7 @@
  * Comprehensive Integration Tests for All Agent/Model Combinations
  * 
  * This script tests every combination of:
- * - Agents: claude-code, codex, aider
+ * - Agents: claude-code, codex, aider, opencode, droid, openhands
  * - Models: GLM-4.7-TEE, DeepSeek-V3.2-TEE, MiniMax-M2, MiMo-V2-Flash
  * 
  * For each combination it:
@@ -26,13 +26,14 @@ import { parseArgs } from 'util';
 const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.65.109.64.180.nip.io';
 const SANDY_API_KEY = process.env.SANDY_API_KEY;
 const CHUTES_API_KEY = process.env.CHUTES_API_KEY;
+const FACTORY_API_KEY = process.env.FACTORY_API_KEY;
 const API_BASE_URL = process.env.TEST_API_URL || 'https://chutes-webcoder.onrender.com';
 
 // Test prompt
 const TEST_PROMPT = 'Create a simple tic tac toe game with React. Include a 3x3 grid, X and O players that alternate turns, win detection, and a reset button. Make it visually appealing with a dark theme.';
 
 // All agents and models
-const ALL_AGENTS = ['claude-code', 'aider'] as const; // codex removed - not fully supported yet
+const ALL_AGENTS = ['claude-code', 'codex', 'aider', 'opencode', 'droid', 'openhands'] as const;
 const ALL_MODELS = [
   'zai-org/GLM-4.7-TEE',
   'deepseek-ai/DeepSeek-V3.2-TEE',
@@ -311,7 +312,7 @@ async function main() {
 Usage: npx tsx tests/integration-all-combinations.ts [options]
 
 Options:
-  --agent=<agent>   Test only this agent (claude-code, aider)
+  --agent=<agent>   Test only this agent (claude-code, codex, aider, opencode, droid, openhands)
   --model=<model>   Test only this model (e.g., zai-org/GLM-4.7-TEE)
   -h, --help        Show this help
 
@@ -320,6 +321,7 @@ Environment:
   CHUTES_API_KEY    Required - Chutes API key
   SANDY_BASE_URL    Optional - Sandy server URL (default: https://sandy.65.109.64.180.nip.io)
   TEST_API_URL      Optional - Webcoder API URL (default: https://chutes-webcoder.onrender.com)
+  FACTORY_API_KEY   Optional - Required for droid agent
 `);
     process.exit(0);
   }
@@ -337,6 +339,9 @@ Environment:
   
   // Determine which tests to run
   let agents: Agent[] = values.agent ? [values.agent as Agent] : [...ALL_AGENTS];
+  if (!FACTORY_API_KEY) {
+    agents = agents.filter(agent => agent !== 'droid');
+  }
   let models: Model[] = values.model ? [values.model as Model] : [...ALL_MODELS];
   
   // Validate
@@ -434,10 +439,6 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
-
-
-
 
 
 

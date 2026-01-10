@@ -129,6 +129,7 @@ export const appConfig = {
       'aider',        // Aider AI coding assistant
       'opencode',     // OpenCode CLI
       'droid',        // Factory AI Droid CLI
+      'openhands',    // OpenHands CLI
     ] as const,
     
     // Agent display names
@@ -139,6 +140,7 @@ export const appConfig = {
       'aider': 'Aider',
       'opencode': 'OpenCode',
       'droid': 'Factory Droid',
+      'openhands': 'OpenHands',
     } as Record<string, string>,
     
     // Agent descriptions
@@ -149,6 +151,7 @@ export const appConfig = {
       'aider': 'Open-source AI pair programming assistant',
       'opencode': 'OpenCode terminal agent with multi-provider support',
       'droid': 'Factory AI Droid agent (requires Factory API key)',
+      'openhands': 'OpenHands CLI agent (OpenHands SDK)',
     } as Record<string, string>,
   },
   

@@ -6,6 +6,7 @@
  */
 
 const API_URL = process.env.WEBCODER_API_URL || 'https://chutes-webcoder.onrender.com';
+const FACTORY_API_KEY = process.env.FACTORY_API_KEY;
 
 interface TestResult {
   agent: string;
@@ -35,9 +36,12 @@ function log(message: string, color: keyof typeof colors = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
-async function killExistingSandbox(): Promise<void> {
+let activeSandboxId: string | null = null;
+
+async function killSandbox(sandboxId: string | null): Promise<void> {
+  if (!sandboxId) return;
   try {
-    await fetch(`${API_URL}/api/kill-sandbox`, { method: 'POST' });
+    await fetch(`${API_URL}/api/kill-sandbox?sandboxId=${sandboxId}`, { method: 'POST' });
     await new Promise(resolve => setTimeout(resolve, 1000));
   } catch {
     // Ignore errors
@@ -59,6 +63,7 @@ async function createSandbox(): Promise<{ sandboxId: string; url: string }> {
   const resolvedUrl = data.url && data.url.startsWith('/')
     ? new URL(data.url, API_URL).toString()
     : data.url;
+  activeSandboxId = data.sandboxId;
   return { sandboxId: data.sandboxId, url: resolvedUrl };
 }
 
@@ -194,8 +199,7 @@ async function checkPreview(sandboxId: string, previewUrl: string): Promise<{ ok
 async function testCombination(agent: string, model: string): Promise<TestResult> {
   log(`\n  Testing: ${agent} + ${model}`, 'blue');
   
-  // Kill any existing sandbox first
-  await killExistingSandbox();
+  await killSandbox(activeSandboxId);
   
   // Create fresh sandbox
   log(`    Creating sandbox...`, 'cyan');
@@ -235,7 +239,14 @@ async function testCombination(agent: string, model: string): Promise<TestResult
     log(`    Error: ${result.error}`, 'red');
   }
   
-  return result;
+  try {
+    return result;
+  } finally {
+    await killSandbox(sandboxId);
+    if (sandboxId === activeSandboxId) {
+      activeSandboxId = null;
+    }
+  }
 }
 
 async function main() {
@@ -246,7 +257,7 @@ async function main() {
   log(`\nAPI URL: ${API_URL}`, 'cyan');
   
   // Define test matrix
-  const agents = ['codex', 'aider', 'claude-code'];
+  const agents = ['codex', 'aider', 'claude-code', 'openhands', 'opencode', 'droid'];
   const models = [
     'deepseek-ai/DeepSeek-V3.2-TEE',
     'zai-org/GLM-4.7-TEE',
@@ -273,6 +284,10 @@ async function main() {
       { agent: 'codex', model: 'zai-org/GLM-4.7-TEE' },
       { agent: 'claude-code', model: 'deepseek-ai/DeepSeek-V3.2-TEE' },
     ];
+  }
+
+  if (!FACTORY_API_KEY) {
+    combinations = combinations.filter(combo => combo.agent !== 'droid');
   }
   
   log(`\nTesting ${combinations.length} combination(s)...`, 'yellow');
@@ -321,8 +336,6 @@ main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-
-
 
 
 

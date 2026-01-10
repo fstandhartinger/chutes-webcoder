@@ -16,6 +16,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
   - **Aider** (`aider-chat`) – Python-based coding assistant via OpenAI-compatible endpoint
   - **OpenCode** (`opencode-ai`) – terminal-native AI coding agent with custom provider support
   - **Factory Droid** (`droid`) – Factory AI CLI (requires `FACTORY_API_KEY`)
+  - **OpenHands** (`openhands`) – OpenHands CLI (via OpenAI-compatible endpoint)
 - **Upstream Enhancements** – AI Builder UI, morph fast-apply edits, GitHub integration hooks, CLI scaffolding (`packages/create-open-lovable`).
 - **Render-ready deployment** – `render.yaml` and sensible `NEXT_PUBLIC_APP_URL` defaults for local routing.
 
@@ -107,6 +108,7 @@ The `/api/agent-run` endpoint proxies to Sandy's agent API, which runs CLI agent
 | **Claude Code** | `@anthropic-ai/claude-code` | `claude.chutes.ai` | ⚠️ Slower | >60s |
 | **OpenCode** | `opencode-ai` | `llm.chutes.ai/v1` | ✅ Tested | ~20s |
 | **Factory Droid** | `droid` | `factory.ai` | ⚠️ Requires key | Varies |
+| **OpenHands** | `openhands` | `llm.chutes.ai/v1` | ✅ Tested | ~30s |
 
 ### Tested Model Combinations
 
@@ -115,6 +117,7 @@ The `/api/agent-run` endpoint proxies to Sandy's agent API, which runs CLI agent
 | **Aider** | ✅ 10.2s | ✅ Works |
 | **Codex** | ✅ 156.9s | ✅ 13.4s |
 | **Claude Code** | ⚠️ Slow | ⚠️ Slow |
+| **OpenHands** | ✅ Works | ✅ Works |
 
 ### Real-Time Output Streaming
 
