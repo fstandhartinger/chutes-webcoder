@@ -188,7 +188,13 @@ export class SandyProvider extends SandboxProvider {
       sandboxId: string;
       url: string;
       createdAt?: string;
-    }>('/api/sandboxes', { method: 'POST' }, this.resolveCreateTimeoutMs());
+    }>('/api/sandboxes', {
+      method: 'POST',
+      body: {
+        priority: 1,      // HIGH priority for user-facing webcoder
+        preemptable: false // Don't preempt user sessions
+      }
+    }, this.resolveCreateTimeoutMs());
 
     this.sandboxInfo = {
       sandboxId: data.sandboxId,
