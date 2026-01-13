@@ -345,7 +345,11 @@ export default defineConfig({
     port: ${appConfig.sandy.vitePort},
     strictPort: true,
     ${hmrConfig}
-    allowedHosts: true
+    allowedHosts: true,
+    watch: {
+      usePolling: true,
+      interval: 1000
+    }
   }
 })`;
 
@@ -454,7 +458,7 @@ body {
     await this.writeFile('vite.config.js', viteConfig);
 
     await this.runCommand('pkill -f vite || true');
-    await this.runCommand('nohup npm run dev > /tmp/vite.log 2>&1 &');
+    await this.runCommand('CHOKIDAR_USEPOLLING=1 CHOKIDAR_INTERVAL=1000 nohup npm run dev > /tmp/vite.log 2>&1 &');
 
     await new Promise(resolve => setTimeout(resolve, appConfig.sandy.viteStartupDelay));
 
@@ -471,7 +475,7 @@ body {
   async restartViteServer(): Promise<void> {
     await this.runCommand('pkill -f vite || true');
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await this.runCommand('nohup npm run dev > /tmp/vite.log 2>&1 &');
+    await this.runCommand('CHOKIDAR_USEPOLLING=1 CHOKIDAR_INTERVAL=1000 nohup npm run dev > /tmp/vite.log 2>&1 &');
     await new Promise(resolve => setTimeout(resolve, appConfig.sandy.viteStartupDelay));
   }
 

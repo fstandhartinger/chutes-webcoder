@@ -199,7 +199,15 @@ function AISandboxPageContent() {
   const router = useRouter();
   
   // Auth state - enforce login on first request
-  const { isAuthenticated, isLoading: isAuthLoading, login, refresh: refreshAuth, user, connections } = useAuth();
+  const {
+    isAuthenticated,
+    isLoading: isAuthLoading,
+    login,
+    refresh: refreshAuth,
+    user,
+    connections,
+    checkAuthAndProceed,
+  } = useAuth();
   const { pendingRequest, clearPendingRequest } = usePendingAuthRequest();
   const githubConnected = connections?.github ?? false;
   const netlifyConnected = connections?.netlify ?? false;
@@ -2483,14 +2491,13 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       return;
     }
     
-    // Enforce authentication on first request
-    if (!isAuthenticated && !isAuthLoading) {
-      console.log('[sendChatMessage] Not authenticated, redirecting to login');
-      // Save the request and redirect to login
-      login(window.location.pathname, {
-        type: 'generate',
-        payload: { prompt: message }
-      });
+    const authReady = await checkAuthAndProceed(
+      async () => true,
+      'generate',
+      { prompt: message }
+    );
+    if (!authReady) {
+      console.log('[sendChatMessage] Auth required, redirecting to login');
       return;
     }
     

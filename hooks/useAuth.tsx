@@ -1,6 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  createContext,
+  useContext,
+  ReactNode,
+} from 'react';
 
 export interface User {
   id: string;
@@ -48,6 +56,11 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
       netlify: false,
     },
   });
+  const stateRef = useRef(state);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Fetch current user on mount
   const refresh = useCallback(async () => {
@@ -89,10 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     // Check for pending request in URL (after OAuth callback)
     const urlParams = new URLSearchParams(window.location.search);
     const pendingRequestParam = urlParams.get('pendingRequest');
-    
+
     if (pendingRequestParam) {
       try {
-        const pendingRequest = JSON.parse(decodeURIComponent(pendingRequestParam));
+        const pendingRequest = JSON.parse(pendingRequestParam);
         // Store pending request for the app to handle
         sessionStorage.setItem('pendingAuthRequest', JSON.stringify(pendingRequest));
         window.dispatchEvent(new Event('pendingAuthRequest'));
@@ -134,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
         console.error('[useAuth] Failed to persist pending request:', error);
       }
       params.set('pendingRequestType', pendingRequest.type);
-      params.set('pendingRequestPayload', encodeURIComponent(JSON.stringify(pendingRequest.payload)));
+      params.set('pendingRequestPayload', JSON.stringify(pendingRequest.payload));
     }
     
     if (params.toString()) {
@@ -169,15 +182,15 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
       requestType: string,
       requestPayload: unknown
     ): Promise<T | null> {
-      // Wait for auth state to load
-      if (state.isLoading) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        // If still loading after a brief wait, let it proceed
+      // Wait for auth state to load (avoid races on first render)
+      const startedAt = Date.now();
+      while (stateRef.current.isLoading && Date.now() - startedAt < 2000) {
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
-      
-      if (!state.isAuthenticated) {
+
+      if (!stateRef.current.isAuthenticated) {
         // Store the pending request and redirect to login
-        login(window.location.pathname, {
+        login(`${window.location.pathname}${window.location.search}`, {
           type: requestType,
           payload: requestPayload,
         });
@@ -187,7 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
       // User is authenticated, proceed with the action
       return action();
     },
-    [state.isLoading, state.isAuthenticated, login]
+    [login]
   );
 
   return (

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       try {
         authState.pendingRequest = {
           type: pendingRequestType,
-          payload: JSON.parse(decodeURIComponent(pendingRequestPayload)),
+          payload: JSON.parse(pendingRequestPayload),
         };
       } catch (e) {
         console.error('[auth/login] Failed to parse pending request payload:', e);
@@ -59,7 +59,6 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
 
 
 
