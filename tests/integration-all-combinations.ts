@@ -7,7 +7,7 @@
  * - Models: GLM-4.7-TEE, DeepSeek-V3.2-TEE, MiniMax-M2, MiMo-V2-Flash
  * 
  * For each combination it:
- * 1. Creates a real Sandy sandbox on the Hetzner server
+ * 1. Creates a sandbox via the webcoder API (ensures template + Vite setup; falls back to Sandy direct)
  * 2. Runs the agent with a test prompt
  * 3. Verifies streaming output works
  * 4. Verifies the end result is a working app
@@ -79,27 +79,96 @@ function log(message: string, color: keyof typeof colors = 'reset') {
 async function sandyRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${SANDY_BASE_URL}${path}`;
   const headers = new Headers(options.headers || {});
-  
+
   if (SANDY_API_KEY) {
     headers.set('Authorization', `Bearer ${SANDY_API_KEY}`);
   }
   headers.set('Content-Type', 'application/json');
-  
+
   const response = await fetch(url, { ...options, headers });
-  
+
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Sandy API error ${response.status}: ${text}`);
   }
-  
+
   return response.json();
 }
 
-async function createSandbox(): Promise<{ sandboxId: string; url: string }> {
-  return sandyRequest('/api/sandboxes', { method: 'POST' });
+type SandboxHandle = {
+  sandboxId: string;
+  url: string;
+  createdViaApi: boolean;
+};
+
+async function createSandboxViaApi(): Promise<SandboxHandle> {
+  const response = await fetch(`${API_BASE_URL}/api/create-ai-sandbox-v2`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`create-ai-sandbox-v2 error ${response.status}: ${text}`);
+  }
+
+  const data = await response.json();
+  if (!data?.sandboxId) {
+    throw new Error('create-ai-sandbox-v2 response missing sandboxId');
+  }
+
+  return {
+    sandboxId: data.sandboxId,
+    url: data.url || data.sandboxUrl || '',
+    createdViaApi: true,
+  };
 }
 
-async function terminateSandbox(sandboxId: string): Promise<void> {
+async function createSandboxDirect(): Promise<SandboxHandle> {
+  const data = await sandyRequest<{ sandboxId: string; url: string }>('/api/sandboxes', {
+    method: 'POST',
+    body: JSON.stringify({
+      priority: 1,
+      preemptable: false,
+    }),
+  });
+
+  return {
+    sandboxId: data.sandboxId,
+    url: data.url,
+    createdViaApi: false,
+  };
+}
+
+async function createSandbox(): Promise<SandboxHandle> {
+  try {
+    return await createSandboxViaApi();
+  } catch (error) {
+    if (!SANDY_API_KEY) {
+      throw error;
+    }
+    console.warn('create-ai-sandbox-v2 failed, falling back to direct Sandy API:', error);
+    return await createSandboxDirect();
+  }
+}
+
+async function terminateSandbox(sandboxId: string, createdViaApi: boolean): Promise<void> {
+  if (createdViaApi) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/kill-sandbox`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sandboxId }),
+      });
+      if (response.ok) {
+        return;
+      }
+    } catch (e) {
+      console.warn(`kill-sandbox failed for ${sandboxId}:`, e);
+    }
+  }
+
   try {
     await sandyRequest(`/api/sandboxes/${sandboxId}/terminate`, { method: 'POST' });
   } catch (e) {
@@ -210,6 +279,7 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
   const events: any[] = [];
   let sandboxId = '';
   let sandboxUrl = '';
+  let createdViaApi = false;
   
   try {
     // Create sandbox
@@ -217,6 +287,7 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
     const sandbox = await createSandbox();
     sandboxId = sandbox.sandboxId;
     sandboxUrl = sandbox.url;
+    createdViaApi = sandbox.createdViaApi;
     log(`  Sandbox: ${sandboxId}`, 'cyan');
     
     // Wait for sandbox to be ready
@@ -290,7 +361,7 @@ async function runTest(agent: Agent, model: Model): Promise<TestResult> {
     // Cleanup
     if (sandboxId) {
       log(`  Cleaning up sandbox ${sandboxId}...`, 'cyan');
-      await terminateSandbox(sandboxId);
+      await terminateSandbox(sandboxId, createdViaApi);
     }
   }
 }
@@ -439,10 +510,6 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
-
-
-
 
 
 

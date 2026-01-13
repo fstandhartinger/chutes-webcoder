@@ -3,7 +3,8 @@ import { Agent } from 'undici';
 import { appConfig } from '@/config/app.config';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 600; // 10 minutes max for agent execution
+const DEFAULT_AGENT_MAX_SECONDS = 1200; // 20 minutes max for agent execution
+export const maxDuration = 1200;
 
 const sandyDispatcherCache = new Map<number, Agent>();
 
@@ -53,7 +54,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { baseUrl, apiKey } = getSandyConfig();
-    const timeoutMs = Number.isFinite(bodyDuration) ? Math.max(1000, Number(bodyDuration) * 1000) : 600000;
+    const requestedDurationSeconds = Number.isFinite(bodyDuration)
+      ? Math.max(60, Number(bodyDuration))
+      : DEFAULT_AGENT_MAX_SECONDS;
+    const timeoutMs = Math.max(1000, requestedDurationSeconds * 1000);
 
     const response = await fetch(`${baseUrl}/api/sandboxes/${sandboxId}/agent/run`, {
       method: 'POST',
@@ -61,7 +65,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
-      body: JSON.stringify({ agent, model, prompt, maxDuration: bodyDuration }),
+      body: JSON.stringify({ agent, model, prompt, maxDuration: requestedDurationSeconds }),
       dispatcher: getSandyDispatcher(timeoutMs),
     } as RequestInit & { dispatcher?: Agent });
 
@@ -96,4 +100,3 @@ export async function GET() {
     models: appConfig.ai.availableModels,
   });
 }
-

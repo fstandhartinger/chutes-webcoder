@@ -25,8 +25,9 @@ echo ""
 # Create a sandbox
 echo "Creating sandbox..."
 SANDBOX_RESPONSE=$(curl -s -X POST "$SANDY_BASE_URL/api/sandboxes" \
-    -H "Authorization: Bearer $SANDY_API_KEY" \
-    -H "Content-Type: application/json")
+  -H "Authorization: Bearer $SANDY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"priority":1,"preemptable":false}')
 
 SANDBOX_ID=$(echo "$SANDBOX_RESPONSE" | jq -r '.sandboxId')
 echo "Sandbox ID: $SANDBOX_ID"
@@ -152,7 +153,6 @@ fi
 
 echo ""
 echo "=== Tests Complete ==="
-
 
 
 

@@ -39,6 +39,10 @@ async function createTestSandbox(): Promise<string> {
       'Authorization': `Bearer ${SANDY_API_KEY}`,
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      priority: 1,
+      preemptable: false,
+    }),
   });
   
   if (!response.ok) {
@@ -279,7 +283,6 @@ if (import.meta.main) {
   console.log('Has SANDY_API_KEY:', !!SANDY_API_KEY);
   console.log('Has CHUTES_API_KEY:', !!CHUTES_API_KEY);
 }
-
 
 
 
