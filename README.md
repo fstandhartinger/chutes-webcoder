@@ -43,6 +43,8 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
    SANDY_API_KEY=your_sandy_api_key
    SANDY_HOST_SUFFIX=.sandy.65.109.64.180.nip.io
    NEXT_PUBLIC_SANDBOX_HOST_SUFFIX=.sandy.65.109.64.180.nip.io
+   # Optional: force Sandy controller routing (use docker-backed upstreams for agent runs)
+   SANDY_PREFERRED_UPSTREAM=docker-primary
 
    # Optional: Vercel sandbox (requires Vercel account setup)
    # SANDBOX_PROVIDER=vercel

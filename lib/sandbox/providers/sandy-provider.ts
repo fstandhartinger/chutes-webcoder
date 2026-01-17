@@ -76,6 +76,13 @@ export class SandyProvider extends SandboxProvider {
     return raw.startsWith('.') ? raw : `.${raw}`;
   }
 
+  private resolvePreferredUpstream(): string | undefined {
+    return (
+      this.config.sandy?.preferredUpstream ||
+      process.env.SANDY_PREFERRED_UPSTREAM
+    );
+  }
+
   private resolveAllowedHosts(): true {
     // Allow all hosts for sandbox environments
     // This is safe for sandboxed containers and avoids issues with
@@ -192,7 +199,8 @@ export class SandyProvider extends SandboxProvider {
       method: 'POST',
       body: {
         priority: 1,      // HIGH priority for user-facing webcoder
-        preemptable: false // Don't preempt user sessions
+        preemptable: false, // Don't preempt user sessions
+        upstream: this.resolvePreferredUpstream()
       }
     }, this.resolveCreateTimeoutMs());
 

@@ -29,6 +29,7 @@ export interface SandboxProviderConfig {
     apiKey?: string;
     baseUrl?: string;
     hostSuffix?: string;
+    preferredUpstream?: string;
     timeoutMs?: number;
     createTimeoutMs?: number;
     setupTimeoutMs?: number;
