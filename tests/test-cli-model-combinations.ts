@@ -5,6 +5,8 @@
  * Tests the production-like setup with Sandy sandboxes and Chutes models
  */
 
+import { SSEJsonBuffer } from '../lib/agent-output-parser';
+
 const API_URL = process.env.WEBCODER_API_URL || 'https://chutes-webcoder.onrender.com';
 const FACTORY_API_KEY = process.env.FACTORY_API_KEY;
 
@@ -99,43 +101,34 @@ async function runAgent(
     
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
+    const sseBuffer = new SSEJsonBuffer();
     
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
-      
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n\n');
-      buffer = lines.pop() || '';
-      
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        
-        try {
-          const data = JSON.parse(line.slice(6));
-          
-          if (data.type === 'output' || data.type === 'agent-output') {
-            outputCount++;
-            if (firstOutputAt === null) {
-              firstOutputAt = Date.now() - startTime;
-            }
-            // Log first few outputs
-            if (outputCount <= 3) {
-              const text = data.text || JSON.stringify(data.data).substring(0, 60);
-              log(`    📝 ${text.substring(0, 70)}...`, 'magenta');
-            }
-          } else if (data.type === 'complete') {
-            success = data.success === true;
-          } else if (data.type === 'error') {
-            error = data.error;
-          } else if (data.type === 'heartbeat' && outputCount === 0) {
-            log(`    💓 Heartbeat (${data.elapsed}s)`, 'cyan');
+      const chunk = done ? '' : decoder.decode(value, { stream: true });
+      const { jsonObjects } = sseBuffer.addChunk(chunk, done);
+
+      for (const data of jsonObjects) {
+        if (data.type === 'output' || data.type === 'agent-output') {
+          outputCount++;
+          if (firstOutputAt === null) {
+            firstOutputAt = Date.now() - startTime;
           }
-        } catch {
-          // Ignore parse errors
+          // Log first few outputs
+          if (outputCount <= 3) {
+            const text = data.text || JSON.stringify(data.data).substring(0, 60);
+            log(`    📝 ${text.substring(0, 70)}...`, 'magenta');
+          }
+        } else if (data.type === 'complete') {
+          success = data.success === true;
+        } else if (data.type === 'error') {
+          error = data.error;
+        } else if (data.type === 'heartbeat' && outputCount === 0) {
+          log(`    💓 Heartbeat (${data.elapsed}s)`, 'cyan');
         }
       }
+
+      if (done) break;
     }
   } catch (e: any) {
     error = e.message;
@@ -336,7 +329,6 @@ main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-
 
 
 

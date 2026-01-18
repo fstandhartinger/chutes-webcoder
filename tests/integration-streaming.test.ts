@@ -9,6 +9,8 @@
  * 4. Exit codes are properly reported
  */
 
+import { SSEJsonBuffer } from '../lib/agent-output-parser';
+
 const API_URL = process.env.WEBCODER_API_URL || 'https://chutes-webcoder.onrender.com';
 
 interface SSEEvent {
@@ -99,53 +101,45 @@ async function runAgentWithStreaming(
   
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = '';
+  const sseBuffer = new SSEJsonBuffer();
   
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
-    
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n\n');
-    buffer = lines.pop() || '';
-    
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
+    const chunk = done ? '' : decoder.decode(value, { stream: true });
+    const { jsonObjects } = sseBuffer.addChunk(chunk, done);
+
+    for (const data of jsonObjects) {
+      const event: SSEEvent = {
+        type: data.type,
+        timestamp: Date.now() - startTime,
+        data,
+      };
       
-      try {
-        const data = JSON.parse(line.slice(6));
-        const event: SSEEvent = {
-          type: data.type,
-          timestamp: Date.now() - startTime,
-          data,
-        };
-        
-        metrics.totalEvents++;
-        metrics.allEvents.push(event);
-        
-        if (data.type === 'output' || data.type === 'agent-output') {
-          metrics.outputEvents++;
-          if (metrics.firstOutputAt === null) {
-            metrics.firstOutputAt = event.timestamp;
-          }
-          metrics.lastOutputAt = event.timestamp;
-        } else if (data.type === 'heartbeat') {
-          metrics.heartbeatEvents++;
-        } else if (data.type === 'status') {
-          metrics.statusEvents++;
-        } else if (data.type === 'complete') {
-          metrics.completeEvent = data;
-        } else if (data.type === 'error') {
-          metrics.errors.push(data.error);
+      metrics.totalEvents++;
+      metrics.allEvents.push(event);
+      
+      if (data.type === 'output' || data.type === 'agent-output') {
+        metrics.outputEvents++;
+        if (metrics.firstOutputAt === null) {
+          metrics.firstOutputAt = event.timestamp;
         }
-        
-        if (onEvent) {
-          onEvent(event);
-        }
-      } catch (e) {
-        // Ignore parse errors
+        metrics.lastOutputAt = event.timestamp;
+      } else if (data.type === 'heartbeat') {
+        metrics.heartbeatEvents++;
+      } else if (data.type === 'status') {
+        metrics.statusEvents++;
+      } else if (data.type === 'complete') {
+        metrics.completeEvent = data;
+      } else if (data.type === 'error') {
+        metrics.errors.push(data.error);
+      }
+      
+      if (onEvent) {
+        onEvent(event);
       }
     }
+
+    if (done) break;
   }
   
   return metrics;
@@ -311,7 +305,6 @@ main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-
 
 
 

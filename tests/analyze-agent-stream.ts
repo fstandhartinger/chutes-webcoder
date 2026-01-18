@@ -7,6 +7,7 @@
  */
 
 import fetch from 'node-fetch';
+import { SSEJsonBuffer } from '../lib/agent-output-parser';
 
 // Configuration
 const API_URL = process.env.API_URL || 'https://chutes-webcoder.onrender.com';
@@ -96,28 +97,21 @@ async function runAgent(
     
     const reader = response.body as any;
     const decoder = new TextDecoder();
-    let buffer = '';
+    const sseBuffer = new SSEJsonBuffer();
     
     for await (const chunk of reader) {
-      buffer += decoder.decode(chunk, { stream: true });
+      const text = decoder.decode(chunk, { stream: true });
+      const { jsonObjects } = sseBuffer.addChunk(text, false);
       
-      // Process complete SSE lines
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        
+      for (const data of jsonObjects) {
         try {
-          const jsonStr = line.slice(6);
-          const data = JSON.parse(jsonStr);
           const elapsed = Date.now() - startTime;
           
           const event: StreamEvent = {
             timestamp: elapsed,
             type: data.type,
             data,
-            raw: jsonStr
+            raw: JSON.stringify(data)
           };
           events.push(event);
           
@@ -167,8 +161,45 @@ async function runAgent(
           console.log(`   [${(elapsed/1000).toFixed(1)}s] ${typeEmoji} ${data.type}: ${preview}`);
           
         } catch (e) {
-          // Skip non-JSON lines
+          // Skip malformed events
         }
+      }
+    }
+    
+    const { jsonObjects: finalObjects } = sseBuffer.flush();
+    for (const data of finalObjects) {
+      try {
+        const elapsed = Date.now() - startTime;
+        events.push({
+          timestamp: elapsed,
+          type: data.type,
+          data,
+          raw: JSON.stringify(data)
+        });
+        eventTypes.set(data.type, (eventTypes.get(data.type) || 0) + 1);
+        if (!firstContentTime && (data.type === 'output' || data.type === 'agent-output')) {
+          firstContentTime = elapsed;
+        }
+        switch (data.type) {
+          case 'output':
+            outputLines.push(data.text || '');
+            break;
+          case 'status':
+            statusMessages.push(data.message || '');
+            break;
+          case 'error':
+            errors.push(data.error || '');
+            break;
+          case 'files-update':
+            fileUpdates.push(...(data.files || []));
+            break;
+          case 'complete':
+            exitCode = data.exitCode;
+            success = data.success;
+            break;
+        }
+      } catch (e) {
+        // Skip malformed events
       }
     }
     
@@ -392,7 +423,6 @@ async function main() {
 }
 
 main();
-
 
 
 

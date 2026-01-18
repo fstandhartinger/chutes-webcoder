@@ -38,10 +38,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { agent, model, prompt, sandboxId, maxDuration: bodyDuration } = body || {};
+    const externalAgents = appConfig.agents.availableAgents.filter((id) => id !== 'builtin');
 
     if (!agent || !model || !prompt || !sandboxId) {
       return NextResponse.json(
         { error: 'agent, model, prompt, and sandboxId are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!externalAgents.includes(agent)) {
+      return NextResponse.json(
+        { error: `Unknown agent: ${agent}. Available: ${externalAgents.join(', ')}` },
         { status: 400 }
       );
     }
@@ -88,15 +96,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const externalAgents = appConfig.agents.availableAgents.filter((id) => id !== 'builtin');
   return NextResponse.json({
-    agents: [
-      { id: 'claude-code', name: 'Claude Code' },
-      { id: 'codex', name: 'OpenAI Codex' },
-      { id: 'aider', name: 'Aider' },
-      { id: 'opencode', name: 'OpenCode' },
-      { id: 'droid', name: 'Factory Droid' },
-      { id: 'openhands', name: 'OpenHands' },
-    ],
+    agents: externalAgents.map((id) => ({
+      id,
+      name: appConfig.agents.agentDisplayNames[id] || id,
+    })),
     models: appConfig.ai.availableModels,
   });
 }

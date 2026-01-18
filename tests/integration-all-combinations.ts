@@ -21,6 +21,7 @@
  */
 
 import { parseArgs } from 'util';
+import { SSEJsonBuffer } from '../lib/agent-output-parser';
 
 // Configuration
 const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.65.109.64.180.nip.io';
@@ -235,36 +236,28 @@ async function runAgent(
   }
   
   const decoder = new TextDecoder();
-  let buffer = '';
+  const sseBuffer = new SSEJsonBuffer();
   let success = false;
   let error: string | undefined;
   
   try {
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
-      
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            onEvent(data);
-            
-            if (data.type === 'error') {
-              error = data.error;
-            }
-            if (data.type === 'complete') {
-              success = data.success;
-            }
-          } catch (e) {
-            // Ignore parse errors
-          }
+      const chunk = done ? '' : decoder.decode(value, { stream: true });
+      const { jsonObjects } = sseBuffer.addChunk(chunk, done);
+
+      for (const data of jsonObjects) {
+        onEvent(data);
+
+        if (data.type === 'error') {
+          error = data.error;
+        }
+        if (data.type === 'complete') {
+          success = data.success;
         }
       }
+
+      if (done) break;
     }
   } finally {
     reader.releaseLock();
@@ -510,7 +503,6 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
 
 
 

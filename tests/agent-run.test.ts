@@ -8,6 +8,7 @@
 
 import assert from 'node:assert/strict';
 import { before, after, describe, test } from 'node:test';
+import { SSEJsonBuffer } from '../lib/agent-output-parser';
 
 // Configuration
 const API_BASE_URL = process.env.TEST_API_URL || 'http://localhost:3000';
@@ -84,37 +85,40 @@ async function consumeSSEStream(response: Response): Promise<{
   }
   
   const decoder = new TextDecoder();
-  let buffer = '';
+  const sseBuffer = new SSEJsonBuffer();
   
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            events.push(data);
-            
-            if (data.type === 'error') {
-              error = data.error;
-            }
-            if (data.type === 'complete') {
-              success = data.success;
-            }
-          } catch (e) {
-            console.warn('Failed to parse SSE data:', line);
-          }
+      const chunk = decoder.decode(value, { stream: true });
+      const { jsonObjects } = sseBuffer.addChunk(chunk, false);
+
+      for (const data of jsonObjects) {
+        events.push(data);
+
+        if (data.type === 'error') {
+          error = data.error;
+        }
+        if (data.type === 'complete') {
+          success = data.success;
         }
       }
     }
   } finally {
     reader.releaseLock();
+  }
+
+  const { jsonObjects: finalObjects } = sseBuffer.flush();
+  for (const data of finalObjects) {
+    events.push(data);
+    if (data.type === 'error') {
+      error = data.error;
+    }
+    if (data.type === 'complete') {
+      success = data.success;
+    }
   }
   
   return { events, error, success };
@@ -283,7 +287,6 @@ if (import.meta.main) {
   console.log('Has SANDY_API_KEY:', !!SANDY_API_KEY);
   console.log('Has CHUTES_API_KEY:', !!CHUTES_API_KEY);
 }
-
 
 
 
