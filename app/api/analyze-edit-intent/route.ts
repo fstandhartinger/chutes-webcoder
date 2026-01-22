@@ -38,6 +38,9 @@ const chutesApiKey = process.env.CHUTES_API_KEY;
 const chutes = createOpenAI({
   apiKey: chutesApiKey ?? (isUsingAIGateway ? process.env.AI_GATEWAY_API_KEY : process.env.OPENAI_API_KEY),
   baseURL: chutesApiKey ? chutesBaseUrl : (isUsingAIGateway ? aiGatewayBaseURL : process.env.OPENAI_BASE_URL),
+  headers: {
+    'X-Identifier': 'chutes-webcoder',
+  },
 });
 
 // Schema for the AI's search plan - not file selection!
