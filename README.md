@@ -130,6 +130,15 @@ The agent-run API streams Sandy's SSE output to provide real-time feedback:
 - Output is sent line-by-line for immediate visual feedback
 - Users see progress immediately instead of waiting for completion
 
+### Sandy + Claude Code routing notes
+
+For Claude Code (and other CLI agents) we now recommend routing through the Janus model router instead of hard‑coding a single model:
+
+- Set Sandy `/agent/run` `apiBaseUrl` to the Janus router (Anthropic Messages compatible).
+- Keep `model` as `janus-router` so the router can select + fail over across Chutes models.
+- Pass `rawPrompt: true` when you already provide a system prompt.
+- Upload an agent pack into `/workspace/agent-pack` and set `JANUS_SYSTEM_PROMPT_PATH=/workspace/agent-pack/prompts/system.md` so Claude Code reads the full instruction set.
+
 > **Note:** Factory Droid requires a proprietary `FACTORY_API_KEY` and uses Factory-hosted models. OpenCode uses the OpenAI-compatible endpoint and supports Chutes models via `OPENAI_BASE_URL`.
 
 ### Agent API Usage
