@@ -138,6 +138,7 @@ For Claude Code (and other CLI agents) we now recommend routing through the Janu
 - Keep `model` as `janus-router` so the router can select + fail over across Chutes models.
 - Pass `rawPrompt: true` when you already provide a system prompt.
 - Upload an agent pack into `/workspace/agent-pack` and set `JANUS_SYSTEM_PROMPT_PATH=/workspace/agent-pack/prompts/system.md` so Claude Code reads the full instruction set.
+- Save generated files to `/workspace/artifacts`; cache sandbox artifact URLs server‑side (e.g., `/var/data/...`) and serve them via `/api/artifacts/...` before the sandbox exits.
 
 > **Note:** Factory Droid requires a proprietary `FACTORY_API_KEY` and uses Factory-hosted models. OpenCode uses the OpenAI-compatible endpoint and supports Chutes models via `OPENAI_BASE_URL`.
 
