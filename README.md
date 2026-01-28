@@ -112,6 +112,21 @@ The `/api/agent-run` endpoint proxies to Sandy's agent API, which runs CLI agent
 | **Factory Droid** | `droid` | `factory.ai` | ⚠️ Requires key | Varies |
 | **OpenHands** | `openhands` | `llm.chutes.ai/v1` | ✅ Tested | ~30s |
 
+### Sandy Agent Routing (optional)
+
+If you want Sandy agents to route through the Janus model router (and include a custom system prompt file), set the following env vars:
+
+```env
+# Route Anthropic-style calls via the Janus model router
+SANDY_AGENT_API_BASE_URL=http://your-janus-router-host:port
+# Provide a system prompt file path inside the sandbox (if you upload an agent pack)
+SANDY_AGENT_SYSTEM_PROMPT_PATH=/workspace/agent-pack/prompts/system.md
+# Optional: skip Sandy's web-dev wrapper prompt
+SANDY_AGENT_RAW_PROMPT=true
+```
+
+`/api/agent-run` forwards `systemPromptPath`, `apiBaseUrl`, `rawPrompt`, and `env` to Sandy when provided.
+
 ### Tested Model Combinations
 
 | Agent | DeepSeek V3.2 | GLM-4.7 |
@@ -137,8 +152,9 @@ For Claude Code (and other CLI agents) we now recommend routing through the Janu
 - Set Sandy `/agent/run` `apiBaseUrl` to the Janus router (Anthropic Messages compatible).
 - Keep `model` as `janus-router` so the router can select + fail over across Chutes models.
 - Pass `rawPrompt: true` when you already provide a system prompt.
-- Upload an agent pack into `/workspace/agent-pack` and set `JANUS_SYSTEM_PROMPT_PATH=/workspace/agent-pack/prompts/system.md` so Claude Code reads the full instruction set.
+- Upload an agent pack into `/workspace/agent-pack` and set `JANUS_SYSTEM_PROMPT_PATH` or pass `systemPromptPath=/workspace/agent-pack/prompts/system.md` so Claude Code reads the full instruction set.
 - Save generated files to `/workspace/artifacts`; cache sandbox artifact URLs server‑side (e.g., `/var/data/...`) and serve them via `/api/artifacts/...` before the sandbox exits.
+- You can set `SANDY_AGENT_API_BASE_URL` and `SANDY_AGENT_SYSTEM_PROMPT_PATH` as defaults so `/api/agent-run` auto‑wires the router + system prompt.
 
 > **Note:** Factory Droid requires a proprietary `FACTORY_API_KEY` and uses Factory-hosted models. OpenCode uses the OpenAI-compatible endpoint and supports Chutes models via `OPENAI_BASE_URL`.
 

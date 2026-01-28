@@ -37,7 +37,17 @@ function getSandyConfig() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { agent, model, prompt, sandboxId, maxDuration: bodyDuration } = body || {};
+    const {
+      agent,
+      model,
+      prompt,
+      sandboxId,
+      maxDuration: bodyDuration,
+      rawPrompt,
+      systemPromptPath,
+      apiBaseUrl,
+      env: requestEnv,
+    } = body || {};
     const externalAgents = appConfig.agents.availableAgents.filter((id) => id !== 'builtin');
 
     if (!agent || !model || !prompt || !sandboxId) {
@@ -66,6 +76,34 @@ export async function POST(request: NextRequest) {
       ? Math.max(60, Number(bodyDuration))
       : DEFAULT_AGENT_MAX_SECONDS;
     const timeoutMs = Math.max(1000, requestedDurationSeconds * 1000);
+    const envVars = {
+      ...(typeof requestEnv === 'object' && requestEnv ? requestEnv : {}),
+      ...(process.env.CHUTES_API_KEY ? { CHUTES_API_KEY: process.env.CHUTES_API_KEY } : {}),
+    };
+    const resolvedSystemPromptPath =
+      systemPromptPath ||
+      process.env.SANDY_AGENT_SYSTEM_PROMPT_PATH ||
+      process.env.JANUS_SYSTEM_PROMPT_PATH;
+    const resolvedApiBase =
+      apiBaseUrl ||
+      process.env.SANDY_AGENT_API_BASE_URL ||
+      process.env.SANDY_AGENT_ROUTER_URL ||
+      process.env.JANUS_ROUTER_URL ||
+      process.env.JANUS_MODEL_ROUTER_URL;
+    const normalizedApiBase = resolvedApiBase
+      ? resolvedApiBase.replace(/\/+$/, '').replace(/\/v1$/, '')
+      : undefined;
+    const resolvedRawPrompt =
+      typeof rawPrompt === 'boolean'
+        ? rawPrompt
+        : process.env.SANDY_AGENT_RAW_PROMPT === 'true';
+
+    if (model === 'janus-router' && !normalizedApiBase) {
+      return NextResponse.json(
+        { error: 'janus-router requires SANDY_AGENT_API_BASE_URL (or apiBaseUrl in the request).' },
+        { status: 400 }
+      );
+    }
 
     const response = await fetch(`${baseUrl}/api/sandboxes/${sandboxId}/agent/run`, {
       method: 'POST',
@@ -73,7 +111,16 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
-      body: JSON.stringify({ agent, model, prompt, maxDuration: requestedDurationSeconds }),
+      body: JSON.stringify({
+        agent,
+        model,
+        prompt,
+        maxDuration: requestedDurationSeconds,
+        ...(resolvedRawPrompt !== undefined ? { rawPrompt: resolvedRawPrompt } : {}),
+        ...(resolvedSystemPromptPath ? { systemPromptPath: resolvedSystemPromptPath } : {}),
+        ...(normalizedApiBase ? { apiBaseUrl: normalizedApiBase } : {}),
+        ...(Object.keys(envVars).length ? { env: envVars, envVars } : {}),
+      }),
       dispatcher: getSandyDispatcher(timeoutMs),
     } as RequestInit & { dispatcher?: Agent });
 

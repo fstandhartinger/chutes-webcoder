@@ -81,6 +81,7 @@ export const appConfig = {
     
     // Available models
     availableModels: [
+      'janus-router',
       'zai-org/GLM-4.7-TEE',
       'deepseek-ai/DeepSeek-V3.2-TEE',
       'MiniMaxAI/MiniMax-M2.1-TEE',
@@ -90,6 +91,7 @@ export const appConfig = {
     
     // Model display names
     modelDisplayNames: {
+      'janus-router': 'Janus Router (Chutes)',
       'zai-org/GLM-4.7-TEE': 'GLM 4.7',
       'deepseek-ai/DeepSeek-V3.2-TEE': 'DeepSeek V3.2',
       'MiniMaxAI/MiniMax-M2.1-TEE': 'MiniMax M2.1',
