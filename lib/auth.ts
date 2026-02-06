@@ -226,13 +226,28 @@ export async function revokeToken(token: string): Promise<void> {
 // Cookie-based session storage (serverless-compatible)
 // Sessions are stored directly in the cookie as encrypted/encoded JSON
 
-const SESSION_SECRET = process.env.SESSION_SECRET || 'chutes-webcoder-default-secret-change-in-production';
+let warnedMissingSessionSecret = false;
+const getSessionSecretEffective = () => {
+  const secret = process.env.SESSION_SECRET;
+  if (secret) return secret;
+  // Avoid hard-failing at import-time (e.g. during `next build`). Fail only when actually used.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('SESSION_SECRET must be set in production');
+  }
+  if (!warnedMissingSessionSecret) {
+    console.warn(
+      '[auth] SESSION_SECRET is not set; using an insecure default for local development only.',
+    );
+    warnedMissingSessionSecret = true;
+  }
+  return 'chutes-webcoder-dev-insecure-secret';
+};
 
 // Simple encryption for session data
 function encryptSession(session: AuthSession): string {
   const data = JSON.stringify(session);
   // Create a simple signature using HMAC
-  const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+  const hmac = crypto.createHmac('sha256', getSessionSecretEffective());
   hmac.update(data);
   const signature = hmac.digest('base64url');
   // Encode the data as base64
@@ -249,7 +264,7 @@ function decryptSession(cookieValue: string): AuthSession | null {
     const data = Buffer.from(encodedData, 'base64url').toString('utf-8');
     
     // Verify signature
-    const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+    const hmac = crypto.createHmac('sha256', getSessionSecretEffective());
     hmac.update(data);
     const expectedSignature = hmac.digest('base64url');
     
@@ -331,8 +346,6 @@ export async function callChutesApiWithUserToken(
     },
   });
 }
-
-
 
 
 

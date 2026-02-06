@@ -12,7 +12,7 @@ import { SSEJsonBuffer } from '../lib/agent-output-parser';
 
 // Configuration
 const API_BASE_URL = process.env.TEST_API_URL || 'http://localhost:3000';
-const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.65.109.64.180.nip.io';
+const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.example.com';
 const SANDY_API_KEY = process.env.SANDY_API_KEY;
 const CHUTES_API_KEY = process.env.CHUTES_API_KEY;
 const FACTORY_API_KEY = process.env.FACTORY_API_KEY;
@@ -287,7 +287,6 @@ if (import.meta.main) {
   console.log('Has SANDY_API_KEY:', !!SANDY_API_KEY);
   console.log('Has CHUTES_API_KEY:', !!CHUTES_API_KEY);
 }
-
 
 
 

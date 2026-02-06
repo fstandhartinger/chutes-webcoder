@@ -74,8 +74,6 @@ export async function GET(request: NextRequest) {
     console.log('[auth/callback] Getting user info...');
     const user = await getUserInfo(tokens.accessToken);
     
-    console.log('[auth/callback] Authenticated user:', user.username);
-    
     // Create session
     const sessionId = createSession({
       user,
@@ -89,7 +87,8 @@ export async function GET(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      // Keep users logged in for 30 days after last signed-in usage (sliding in /api/auth/me).
+      maxAge: 30 * 24 * 60 * 60,
       path: '/',
     });
     
@@ -116,7 +115,6 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
 
 
 

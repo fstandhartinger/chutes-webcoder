@@ -10,7 +10,8 @@ import { resolve } from 'path';
 config({ path: resolve(process.cwd(), '.env.local') });
 config({ path: resolve(process.cwd(), '.env') });
 
-const E2B_API_KEY = process.env.E2B_API_KEY || 'e2b_1a58a57202a6bdbf29fd7c39444b436b7a074581';
+const E2B_API_KEY = process.env.E2B_API_KEY || '';
+const SKIP_E2B = !E2B_API_KEY;
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -129,7 +130,7 @@ print(json.dumps({
   };
 }
 
-test('Deploy Flow Tests', async (t) => {
+test('Deploy Flow Tests', { skip: SKIP_E2B }, async (t) => {
   await t.test('should create sandbox and setup project', async () => {
     console.log('[test] Creating sandbox...');
     
@@ -388,4 +389,3 @@ print(json.dumps(files))
 });
 
 console.log('Starting Deploy Flow Tests...');
-

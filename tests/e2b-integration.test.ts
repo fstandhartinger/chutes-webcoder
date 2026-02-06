@@ -11,12 +11,8 @@ config({ path: resolve(process.cwd(), '.env.local') });
 config({ path: resolve(process.cwd(), '.env') });
 
 // Set environment variables directly if not loaded
-const E2B_API_KEY = process.env.E2B_API_KEY || 'e2b_1a58a57202a6bdbf29fd7c39444b436b7a074581';
-
-if (!E2B_API_KEY) {
-  console.error('E2B_API_KEY is required');
-  process.exit(1);
-}
+const E2B_API_KEY = process.env.E2B_API_KEY || '';
+const SKIP_E2B = !E2B_API_KEY;
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -36,10 +32,10 @@ test.after(async () => {
   }
 });
 
-test('E2B Sandbox Creation', async (t) => {
+test('E2B Sandbox Creation', { skip: SKIP_E2B }, async (t) => {
   await t.test('should create a new sandbox successfully', async () => {
-    console.log('[test] Creating sandbox with API key:', E2B_API_KEY.substring(0, 10) + '...');
-    
+    console.log('[test] Creating sandbox...');
+
     testSandbox = await Sandbox.create({
       apiKey: E2B_API_KEY,
       timeoutMs: 5 * 60 * 1000 // 5 minutes
@@ -69,7 +65,7 @@ print(json.dumps({"status": "ok", "value": 42}))
   });
 });
 
-test('E2B File Operations', async (t) => {
+test('E2B File Operations', { skip: SKIP_E2B }, async (t) => {
   await t.test('should create directories using Python', async () => {
     assert.ok(testSandbox, 'Sandbox should exist');
     
@@ -170,7 +166,7 @@ print(json.dumps(files))
   });
 });
 
-test('E2B Vite Setup', async (t) => {
+test('E2B Vite Setup', { skip: SKIP_E2B }, async (t) => {
   await t.test('should create package.json', async () => {
     assert.ok(testSandbox, 'Sandbox should exist');
     
@@ -383,7 +379,7 @@ print('Tailwind config created')
   });
 });
 
-test('E2B npm and Build', async (t) => {
+test('E2B npm and Build', { skip: SKIP_E2B }, async (t) => {
   await t.test('should run npm install', async () => {
     assert.ok(testSandbox, 'Sandbox should exist');
     console.log('[test] Running npm install (this may take a while)...');
@@ -544,7 +540,7 @@ print(json.dumps({
   });
 });
 
-test('E2B runCommand Function', async (t) => {
+test('E2B runCommand Function', { skip: SKIP_E2B }, async (t) => {
   await t.test('should parse JSON output from runCommand correctly', async () => {
     assert.ok(testSandbox, 'Sandbox should exist');
     
@@ -619,7 +615,7 @@ print(json.dumps({
   });
 });
 
-test('E2B Provider listFiles Bug Test', async (t) => {
+test('E2B Provider listFiles Bug Test', { skip: SKIP_E2B }, async (t) => {
   await t.test('should handle listFiles for dist directory', async () => {
     assert.ok(testSandbox, 'Sandbox should exist');
     
@@ -664,8 +660,6 @@ print(json.dumps(files))
 
 console.log('Starting E2B Integration Tests...');
 console.log('E2B_API_KEY:', E2B_API_KEY ? 'Set (length: ' + E2B_API_KEY.length + ')' : 'Not set');
-
-
 
 
 

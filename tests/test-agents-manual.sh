@@ -9,7 +9,7 @@
 
 set -e
 
-SANDY_BASE_URL="${SANDY_BASE_URL:-https://sandy.65.109.64.180.nip.io}"
+SANDY_BASE_URL="${SANDY_BASE_URL:-https://sandy.example.com}"
 CHUTES_API_KEY="${CHUTES_API_KEY:-}"
 SANDY_API_KEY="${SANDY_API_KEY:-}"
 
@@ -153,7 +153,6 @@ fi
 
 echo ""
 echo "=== Tests Complete ==="
-
 
 
 

@@ -39,10 +39,10 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
 
    # Sandbox provider (Sandy by default; dedicated host)
    SANDBOX_PROVIDER=sandy
-   SANDY_BASE_URL=https://sandy.65.109.64.180.nip.io
+   SANDY_BASE_URL=https://sandy.example.com
    SANDY_API_KEY=your_sandy_api_key
-   SANDY_HOST_SUFFIX=.sandy.65.109.64.180.nip.io
-   NEXT_PUBLIC_SANDBOX_HOST_SUFFIX=.sandy.65.109.64.180.nip.io
+   SANDY_HOST_SUFFIX=.sandy.example.com
+   NEXT_PUBLIC_SANDBOX_HOST_SUFFIX=.sandy.example.com
    # Optional: force Sandy controller routing (use docker-backed upstreams for agent runs)
    SANDY_PREFERRED_UPSTREAM=docker-primary
 
@@ -83,7 +83,7 @@ A Chutes-flavoured fork of [firecrawl/open-lovable](https://github.com/firecrawl
    DROID_MODEL=glm-4.6
    ```
 
-> **Note**: The production Sandy host moved to `https://sandy.65.109.64.180.nip.io` (old Sandy is deprecated).
+> **Note**: Treat Sandy hostnames as environment-specific (local vs. staging vs. production) and keep them in env vars, not in committed docs.
 
 3. **Run dev server**
    ```bash

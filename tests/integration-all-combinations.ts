@@ -24,7 +24,7 @@ import { parseArgs } from 'util';
 import { SSEJsonBuffer } from '../lib/agent-output-parser';
 
 // Configuration
-const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.65.109.64.180.nip.io';
+const SANDY_BASE_URL = process.env.SANDY_BASE_URL || 'https://sandy.example.com';
 const SANDY_API_KEY = process.env.SANDY_API_KEY;
 const CHUTES_API_KEY = process.env.CHUTES_API_KEY;
 const FACTORY_API_KEY = process.env.FACTORY_API_KEY;
@@ -383,7 +383,7 @@ Options:
 Environment:
   SANDY_API_KEY     Required - Sandy API key
   CHUTES_API_KEY    Required - Chutes API key
-  SANDY_BASE_URL    Optional - Sandy server URL (default: https://sandy.65.109.64.180.nip.io)
+  SANDY_BASE_URL    Optional - Sandy server URL (default: https://sandy.example.com)
   TEST_API_URL      Optional - Webcoder API URL (default: https://chutes-webcoder.onrender.com)
   FACTORY_API_KEY   Optional - Required for droid agent
 `);
@@ -503,7 +503,6 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
 
 
 

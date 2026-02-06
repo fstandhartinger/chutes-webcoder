@@ -24,29 +24,32 @@ export async function GET() {
       cookieStore.delete(SESSION_COOKIE_NAME);
       return NextResponse.json({ user: null });
     }
-    
+
+    let cookieValue = sessionCookie.value;
+
     // Check if tokens need refresh
     if (tokensNeedRefresh(session.tokens) && session.tokens.refreshToken) {
       try {
-        console.log('[auth/me] Refreshing tokens...');
         const newTokens = await refreshAccessToken(session.tokens.refreshToken);
         // Update session with new tokens and set updated cookie
         const newCookieValue = updateSessionTokens(sessionCookie.value, newTokens);
-        cookieStore.set(SESSION_COOKIE_NAME, newCookieValue, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-          path: '/',
-        });
+        cookieValue = newCookieValue;
         session.tokens = newTokens;
       } catch (e) {
         console.error('[auth/me] Token refresh failed:', e);
-        // Token refresh failed - session is invalid
-        cookieStore.delete(SESSION_COOKIE_NAME);
-        return NextResponse.json({ user: null });
+        // Do not force sign-out on transient refresh failures; keep the session
+        // and let callers fall back if the access token is expired.
       }
     }
+
+    // Refresh cookie expiry so the browser keeps the session for 30 days after last usage.
+    cookieStore.set(SESSION_COOKIE_NAME, cookieValue, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60,
+      path: '/',
+    });
     
     // Return user info (without sensitive token data)
     return NextResponse.json({
@@ -70,7 +73,6 @@ export async function GET() {
     );
   }
 }
-
 
 
 
