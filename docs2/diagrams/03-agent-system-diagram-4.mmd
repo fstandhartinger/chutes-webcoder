@@ -1,0 +1,16 @@
+flowchart TD
+    A[Agent writes files] --> B{File type?}
+    B -->|JS/JSX/TSX| C[Vite HMR triggers]
+    B -->|CSS| D[Vite CSS hot update]
+    B -->|Other| E[Manual refresh needed]
+
+    C --> F[Browser iframe updates via HMR WebSocket]
+    D --> F
+
+    E --> G[Apply code endpoint detects changes]
+    G --> H{Packages installed?}
+    H -->|Yes| I[Wait packageInstallRefreshDelay 5s]
+    H -->|No| J[Wait defaultRefreshDelay 2s]
+    I --> K[Restart Vite if needed]
+    K --> L[Reload iframe]
+    J --> L

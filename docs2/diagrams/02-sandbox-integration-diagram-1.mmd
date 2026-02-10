@@ -1,0 +1,28 @@
+classDiagram
+    class SandyProvider {
+        -existingFiles: Set~string~
+        -getBaseUrl() string
+        -getApiKey() string
+        -resolveWorkdir() string
+        -resolveTimeoutMs() number
+        -resolveCreateTimeoutMs() number
+        -resolveRequestTimeoutMs() number
+        -resolveHostSuffix() string
+        -resolvePreferredUpstream() string
+        -resolveAllowedHosts() true
+        -request~T~(path, options, timeoutMs) T
+        -requireSandboxId() string
+        +reconnect(sandboxId) boolean
+        +createSandbox() SandboxInfo
+        +runCommand(command) CommandResult
+        +writeFile(path, content) void
+        +readFile(path) string
+        +listFiles(directory) string[]
+        +installPackages(packages) CommandResult
+        +setupViteApp() void
+        +restartViteServer() void
+        +getSandboxUrl() string
+        +getSandboxInfo() SandboxInfo
+        +terminate() void
+        +isAlive() boolean
+    }

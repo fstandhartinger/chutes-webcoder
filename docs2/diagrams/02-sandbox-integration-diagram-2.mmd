@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant Client as Webcoder API
+    participant Factory as SandboxFactory
+    participant Provider as SandyProvider
+    participant Sandy as Sandy Controller
+    participant Sandbox as Container
+    participant Manager as SandboxManager
+
+    Client->>Factory: create("sandy")
+    Factory-->>Client: SandyProvider instance
+
+    Client->>Provider: createSandbox()
+    Provider->>Provider: terminate() if existing
+    Provider->>Provider: existingFiles.clear()
+    Provider->>Sandy: POST /api/sandboxes { priority: 1, preemptable: false, upstream }
+    Sandy-->>Provider: { sandboxId, url, createdAt }
+    Provider->>Provider: Store sandboxInfo
+
+    Client->>Provider: setupViteApp()
+    Provider->>Sandbox: Check /opt/sandy/template
+    alt Template exists
+        Provider->>Sandbox: cp -R /opt/sandy/template/. /workspace
+    else No template
+        Provider->>Sandbox: writeFile(package.json, vite.config.js, ...)
+        Provider->>Sandbox: npm install
+    end
+    Provider->>Sandbox: writeFile(vite.config.js) with HMR config
+    Provider->>Sandbox: pkill -f vite || true
+    Provider->>Sandbox: nohup npm run dev &
+    Provider->>Provider: Wait viteStartupDelay (10s)
+
+    Client->>Manager: registerSandbox(sandboxId, provider)
+
+    Note over Client,Sandbox: Sandbox is now active and serving
+
+    Client->>Provider: terminate()
+    Provider->>Sandy: POST /api/sandboxes/:id/terminate
+    Provider->>Provider: sandboxInfo = null

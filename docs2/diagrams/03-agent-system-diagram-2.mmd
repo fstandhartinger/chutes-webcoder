@@ -1,0 +1,10 @@
+flowchart LR
+    A[Raw SSE chunks] --> B[SSEJsonBuffer.addChunk]
+    B --> C{Complete event?}
+    C -->|Yes| D[Split by double newline]
+    D --> E[Extract data: lines]
+    E --> F{Valid JSON?}
+    F -->|Yes| G[jsonObjects array]
+    F -->|No| H[tryExtractJson fallback]
+    H --> G
+    C -->|No| I[Buffer for next chunk]

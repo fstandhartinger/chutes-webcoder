@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant Browser as Browser
+    participant Agent as Agent (via SSE)
+    participant Files as /api/get-sandbox-files
+    participant Sandbox as Sandy Sandbox
+
+    Agent-->>Browser: SSE: tool_use Write "src/App.jsx"
+    Browser->>Browser: Parse tool-use event, identify file path
+
+    Browser->>Files: GET /api/get-sandbox-files?sandboxId=...
+    Files->>Sandbox: listFiles("/workspace")
+    Sandbox-->>Files: ["src/App.jsx", "src/index.css", ...]
+    Files-->>Browser: File list
+
+    Browser->>Browser: Update file tree UI
+    Browser->>Browser: If active file changed, reload editor

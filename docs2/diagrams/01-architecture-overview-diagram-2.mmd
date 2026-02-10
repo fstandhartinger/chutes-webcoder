@@ -1,0 +1,44 @@
+classDiagram
+    class SandboxProvider {
+        <<abstract>>
+        +createSandbox() SandboxInfo
+        +runCommand(command) CommandResult
+        +writeFile(path, content) void
+        +readFile(path) string
+        +listFiles(directory) string[]
+        +installPackages(packages) CommandResult
+        +getSandboxUrl() string
+        +getSandboxInfo() SandboxInfo
+        +terminate() void
+        +isAlive() boolean
+        +setupViteApp() void
+        +restartViteServer() void
+    }
+
+    class SandyProvider {
+        -existingFiles: Set~string~
+        -getBaseUrl() string
+        -getApiKey() string
+        -resolveWorkdir() string
+        -resolvePreferredUpstream() string
+        +reconnect(sandboxId) boolean
+    }
+
+    class E2BProvider {
+        E2B Cloud Sandboxes
+    }
+
+    class VercelProvider {
+        Vercel OIDC Sandboxes
+    }
+
+    class SandboxFactory {
+        +create(provider, config) SandboxProvider
+        +getAvailableProviders() string[]
+        +isProviderAvailable(provider) boolean
+    }
+
+    SandboxProvider <|-- SandyProvider
+    SandboxProvider <|-- E2BProvider
+    SandboxProvider <|-- VercelProvider
+    SandboxFactory ..> SandboxProvider

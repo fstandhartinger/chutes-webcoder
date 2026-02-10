@@ -1,0 +1,22 @@
+flowchart TD
+    A[POST /api/create-ai-sandbox-v2] --> B{sandboxId in body?}
+    B -->|Yes| C[Restore existing sandbox]
+    B -->|No| D[createSandboxWithRetry max=5]
+
+    D --> E[createSandboxInternal]
+    E --> F[SandboxFactory.create]
+    F --> G[provider.createSandbox]
+    G --> H[provider.setupViteApp]
+    H --> I[Health check: echo sandbox-ready]
+    I -->|Success| J[sandboxManager.registerSandbox]
+    I -->|Failure| K{Retry?}
+    K -->|Yes| L[Exponential backoff]
+    L --> E
+    K -->|No| M[Return 500 error]
+
+    J --> N[writeProjectState]
+    N --> O["Return sandboxId + previewUrl"]
+
+    C --> P{Provider found?}
+    P -->|Yes| Q[Return sandbox info]
+    P -->|No| R[Return 404]

@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Browser as Browser iframe
+    participant Preview as /api/sandy-preview/:id
+    participant Proxy as /api/sandy-proxy/:id/...
+    participant Sandy as Sandy Proxy Layer
+    participant Vite as Vite Dev Server (port 5173)
+
+    Browser->>Preview: GET /api/sandy-preview/:sandboxId
+    Preview->>Sandy: Proxy request to sandbox
+    Sandy->>Vite: Forward to Vite dev server
+    Vite-->>Sandy: HTML response
+    Sandy-->>Preview: Response
+    Preview-->>Browser: HTML + set sandySandboxId cookie
+
+    Browser->>Proxy: GET /api/sandy-proxy/:id/src/App.jsx (JS/CSS assets)
+    Proxy->>Sandy: Proxy to sandbox
+    Sandy->>Vite: Serve asset
+    Vite-->>Sandy: Asset
+    Sandy-->>Proxy: Response
+    Proxy-->>Browser: Asset content
+
+    Note over Browser,Vite: Vite HMR uses WebSocket<br/>via sandbox host suffix

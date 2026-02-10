@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant UI as Browser
+    participant API as /api/agent-run
+    participant Sandy as Sandy Controller
+    participant Agent as Agent CLI (in sandbox)
+    participant Janus as Janus Router
+    participant Chutes as Chutes LLM
+
+    UI->>API: POST { agent, model, prompt, sandboxId }
+    API->>API: Resolve apiBaseUrl, systemPromptPath, rawPrompt
+
+    alt model == "janus-router"
+        API->>API: Require SANDY_AGENT_API_BASE_URL
+    end
+
+    API->>Sandy: POST /api/sandboxes/:id/agent/run
+    Sandy->>Agent: Launch agent CLI with env vars
+
+    loop Agent execution
+        Agent->>Janus: Model request (Messages API)
+        Janus->>Chutes: Route to best available model
+        Chutes-->>Janus: Response
+        Janus-->>Agent: Response
+        Agent-->>Sandy: SSE output events
+        Sandy-->>API: SSE stream
+        API-->>UI: SSE passthrough
+    end
