@@ -28,6 +28,12 @@ function getSandyDispatcher(timeoutMs: number): Agent {
 export class SandyProvider extends SandboxProvider {
   private existingFiles: Set<string> = new Set();
 
+  private buildViteStartCommand(logPath: string = '/tmp/vite.log'): string {
+    // `vite --host` (without an explicit host value) can bind IPv6-only on some Sandy images,
+    // which breaks the Sandy ingress (and even localhost IPv4 checks). Force IPv4 + strictPort.
+    return `CHOKIDAR_USEPOLLING=1 CHOKIDAR_INTERVAL=1000 nohup node node_modules/vite/bin/vite.js --host 0.0.0.0 --port ${appConfig.sandy.vitePort} --strictPort > ${logPath} 2>&1 &`;
+  }
+
   private getBaseUrl(): string {
     const baseUrl = this.config.sandy?.baseUrl || process.env.SANDY_BASE_URL;
     if (!baseUrl) {
@@ -79,7 +85,11 @@ export class SandyProvider extends SandboxProvider {
   private resolvePreferredUpstream(): string | undefined {
     return (
       this.config.sandy?.preferredUpstream ||
-      process.env.SANDY_PREFERRED_UPSTREAM
+      process.env.SANDY_PREFERRED_UPSTREAM ||
+      // Webcoder depends on a working preview server and ingress. On Sandy controllers
+      // where Firecracker preview bootstrapping is not yet reliable, default to the
+      // Docker upstream used for web workloads.
+      'docker-primary'
     );
   }
 
@@ -466,7 +476,7 @@ body {
     await this.writeFile('vite.config.js', viteConfig);
 
     await this.runCommand('pkill -f vite || true');
-    await this.runCommand('CHOKIDAR_USEPOLLING=1 CHOKIDAR_INTERVAL=1000 nohup npm run dev > /tmp/vite.log 2>&1 &');
+    await this.runCommand(this.buildViteStartCommand('/tmp/vite.log'));
 
     await new Promise(resolve => setTimeout(resolve, appConfig.sandy.viteStartupDelay));
 
@@ -483,7 +493,7 @@ body {
   async restartViteServer(): Promise<void> {
     await this.runCommand('pkill -f vite || true');
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await this.runCommand('CHOKIDAR_USEPOLLING=1 CHOKIDAR_INTERVAL=1000 nohup npm run dev > /tmp/vite.log 2>&1 &');
+    await this.runCommand(this.buildViteStartCommand('/tmp/vite.log'));
     await new Promise(resolve => setTimeout(resolve, appConfig.sandy.viteStartupDelay));
   }
 

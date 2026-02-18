@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "test:unit": "tsx --test tests/*.unit.test.ts",
-    "test:integration": "tsx tests/sandbox-utils.integration.test.ts",
+    "test:integration": "tsx --test tests/*.integration.test.ts",
     "test:api": "tsx tests/parse-ai-response.test.ts",
     "test:code": "tsx tests/code-application-flow.test.ts",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:api && npm run test:code"
